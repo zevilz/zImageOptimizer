@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.1.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.1.0)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.1.1-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.1.1)
 
 Simple lossless image optimizer for JPEG and PNG images in specified directory include subdirectories.
 
