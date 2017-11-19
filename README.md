@@ -43,6 +43,8 @@ Supported parameters:
 - -p, --path - specify input directory without slash in the end of path
 
 ## Manual installing dependences
+Notice: curent user must be root ar user with sudo access.
+
 **Install following packages or analogs (for non deb-based distributions) from repositories**
 ```bash
 jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp autoconf automake libtool nasm make pkg-config git
@@ -83,6 +85,13 @@ rm -rf pngout-20150319-linux
 By default script looks for binary files into folowing directories /bin/ /usr/bin/ /usr/local/bin/. If your binary file is not in these directories add your directory in variable BINARY_PATHS through a space like below and restart script
 ```bash
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/ /your/custom/path/"
+```
+
+**I have errors `djpeg: can't open /tmp/*` and `cjpeg: can't open /tmp/*` during optimization**
+
+You have not write access to directory /tmp. Tools djpeg and cjpeg use this directory for temporary files. Change path in variable TMP_PATH on full path to directory which you have write access like below (directory must be exist)
+```bash
+TMP_PATH="/custom/path/to/temp/files/"
 ```
 
 ## TODO
