@@ -94,6 +94,7 @@ Do you like script? Would you like to support its development? Feel free to dona
 ## Troubleshooting
 
 **I'm install dependences but one of tool is marked as NOT FOUND**
+
 By default script looks for binary files into folowing directories /bin/ /usr/bin/ /usr/local/bin/. If your binary file is not in these directories add your directory in variable BINARY_PATHS through a space like below and restart script
 ```bash
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/ /your/custom/path/"
