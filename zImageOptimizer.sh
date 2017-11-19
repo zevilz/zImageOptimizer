@@ -271,8 +271,8 @@ INPUT=0
 OUTPUT=0
 SAVED_SIZE=0
 
-#find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -name '*.JPG' -or -name '*.JPEG' -or -name '*.GIF' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
-find $path \( -name '*.jpg' -or -name '*.jpeg' -name '*.JPG' -or -name '*.JPEG' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
+#find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JPG' -or -name '*.JPEG' -or -name '*.GIF' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
+find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.JPG' -or -name '*.JPEG' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
 	echo -n "$IMAGE"
 	echo -n '...'
 	SIZE_BEFORE=$(stat "$IMAGE" -c %s)
