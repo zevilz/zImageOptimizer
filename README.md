@@ -110,4 +110,5 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 19.11.2017 - 0.1.1 - some bug fixes
 - 19.11.2017 - 0.1.0 - beta released
