@@ -50,7 +50,6 @@ jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp autoconf automake lib
 
 **Install MozJPEG**
 ```bash
-apt-get install autoconf automake libtool nasm make pkg-config git
 git clone https://github.com/mozilla/mozjpeg.git
 cd mozjpeg/
 autoreconf -fiv
