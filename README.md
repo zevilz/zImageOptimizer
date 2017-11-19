@@ -77,6 +77,15 @@ cp pngout-20150319-linux/x86_64/pngout /bin/pngout
 rm -rf pngout-20150319-linux
 ```
 
+## Troubleshooting
+
+**I'm install dependences but one of tool is marked as NOT FOUND**
+
+By default script looks for binary files into folowing directories /bin/ /usr/bin/ /usr/local/bin/. If your binary file is not in these directories add your directory in variable BINARY_PATHS through a space like below and restart script
+```bash
+BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/ /your/custom/path/"
+```
+
 ## TODO
 - add parameter for execute script without any questions and users actions (for cron usage)
 - add parameter for set time of the last change files for optimize only new images (for cron usage)
@@ -90,15 +99,6 @@ rm -rf pngout-20150319-linux
 Do you like script? Would you like to support its development? Feel free to donate
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
-
-## Troubleshooting
-
-**I'm install dependences but one of tool is marked as NOT FOUND**
-
-By default script looks for binary files into folowing directories /bin/ /usr/bin/ /usr/local/bin/. If your binary file is not in these directories add your directory in variable BINARY_PATHS through a space like below and restart script
-```bash
-BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/ /your/custom/path/"
-```
 
 ## Changelog
 - 19.11.2017 - 0.1.0 - beta released
