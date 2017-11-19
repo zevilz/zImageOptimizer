@@ -237,7 +237,6 @@ then
 	echo "All tools found"
 	echo
 	sayWait
-	echo
 else
 	echo "One or more tools not found"
 	echo
