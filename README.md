@@ -1,4 +1,4 @@
-# zImageOptimizer [![GitHub (pre-)release](https://img.shields.io/github/release/qubyte/rubidium/all.svg)](v0.1.0) [![PyPI](https://img.shields.io/pypi/status/Django.svg)](beta) [![Conda](https://img.shields.io/conda/pn/conda-forge/python.svg)](linux)
+# zImageOptimizer
 
 Simple lossless image optimizer for JPEG and PNG images in specified directory include subdirectories.
 
