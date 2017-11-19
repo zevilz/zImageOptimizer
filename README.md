@@ -66,6 +66,7 @@ make rpm
 rpm -i mozjpeg_*.rpm
 
 # for install from sources
+make
 make install
 ```
 
