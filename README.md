@@ -16,18 +16,18 @@ Tested only on Debian 9.2 amd64!
 - supported special characters (except slashes and back slashes), spaces and not latin characters in file name.
 
 ## Tools
-for jpeg:
+JPEG:
 - jpegoptim
 - jpegtran
 - [MozJPEG](https://github.com/mozilla/mozjpeg.git)
 
-for png:
+PNG:
 - pngcrush (v.1.7.22+)
 - optipng
 - [pngout](http://www.jonof.id.au/kenutils)
 - advpng
 
-for gif:
+GIF:
 - gifsicle
 
 One or more tools for each format required for optimization.
@@ -130,6 +130,6 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
-- 20.11.2017 - 0.2.0 - added [some features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.0), code refactoring
+- 20.11.2017 - 0.2.0 - added [some features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.0) and code refactoring
 - 19.11.2017 - 0.1.1 - some bug fixes
 - 19.11.2017 - 0.1.0 - beta released
