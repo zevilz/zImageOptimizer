@@ -1,6 +1,6 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.1.1-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.1.1)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.2.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.0)
 
-Simple lossless image optimizer for JPEG and PNG images in specified directory include subdirectories.
+Simple bash script for lossless image optimize JPEG, PNG and GIF images in specified directory include subdirectories.
 
 Tested only on Debian 9.2 amd64!
 
@@ -27,6 +27,9 @@ for png:
 - [pngout](http://www.jonof.id.au/kenutils)
 - advpng
 
+for gif:
+- gifsicle
+
 One or more tools for each format required for optimization.
 
 ## Usage
@@ -39,15 +42,31 @@ bash zImageOptimizer.sh --path=/path/to/files
 ```
 
 Supported parameters:
-- -h, --help - shows help
-- -p, --path - specify input directory without slash in the end of path
+- -h, --help        - shows help
+- -p, --path        - specify input directory without slash in the end of path
+- -n, --no-ask      - execute script without any questions and users actions
+- -c, --check-only  - check tools only with an opportunity to install dependences (all parameters will be ignored with this)
+
+## Automatical installing dependences
+Notice: curent user must be root ar user with sudo access.
+
+Start script if you want to install dependences automatically. It check installed tools and print choise option dialog if one or more tools not found. Select option **Install dependences and exit** by typing appropriate number and press enter. Script install dependences based on your platform, distribution and package manager. After that restart script to recheck installed tools.
+
+Supported only deb-based linux distributions for now:
+- Debian 8+ and forks
+- Ubuntu 14.04+ and forks
+
+Tested on:
+- Debian 9.2 amd64
+
+If you have errors during installing dependences on supported platforms please contact me or open issue.
 
 ## Manual installing dependences
 Notice: curent user must be root ar user with sudo access.
 
 **Install following packages or analogs (for non deb-based distributions) from repositories**
 ```bash
-jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp autoconf automake libtool nasm make pkg-config git
+jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle autoconf automake libtool nasm make pkg-config git
 ```
 
 **Install MozJPEG**
@@ -96,13 +115,14 @@ TMP_PATH="/custom/path/to/temp/files/"
 ```
 
 ## TODO
-- add parameter for execute script without any questions and users actions (for cron usage)
-- add parameter for set time of the last change files for optimize only new images (for cron usage)
-- add parameter for set quality for more small files in output
-- add parameter for check tools only
-- add support for optimize gif images
-- add support for automatic install dependences on other platforms and distributions with other package managers
-- even more to improve results of compression
+- [x] ~~add parameter for execute script without any questions and users actions (for cron usage)~~
+- [ ] add parameter for set time of the last change files for optimize only new images (for cron usage)
+- [ ] add parameter for set quality for more small files in output
+- [x] ~~add parameter for check tools only~~
+- [x] ~~add support for optimize gif images~~
+- [ ] add support for automatic install dependences on other platforms and distributions with other package managers
+- [ ] add support for parallel optimization
+- [ ] even more to improve results of compression
 
 ## Donations
 Do you like script? Would you like to support its development? Feel free to donate
@@ -110,5 +130,6 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 20.11.2017 - 0.2.0 - added [some features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.0), code refactoring
 - 19.11.2017 - 0.1.1 - some bug fixes
 - 19.11.2017 - 0.1.0 - beta released

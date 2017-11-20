@@ -3,12 +3,12 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.1.1
+# Version: 0.2.0
 
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
 TMP_PATH="/tmp/"
-TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng"
-DEPS="jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp autoconf automake libtool nasm make pkg-config git"
+TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng gifsicle"
+DEPS="jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle autoconf automake libtool nasm make pkg-config git"
 GIT_URL="https://github.com/zevilz/zImageOptimizer"
 
 SETCOLOR_SUCCESS="echo -en \\033[1;32m"
@@ -158,12 +158,68 @@ usage()
 	echo "Script to optimize JPG and PNG images in a directory."
 	echo
 	echo "Options:"
+	echo
 	echo "	-h, --help         shows this help"
+	echo
 	echo "	-p, --path [dir]   specify input directory"
 	echo
+	echo "	-n, --no-ask       execute script without any questions and users actions"
+	echo
+	echo "	-c, --check-only   check tools only with an opportunity to install "
+	echo "	                   dependences (all parameters will be ignored with this)"
+	echo
+}
+optimJpegoptim()
+{
+	jpegoptim --strip-all "$1" > /dev/null
+}
+optimJpegtran()
+{
+	jpegtran -progressive -copy none -optimize "$1" > /dev/null
+}
+optimMozjpeg()
+{
+	djpeg -outfile $TMP_PATH"$(basename "$1")" "$1" > /dev/null
+	cjpeg -optimize -progressive -outfile "$1" $TMP_PATH"$(basename "$1")" > /dev/null
+	rm $TMP_PATH"$(basename "$1")"
+}
+optimPngcrush()
+{
+	pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -reduce -q -ow "$1" > /dev/null
+}
+optimOptipng()
+{
+	optipng -strip all -o7 -q "$1" > /dev/null
+}
+optimPngout()
+{
+	pngout -q -y -k0 -s0 "$1" > /dev/null
+}
+optimAdvpng()
+{
+	advpng -z -4 "$1" > /dev/null
+}
+optimGifsicle()
+{
+	gifsicle --optimize=3 -b "$1" > /dev/null
+	#gifsicle --optimize=3 --lossy=30 -b "$IMAGE"
+}
+readableSize()
+{
+	if [ $1 -ge 1000000000 ]
+	then
+		echo -n $(echo "scale=1; $1/1024/1024/1024" | bc | sed 's/^\./0./')"Gb"
+	elif [ $1 -ge 1000000 ]
+	then
+		echo -n $(echo "scale=1; $1/1024/1024" | bc | sed 's/^\./0./')"Mb"
+	else
+		echo -n $(echo "scale=1; $1/1024" | bc | sed 's/^\./0./')"Kb"
+	fi
 }
 
 HELP=0
+NO_ASK=0
+CHECK_ONLY=0
 PARAMS_NUM=$#
 
 while [ 1 ] ; do
@@ -177,10 +233,22 @@ while [ 1 ] ; do
 	elif [ "$1" = "-h" ] ; then
 		shift ; HELP=1
 
+	elif [ "${1#--no-ask}" != "$1" ] ; then
+		NO_ASK=1
+	elif [ "$1" = "-n" ] ; then
+		shift ; NO_ASK=1
+
+	elif [ "${1#--check-only}" != "$1" ] ; then
+		CHECK_ONLY=1
+	elif [ "$1" = "-c" ] ; then
+		shift ; CHECK_ONLY=1
+
 	elif [ -z "$1" ] ; then
 		break
 	else
-		echo "Ошибка: неизвестный ключ" 1>&2
+		echo
+		echo "Unknown key detected!" 1>&2
+		usage
 		exit 1
 	fi
 	shift
@@ -192,10 +260,13 @@ then
 	exit 1
 fi
 
-checkParm "$path" "Path to files not set (-p|--path)"
-checkDir "$path"
-cdAndCheck "$path"
-checkDirPermissions "$path"
+if [ $CHECK_ONLY == 0 ]
+then
+	checkParm "$path" "Path to files not set (-p|--path)"
+	checkDir "$path"
+	cdAndCheck "$path"
+	checkDirPermissions "$path"
+fi
 
 BINARY_PATHS_ARRAY=($BINARY_PATHS)
 TOOLS_ARRAY=($TOOLS)
@@ -236,32 +307,71 @@ if [ $ALL_FOUND == 1 ]
 then
 	echo "All tools found"
 	echo
-	sayWait
+	if [[ $NO_ASK == 0 && $CHECK_ONLY == 0 ]]
+	then
+		sayWait
+	fi
+	if [ $CHECK_ONLY == 1 ]
+	then
+		exit 0
+	fi
 else
 	echo "One or more tools not found"
 	echo
-	echo "Please Select:"
-	echo
-	echo "1. Continue (default)"
-	echo "2. Install dependences and exit"
-	echo "0. Exit"
-	echo
-	echo -n "Enter selection [1] > "
-	read item
-	case "$item" in
-		1) echo
-			;;
-		0) echo "Exiting..."
-			exit 0
-			;;
-		2) echo
-			installDeps
-			echo "Exiting..."
-			exit 0
-			;;
-		*) echo 
-			;;
-	esac
+	if [ $NO_ASK == 0 ]
+	then
+		echo "Please Select:"
+		echo
+		if [ $CHECK_ONLY == 0 ]
+		then
+			echo "1. Continue (default)"
+			echo "2. Install dependences and exit"
+			echo "0. Exit"
+			echo
+			echo -n "Enter selection [1] > "
+		else
+			echo "1. Install dependences and exit"
+			echo "0. Exit (default)"
+			echo
+			echo -n "Enter selection [0] > "
+		fi
+		if [ $CHECK_ONLY == 0 ]
+		then
+			read item
+			case "$item" in
+				1) echo
+					;;
+				0) echo
+					echo "Exiting..."
+					exit 0
+					;;
+				2) echo
+					installDeps
+					echo "Exiting..."
+					exit 0
+					;;
+				*) echo 
+					;;
+			esac
+		else
+			read item
+			case "$item" in
+				0) echo
+					echo "Exiting..."
+					exit 0
+					;;
+				1) echo
+					installDeps
+					echo "Exiting..."
+					exit 0
+					;;
+				*) echo
+					echo "Exiting..."
+					exit 0
+					;;
+			esac
+		fi
+	fi
 fi
 
 echo "Optimizing..."
@@ -270,8 +380,7 @@ INPUT=0
 OUTPUT=0
 SAVED_SIZE=0
 
-#find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JPG' -or -name '*.JPEG' -or -name '*.GIF' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
-find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.JPG' -or -name '*.JPEG' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
+find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JPG' -or -name '*.JPEG' -or -name '*.GIF' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
 	echo -n "$IMAGE"
 	echo -n '...'
 	SIZE_BEFORE=$(stat "$IMAGE" -c %s)
@@ -286,46 +395,48 @@ find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.JPG' -or -name '*.JP
 
 		if [ $ISSET_jpegoptim == 1 ]
 		then
-			jpegoptim --strip-all "$IMAGE" > /dev/null
+			optimJpegoptim "$IMAGE"
 		fi
 
 		if [ $ISSET_jpegtran == 1 ]
 		then
-			jpegtran -progressive -copy none -optimize "$IMAGE" > /dev/null
+			optimJpegtran "$IMAGE"
 		fi
 
 		if [[ $ISSET_djpeg == 1 && $ISSET_cjpeg == 1 ]]
 		then
-			djpeg -outfile $TMP_PATH"$(basename "$IMAGE")" "$IMAGE" > /dev/null
-			cjpeg -optimize -progressive -outfile "$IMAGE" $TMP_PATH"$(basename "$IMAGE")" > /dev/null
-			rm $TMP_PATH"$(basename "$IMAGE")"
+			optimMozjpeg "$IMAGE"
 		fi
+
 	elif [[ $EXT == "png" || $EXT == "PNG" ]]
 	then
 		echo -n " "
 
 		if [ $ISSET_pngcrush == 1 ]
 		then
-			pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -reduce -q -ow "$IMAGE" > /dev/null
+			optimPngcrush "$IMAGE"
 		fi
 
 		if [ $ISSET_optipng == 1 ]
 		then
-			optipng -strip all -o7 -q "$IMAGE" > /dev/null
+			optimOptipng "$IMAGE"
 		fi
 
 		if [ $ISSET_pngout == 1 ]
 		then
-			pngout -q -y -k0 -s0 "$IMAGE" > /dev/null
+			optiPngout "$IMAGE"
 		fi
 
 		if [ $ISSET_advpng == 1 ]
 		then
-			advpng -z -4 "$IMAGE" > /dev/null
+			optimAdvpng "$IMAGE"
 		fi
-#	elif [[ $EXT == "gif" || $EXT == "GIF" ]]
-#	then
-#		# gif tools
+	elif [[ $EXT == "gif" || $EXT == "GIF" ]]
+	then
+		if [ $ISSET_gifsicle == 1 ]
+		then
+			optimGifsicle "$IMAGE"
+		fi
 	fi
 
 	SIZE_AFTER=$(stat "$IMAGE" -c %s)
@@ -336,12 +447,12 @@ find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.JPG' -or -name '*.JP
 		$SETCOLOR_FAILURE
 		echo -n "[NOT OPTIMIZED]"
 		$SETCOLOR_NORMAL
-		echo -n " ${SIZE_AFTER_SCALED}kb"
+		echo -n " ${SIZE_AFTER_SCALED}Kb"
 	else
 		$SETCOLOR_SUCCESS
 		echo -n "[OPTIMIZED]"
 		$SETCOLOR_NORMAL
-		echo -n " ${SIZE_BEFORE_SCALED}k -> ${SIZE_AFTER_SCALED}kb"
+		echo -n " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
 		SIZE_DIFF=$(echo "$SIZE_BEFORE-$SIZE_AFTER" | bc)
 		SAVED_SIZE=$(echo "$SAVED_SIZE+$SIZE_DIFF" | bc)
 	fi
@@ -350,36 +461,16 @@ done
 
 echo
 echo -n "Input: "
-if [ $INPUT -ge 1000000000 ]
-then
-	echo $(echo "scale=1; $INPUT/1024/1024/1024" | bc | sed 's/^\./0./')"Gb"
-elif [ $INPUT -ge 1000000 ]
-then
-	echo $(echo "scale=1; $INPUT/1024/1024" | bc | sed 's/^\./0./')"Mb"
-else
-	echo $(echo "scale=1; $INPUT/1024" | bc | sed 's/^\./0./')"kb"
-fi
+readableSize $INPUT
+echo
 
 echo -n "Output: "
-if [ $OUTPUT -ge 1000000000 ]
-then
-	echo $(echo "scale=1; $OUTPUT/1024/1024/1024" | bc | sed 's/^\./0./')"Gb"
-elif [ $OUTPUT -ge 1000000 ]
-then
-	echo $(echo "scale=1; $OUTPUT/1024/1024" | bc | sed 's/^\./0./')"Mb"
-else
-	echo $(echo "scale=1; $OUTPUT/1024" | bc | sed 's/^\./0./')"kb"
-fi
+readableSize $OUTPUT
+echo
 
 echo -n "You save: "
-if [ $SAVED_SIZE -ge 1000000000 ]
-then
-	echo $(echo "scale=1; $SAVED_SIZE/1024/1024/1024" | bc | sed 's/^\./0./')"Gb"
-elif [ $SAVED_SIZE -ge 1000000 ]
-then
-	echo $(echo "scale=1; $SAVED_SIZE/1024/1024" | bc | sed 's/^\./0./')"Mb"
-else
-	echo $(echo "scale=1; $SAVED_SIZE/1024" | bc | sed 's/^\./0./')"kb"
-fi )
+readableSize $SAVED_SIZE
+echo
+)
 
 echo
