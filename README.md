@@ -1,8 +1,6 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.2.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.0)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.2.1-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.1)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories.
-
-Tested only on Debian 9.2 amd64!
 
 ## Features
 - lossless image optimization with small image size in output;
@@ -58,6 +56,7 @@ Supported only deb-based linux distributions for now:
 
 Tested on:
 - Debian 9.2 amd64
+- Ubuntu 14.04.5 amd64
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
@@ -130,6 +129,7 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 20.11.2017 - 0.2.1 - some bug fixes
 - 20.11.2017 - 0.2.0 - added [some features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.0) and code refactoring
 - 19.11.2017 - 0.1.1 - some bug fixes
 - 19.11.2017 - 0.1.0 - beta released

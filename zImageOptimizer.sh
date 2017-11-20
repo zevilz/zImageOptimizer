@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.2.0
+# Version: 0.2.1
 
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
 TMP_PATH="/tmp/"
@@ -189,6 +189,7 @@ optimPngcrush()
 }
 optimOptipng()
 {
+	echo $OPTIPNG_V
 	optipng -strip all -o7 -q "$1" > /dev/null
 }
 optimPngout()
