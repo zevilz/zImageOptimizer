@@ -424,7 +424,7 @@ find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JP
 
 		if [ $ISSET_pngout == 1 ]
 		then
-			optiPngout "$IMAGE"
+			optimPngout "$IMAGE"
 		fi
 
 		if [ $ISSET_advpng == 1 ]
