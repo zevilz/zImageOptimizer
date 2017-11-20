@@ -65,7 +65,7 @@ Notice: curent user must be root or user with sudo access.
 
 **Install following packages or analogs (for non deb-based distributions) from repositories**
 ```bash
-jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle autoconf automake libtool nasm make pkg-config git
+jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle autoconf automake libtool nasm make pkg-config git bc
 ```
 
 **Install MozJPEG**
