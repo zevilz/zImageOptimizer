@@ -48,7 +48,7 @@ Supported parameters:
 - -c, --check-only  - check tools only with an opportunity to install dependences (all parameters will be ignored with this)
 
 ## Automatical installing dependences
-Notice: curent user must be root ar user with sudo access.
+Notice: curent user must be root or user with sudo access.
 
 Start script if you want to install dependences automatically. It check installed tools and print choise option dialog if one or more tools not found. Select option **Install dependences and exit** by typing appropriate number and press enter. Script install dependences based on your platform, distribution and package manager. After that restart script to recheck installed tools.
 
@@ -62,7 +62,7 @@ Tested on:
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
 ## Manual installing dependences
-Notice: curent user must be root ar user with sudo access.
+Notice: curent user must be root or user with sudo access.
 
 **Install following packages or analogs (for non deb-based distributions) from repositories**
 ```bash
