@@ -189,7 +189,6 @@ optimPngcrush()
 }
 optimOptipng()
 {
-	echo $OPTIPNG_V
 	optipng -strip all -o7 -q "$1" > /dev/null
 }
 optimPngout()
