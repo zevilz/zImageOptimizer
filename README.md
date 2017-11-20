@@ -30,7 +30,7 @@ PNG:
 GIF:
 - gifsicle
 
-One or more tools for each format required for optimization.
+One or more tools required for optimization.
 
 ## Usage
 ```bash
