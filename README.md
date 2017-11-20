@@ -22,8 +22,8 @@ JPEG:
 - [MozJPEG](https://github.com/mozilla/mozjpeg.git)
 
 PNG:
-- pngcrush (v.1.7.22+)
-- optipng
+- pngcrush (v1.7.22+)
+- optipng (v0.7+)
 - [pngout](http://www.jonof.id.au/kenutils)
 - advpng
 
