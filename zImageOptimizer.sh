@@ -165,7 +165,7 @@ usage()
 	echo
 	echo "	-n, --no-ask       execute script without any questions and users actions"
 	echo
-	echo "	-c, --check-only   check tools only with an opportunity to install "
+	echo "	-c, --check-only   only check tools with an opportunity to install "
 	echo "	                   dependences (all parameters will be ignored with this)"
 	echo
 }
