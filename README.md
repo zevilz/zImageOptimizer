@@ -1,6 +1,6 @@
 # zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.2.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.0)
 
-Simple bash script for lossless image optimize JPEG, PNG and GIF images in specified directory include subdirectories.
+Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories.
 
 Tested only on Debian 9.2 amd64!
 
