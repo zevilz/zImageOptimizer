@@ -45,7 +45,7 @@ Supported parameters:
 - -h, --help        - shows help
 - -p, --path        - specify input directory without slash in the end of path
 - -n, --no-ask      - execute script without any questions and users actions
-- -c, --check-only  - check tools only with an opportunity to install dependences (all parameters will be ignored with this)
+- -c, --check-only  - only check tools with an opportunity to install dependences (all parameters will be ignored with this)
 
 ## Automatical installing dependences
 Notice: curent user must be root or user with sudo access.
