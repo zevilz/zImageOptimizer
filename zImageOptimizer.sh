@@ -122,6 +122,20 @@ installDeps()
 				$SUDO yum install epel-release -y
 				$SUDO yum install $DEPS_REDHAT -y
 			fi
+
+			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+				if [ -f "${BINARY_PATHS_ARRAY[$p]}djpeg" ]
+				then
+					$ISSET_djpeg=1
+				fi
+			done
+			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+				if [ -f "${BINARY_PATHS_ARRAY[$p]}cjpeg" ]
+				then
+					$ISSET_cjpeg=1
+				fi
+			done
+
 			if [[ $ISSET_djpeg == 0 || $ISSET_cjpeg == 0 ]]
 			then
 				git clone https://github.com/mozilla/mozjpeg.git
@@ -143,6 +157,7 @@ installDeps()
 				cd ../
 				rm -rf mozjpeg
 			fi
+
 			if [[ $ISSET_pngout == 0 ]]
 			then
 				wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
