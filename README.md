@@ -78,6 +78,7 @@ jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake 
 ```
 
 **Install MozJPEG**
+
 Notice: making rpm package not working on CentOS 7+, older version of MozGPEG allready installed in first step. Install from sources if you want to install new version.
 
 ```bash
