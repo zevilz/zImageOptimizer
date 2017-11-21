@@ -6,7 +6,7 @@ Simple bash script for lossless image optimizing JPEG, PNG and GIF images in spe
 - lossless image optimization with small image size in output;
 - script work recursively;
 - checks optimization tools on start;
-- option for automatic install dependences and optimization tools if one or more of it not found (supported deb-based linux distributions for now, like Debian 8+, Ubuntu 14.04+);
+- option for automatic install dependences and optimization tools if one or more of it not found (supported deb-based linux distributions (Debian 8+ and forks, Ubuntu 14.04+ and forks) and CentOS 7+);
 - readable information in output and total info after optimization;
 - no limit for file size (limit only by hardware);
 - no limit for number of files;
