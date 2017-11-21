@@ -9,7 +9,7 @@ BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
 TMP_PATH="/tmp/"
 TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng gifsicle"
 DEPS_DEBIAN="jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle autoconf automake libtool nasm make pkg-config git bc"
-DEPS_REDHAT="epel-release jpegoptim libjpeg-turbo pngcrush optipng advancecomp gifsicle autoconf automake libtool rpmbuild nasm make git bc"
+DEPS_REDHAT="epel-release jpegoptim libjpeg-turbo pngcrush optipng advancecomp gifsicle autoconf automake libtool rpm-build nasm make git bc"
 GIT_URL="https://github.com/zevilz/zImageOptimizer"
 
 SETCOLOR_SUCCESS="echo -en \\033[1;32m"
