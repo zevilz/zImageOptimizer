@@ -8,7 +8,8 @@
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
 TMP_PATH="/tmp/"
 TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng gifsicle"
-DEPS="jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle autoconf automake libtool nasm make pkg-config git bc"
+DEPS_DEBIAN="jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle autoconf automake libtool nasm make pkg-config git bc"
+DEPS_REDHAT="epel-release jpegoptim libjpeg-turbo pngcrush optipng advancecomp gifsicle autoconf automake libtool nasm make git bc"
 GIT_URL="https://github.com/zevilz/zImageOptimizer"
 
 SETCOLOR_SUCCESS="echo -en \\033[1;32m"
@@ -115,7 +116,10 @@ installDeps()
 			if [ $PLATFORM_PKG == "debian" ]
 			then
 				$SUDO apt-get update
-				$SUDO apt-get install $DEPS -y
+				$SUDO apt-get install $DEPS_DEBIAN -y
+			elif [ $PLATFORM_PKG == "redhat" ]
+			then
+				$SUDO yum install $DEPS_REDHAT -y
 			fi
 			if [[ $ISSET_djpeg == 0 || $ISSET_cjpeg == 0 ]]
 			then
@@ -127,6 +131,13 @@ installDeps()
 				then
 					make deb
 					$SUDO dpkg -i mozjpeg_*.deb
+				elif [ $PLATFORM_PKG == "redhat" ]
+				then
+					make rpm
+					$SUDO rpm -i mozjpeg_*.rpm
+				else
+					make
+					$SUDO make install
 				fi
 				cd ../
 				rm -rf mozjpeg
@@ -189,6 +200,10 @@ optimPngcrush()
 }
 optimOptipng()
 {
+	#OPTIPNG_V=$(optipng -v | cut -d ' ' -f2 | cut -d ':' -f1)
+	#OPTIPNG_V=$(optipng -v | sed 's/[^0-9\.]//g' | cut -d '.' -f2)
+	OPTIPNG_V=$(optipng -v | grep -Eo '[0-9]\.[0-9]\.[0-9]' | cut -d '.' -f2)
+	echo $OPTIPNG_V
 	optipng -strip all -o7 -q "$1" > /dev/null
 }
 optimPngout()

@@ -56,7 +56,7 @@ Supported only deb-based linux distributions for now:
 
 Tested on:
 - Debian 9.2 amd64
-- Ubuntu 14.04.5 amd64
+- Ubuntu 14.04.5/16.04.3 amd64
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
