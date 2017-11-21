@@ -203,8 +203,8 @@ optimOptipng()
 {
 	#OPTIPNG_V=$(optipng -v | cut -d ' ' -f2 | cut -d ':' -f1)
 	#OPTIPNG_V=$(optipng -v | sed 's/[^0-9\.]//g' | cut -d '.' -f2)
-	OPTIPNG_V=$(optipng -v | grep -Eo '[0-9]\.[0-9]\.[0-9]' | cut -d '.' -f2)
-	echo $OPTIPNG_V
+	#OPTIPNG_V=$(optipng -v | grep -Eo '[0-9]\.[0-9]\.[0-9]' | cut -d '.' -f2)
+	#echo $OPTIPNG_V
 	optipng -strip all -o7 -q "$1" > /dev/null
 }
 optimPngout()
