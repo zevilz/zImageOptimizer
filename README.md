@@ -65,16 +65,17 @@ If you have errors during installing dependences on supported platforms please c
 ## Manual installing dependences
 Notice: curent user must be root or user with sudo access.
 
-**Install following packages or analogs from repositories**
+**Install following packages from repositories**
 
 DEB-based:
 ```bash
-jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc
+apt-get install jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc -y
 ```
 
 CentOS 7+:
 ```bash
-jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc
+yum install epel-release -y
+yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc -y
 ```
 
 **Install MozJPEG**
