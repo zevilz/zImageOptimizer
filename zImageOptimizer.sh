@@ -132,10 +132,10 @@ installDeps()
 				then
 					make deb
 					$SUDO dpkg -i mozjpeg_*.deb
-				elif [ $PLATFORM_PKG == "redhat" ]
-				then
-					make rpm
-					$SUDO rpm -i mozjpeg_*.rpm
+#				elif [ $PLATFORM_PKG == "redhat" ]
+#				then
+#					make rpm
+#					$SUDO rpm -i mozjpeg_*.rpm
 				else
 					make
 					$SUDO make install
