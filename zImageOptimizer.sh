@@ -126,13 +126,13 @@ installDeps()
 			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
 				if [ -f "${BINARY_PATHS_ARRAY[$p]}djpeg" ]
 				then
-					$ISSET_djpeg=1
+					ISSET_djpeg=1
 				fi
 			done
 			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
 				if [ -f "${BINARY_PATHS_ARRAY[$p]}cjpeg" ]
 				then
-					$ISSET_cjpeg=1
+					ISSET_cjpeg=1
 				fi
 			done
 
