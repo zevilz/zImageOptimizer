@@ -50,22 +50,31 @@ Notice: curent user must be root or user with sudo access.
 
 Start script in the optimization mode (-p|--path) or checking tools mode (-c|--check-only, recommended) if you want to install dependences automatically. It check installed tools and printing choise option dialog if one or more tools not found. Select option **Install dependences and exit** by typing appropriate number and press enter. Script install dependences based on your platform, distribution and package manager. After that restart script to recheck installed tools.
 
-Supported only deb-based linux distributions for now:
+Supported on:
 - Debian 8+ and forks
 - Ubuntu 14.04+ and forks
+- CentOS 7+
 
 Tested on:
 - Debian 9.2 amd64
 - Ubuntu 14.04.5/16.04.3 amd64
+- CentOS 7.4.1708 x86_64 minimal
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
 ## Manual installing dependences
 Notice: curent user must be root or user with sudo access.
 
-**Install following packages or analogs (for non deb-based distributions) from repositories**
+**Install following packages or analogs from repositories**
+
+DEB-based:
 ```bash
-jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle autoconf automake libtool nasm make pkg-config git bc
+jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc
+```
+
+CentOS 7+
+```bash
+jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc
 ```
 
 **Install MozJPEG**
@@ -79,7 +88,7 @@ autoreconf -fiv
 make deb
 dpkg -i mozjpeg_*.deb
 
-# for make rpm package and install
+# for make rpm package and install (not working on CentOS 7+, older version allready installed in first step)
 make rpm
 rpm -i mozjpeg_*.rpm
 
