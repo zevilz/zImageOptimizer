@@ -72,7 +72,7 @@ DEB-based:
 jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc
 ```
 
-CentOS 7+
+CentOS 7+:
 ```bash
 jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc
 ```
