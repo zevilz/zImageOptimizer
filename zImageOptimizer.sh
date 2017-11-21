@@ -83,14 +83,14 @@ installDeps()
 			[ zz`type -t log_begin_msg 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="debian"
 
 		# Then test against Gentoo
-		elif [ -r /etc/init.d/functions.sh ]; then
-			source /etc/init.d/functions.sh
-			[ zz`type -t ebegin 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="gentoo"
+#		elif [ -r /etc/init.d/functions.sh ]; then
+#			source /etc/init.d/functions.sh
+#			[ zz`type -t ebegin 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="gentoo"
 
 		# For Slackware we currently just test if /etc/slackware-version exists
 		# and isn't empty (TODO: Find a better way :)
-		elif [ -s /etc/slackware-version ]; then
-			PLATFORM_PKG="slackware"
+#		elif [ -s /etc/slackware-version ]; then
+#			PLATFORM_PKG="slackware"
 		fi
 
 #	elif [[ "$OSTYPE" == "darwin"* ]]; then
