@@ -178,7 +178,12 @@ installDeps()
 				wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
 				tar -xf pngout-20150319-linux.tar.gz
 				rm pngout-20150319-linux.tar.gz
-				$SUDO cp pngout-20150319-linux/x86_64/pngout /bin/pngout
+				if [ $PLATFORM_ARCH == 64 ]
+				then
+					$SUDO cp pngout-20150319-linux/x86_64/pngout /bin/pngout
+				else
+					$SUDO cp pngout-20150319-linux/i686/pngout /bin/pngout
+				fi
 				rm -rf pngout-20150319-linux
 			fi
 #			echo "PLATFORM: $PLATFORM"
