@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.2.2-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.2)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.2.3-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.3)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories.
 
