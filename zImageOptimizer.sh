@@ -62,14 +62,25 @@ checkParm()
 }
 installDeps()
 {
+	PLATFORM="unknown"
+	PLATFORM_ARCH="unknown"
 	if [[ "$OSTYPE" == "linux-gnu" ]]; then
 		PLATFORM="linux"
+		PLATFORM_DISTRIBUTION="unknown"
+		PLATFORM_VERSION="unknown"
 		PLATFORM_PKG="unknown"
+
+		if [ $(uname -m) == 'x86_64' ]; then
+			PLATFORM_ARCH=64
+		else
+			PLATFORM_ARCH=32
+		fi
 
 		# First test against Fedora / RHEL / CentOS / generic Redhat derivative
 		if [ -r /etc/rc.d/init.d/functions ]; then
 			source /etc/rc.d/init.d/functions
 			[ zz`type -t passed 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="redhat"
+			PLATFORM_VERSION=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d '.' -f1)
 
 		# Then test against SUSE (must be after Redhat,
 		# I've seen rc.status on Ubuntu I think? TODO: Recheck that)
@@ -97,8 +108,6 @@ installDeps()
 #		PLATFORM="macos"
 #	elif [[ "$OSTYPE" == "freebsd"* ]]; then
 #		PLATFORM="freebsd"
-	else
-		PLATFORM="unknown"
 	fi
 	
 	if ! [ $PLATFORM == "unknown" ]
@@ -117,9 +126,15 @@ installDeps()
 			then
 				$SUDO apt-get update
 				$SUDO apt-get install $DEPS_DEBIAN -y
-			elif [ $PLATFORM_PKG == "redhat" ]
+			elif [ $PLATFORM_PKG == "redhat" && $PLATFORM_VERSION -ge 6 ]
 			then
-				$SUDO yum install epel-release -y
+				if [ $PLATFORM_VERSION -eq 6 ]
+				then
+					$SUDO yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+				elif [ $PLATFORM_VERSION -ge 7 ]
+				then
+					$SUDO yum install epel-release -y
+				fi
 				$SUDO yum install $DEPS_REDHAT -y
 			fi
 
@@ -166,6 +181,11 @@ installDeps()
 				$SUDO cp pngout-20150319-linux/x86_64/pngout /bin/pngout
 				rm -rf pngout-20150319-linux
 			fi
+#			echo "PLATFORM: $PLATFORM"
+#			echo "PLATFORM_PKG: $PLATFORM_PKG"
+#			echo "PLATFORM_DISTRIBUTION $PLATFORM_DISTRIBUTION"
+#			echo "PLATFORM_ARCH: $PLATFORM_ARCH"
+#			echo "PLATFORM_VERSION: $PLATFORM_VERSION"
 		else
 			echo "Your package manager not supported! Please install dependaces manually."
 			echo "Info: $GIT_URL"
@@ -216,7 +236,13 @@ optimPngcrush()
 }
 optimOptipng()
 {
-	optipng -strip all -o7 -q "$1" > /dev/null
+	OPTIPNG_V=$(optipng -v | head -n1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | cut -d '.' -f2)
+	if [ $OPTIPNG_V -ge 7 ]
+	then
+		optipng -strip all -o7 -q "$1" > /dev/null
+	else
+		optipng -o7 -q "$1" > /dev/null
+	fi
 }
 optimPngout()
 {
