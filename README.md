@@ -142,6 +142,7 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 22.11.2017 - 0.2.3 - some bug fixes
 - 21.11.2017 - 0.2.2 - added support for automatic install dependences on CentOS 7+
 - 20.11.2017 - 0.2.1 - some bug fixes
 - 20.11.2017 - 0.2.0 - added [some features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.0) and code refactoring
