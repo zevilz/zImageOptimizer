@@ -126,7 +126,7 @@ installDeps()
 			then
 				$SUDO apt-get update
 				$SUDO apt-get install $DEPS_DEBIAN -y
-			elif [ $PLATFORM_PKG == "redhat" && $PLATFORM_VERSION -ge 6 ]
+			elif [[ $PLATFORM_PKG == "redhat" && $PLATFORM_VERSION -ge 6 ]]
 			then
 				if [ $PLATFORM_VERSION -eq 6 ]
 				then
