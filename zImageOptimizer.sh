@@ -148,7 +148,7 @@ installDeps()
 					if [ $ISSET_advpng == 0 ]
 					then
 						$SUDO yum install zlib-devel gcc-c++ -y
-						https://github.com/amadvance/advancecomp/releases/download/v2.0/advancecomp-2.0.tar.gz
+						wget https://github.com/amadvance/advancecomp/releases/download/v2.0/advancecomp-2.0.tar.gz
 						tar -zxvf advancecomp-2.0.tar.gz
 						rm advancecomp-2.0.tar.gz
 						cd advancecomp-2.0
