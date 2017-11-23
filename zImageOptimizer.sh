@@ -140,6 +140,24 @@ installDeps()
 				if [ $PLATFORM_VERSION -eq 6 ]
 				then
 					for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+						if [ -f "${BINARY_PATHS_ARRAY[$p]}pngcrush" ]
+						then
+							ISSET_pngcrush=1
+						fi
+					done
+					if [ $ISSET_pngcrush == 0 ]
+					then
+						wget https://downloads.sourceforge.net/project/pmt/pngcrush/old-versions/1.8/1.8.0/pngcrush-1.8.0.tar.gz
+						tar -zxvf pngcrush-1.8.0.tar.gz
+						rm pngcrush-1.8.0.tar.gz
+						cd pngcrush-1.8.0
+						make
+						$SUDO cp pngcrush /bin/
+						cd ../
+						rm -rf pngcrush-1.8.0
+					fi
+
+					for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
 						if [ -f "${BINARY_PATHS_ARRAY[$p]}advpng" ]
 						then
 							ISSET_advpng=1
@@ -155,6 +173,7 @@ installDeps()
 						./configure
 						make
 						$SUDO make install
+						cd ../
 						rm -rf advancecomp-2.0
 					fi
 				fi
