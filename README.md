@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.2.3-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.3)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.3.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.3.0)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories.
 
@@ -6,7 +6,7 @@ Simple bash script for lossless image optimizing JPEG, PNG and GIF images in spe
 - lossless image optimization with small image size in output;
 - script work recursively;
 - checks optimization tools on start;
-- option for automatic install dependences and optimization tools if one or more of it not found (supported deb-based linux distributions (Debian 8+ and forks, Ubuntu 14.04+ and forks) and CentOS 7+);
+- option for automatic install dependences and optimization tools if one or more of it not found (supported deb-based linux distributions (Debian 8+ and forks, Ubuntu 14.04+ and forks) and CentOS 6+);
 - readable information in output and total info after optimization;
 - no limit for file size (limit only by hardware);
 - no limit for number of files;
@@ -53,12 +53,12 @@ Start script in the optimization mode (-p|--path) or checking tools mode (-c|--c
 Supported on:
 - Debian 8+ and forks
 - Ubuntu 14.04+ and forks
-- CentOS 7+
+- CentOS 6+
 
 Tested on:
 - Debian 9.2 amd64
 - Ubuntu 14.04.5/16.04.3 amd64
-- CentOS 7.4.1708 x86_64 minimal
+- CentOS 6.9/7.4.1708 x86_64 minimal
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
@@ -72,7 +72,7 @@ DEB-based:
 apt-get install jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc -y
 ```
 
-CentOS 7+:
+CentOS 6+:
 ```bash
 yum install epel-release -y
 yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc -y
@@ -80,7 +80,7 @@ yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoco
 
 **Install MozJPEG**
 
-Notice: making rpm package not working on CentOS 7+, older version of MozJPEG allready installed in first step. Install from sources if you want to install new version.
+Notice: on CentOS 6+ older version of MozJPEG allready installed in first step. Install from sources if you want to install new version.
 
 ```bash
 git clone https://github.com/mozilla/mozjpeg.git
@@ -91,10 +91,6 @@ autoreconf -fiv
 # for make deb package and install
 make deb
 dpkg -i mozjpeg_*.deb
-
-# for make rpm package and install
-make rpm
-rpm -i mozjpeg_*.rpm
 
 # for install from sources
 make
@@ -108,6 +104,32 @@ tar -xf pngout-20150319-linux.tar.gz
 rm pngout-20150319-linux.tar.gz
 cp pngout-20150319-linux/x86_64/pngout /bin/pngout
 rm -rf pngout-20150319-linux
+```
+
+**Install pngcrush (CentOS 6.*)**
+```bash
+wget https://downloads.sourceforge.net/project/pmt/pngcrush/old-versions/1.8/1.8.0/pngcrush-1.8.0.tar.gz
+tar -zxvf pngcrush-1.8.0.tar.gz
+rm pngcrush-1.8.0.tar.gz
+cd pngcrush-1.8.0
+make
+cp pngcrush /bin/
+cd ../
+rm -rf pngcrush-1.8.0
+```
+
+**Install advpng (CentOS 6.*)**
+```bash
+yum install zlib-devel gcc-c++ -y
+wget https://github.com/amadvance/advancecomp/releases/download/v2.0/advancecomp-2.0.tar.gz
+tar -zxvf advancecomp-2.0.tar.gz
+rm advancecomp-2.0.tar.gz
+cd advancecomp-2.0
+./configure
+make
+make install
+cd ../
+rm -rf advancecomp-2.0
 ```
 
 ## Troubleshooting
@@ -142,8 +164,9 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 23.11.2017 - 0.3.0 - added support for automatic install dependences on CentOS 6.*
 - 22.11.2017 - 0.2.3 - some bug fixes
-- 21.11.2017 - 0.2.2 - added support for automatic install dependences on CentOS 7+
+- 21.11.2017 - 0.2.2 - added support for automatic install dependences on CentOS 7.*
 - 20.11.2017 - 0.2.1 - some bug fixes
 - 20.11.2017 - 0.2.0 - added [some features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.0) and code refactoring
 - 19.11.2017 - 0.1.1 - some bug fixes
