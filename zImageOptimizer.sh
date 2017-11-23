@@ -155,6 +155,7 @@ installDeps()
 						./configure
 						make
 						$SUDO make install
+						rm -rf advancecomp-2.0
 					fi
 				fi
 			fi
