@@ -109,7 +109,7 @@ installDeps()
 #	elif [[ "$OSTYPE" == "freebsd"* ]]; then
 #		PLATFORM="freebsd"
 	fi
-	
+
 	if ! [ $PLATFORM == "unknown" ]
 	then
 		if ! [ $PLATFORM_PKG == "unknown" ]
@@ -136,6 +136,27 @@ installDeps()
 					$SUDO yum install epel-release -y
 				fi
 				$SUDO yum install $DEPS_REDHAT -y
+
+				if [ $PLATFORM_VERSION -eq 6 ]
+				then
+					for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+						if [ -f "${BINARY_PATHS_ARRAY[$p]}advpng" ]
+						then
+							ISSET_advpng=1
+						fi
+					done
+					if [ $ISSET_advpng == 0 ]
+					then
+						$SUDO yum install zlib-devel gcc-c++ -y
+						https://github.com/amadvance/advancecomp/releases/download/v2.0/advancecomp-2.0.tar.gz
+						tar -zxvf advancecomp-2.0.tar.gz
+						rm advancecomp-2.0.tar.gz
+						cd advancecomp-2.0
+						./configure
+						make
+						$SUDO make install
+					fi
+				fi
 			fi
 
 			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
