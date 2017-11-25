@@ -258,6 +258,7 @@ installDeps()
 	if [ $DEBUG == 1 ]
 	then
 		echo "Platform info:"
+		echo
 		echo "PLATFORM: $PLATFORM"
 		echo "PLATFORM_PKG: $PLATFORM_PKG"
 		echo "PLATFORM_DISTRIBUTION $PLATFORM_DISTRIBUTION"
