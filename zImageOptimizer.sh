@@ -249,15 +249,21 @@ installDeps()
 			fi
 			rm -rf pngout-20150319-linux
 		fi
-#		echo "PLATFORM: $PLATFORM"
-#		echo "PLATFORM_PKG: $PLATFORM_PKG"
-#		echo "PLATFORM_DISTRIBUTION $PLATFORM_DISTRIBUTION"
-#		echo "PLATFORM_ARCH: $PLATFORM_ARCH"
-#		echo "PLATFORM_VERSION: $PLATFORM_VERSION"
-#		echo "PLATFORM_SUPPORT: $PLATFORM_SUPPORT"
 	else
 		echo "Your platform not supported! Please install dependaces manually."
 		echo "Info: $GIT_URL"
+		echo
+	fi
+
+	if [ $DEBUG == 1 ]
+	then
+		echo "Platform info:"
+		echo "PLATFORM: $PLATFORM"
+		echo "PLATFORM_PKG: $PLATFORM_PKG"
+		echo "PLATFORM_DISTRIBUTION $PLATFORM_DISTRIBUTION"
+		echo "PLATFORM_ARCH: $PLATFORM_ARCH"
+		echo "PLATFORM_VERSION: $PLATFORM_VERSION"
+		echo "PLATFORM_SUPPORT: $PLATFORM_SUPPORT"
 		echo
 	fi
 }
@@ -334,6 +340,7 @@ readableSize()
 	fi
 }
 
+DEBUG=0
 HELP=0
 NO_ASK=0
 CHECK_ONLY=0
@@ -345,20 +352,17 @@ while [ 1 ] ; do
 	elif [ "$1" = "-p" ] ; then
 		shift ; path="$1"
 
-	elif [ "${1#--help}" != "$1" ] ; then
+	elif [[ "$1" = "--help" || "$1" = "-h" ]] ; then
 		HELP=1
-	elif [ "$1" = "-h" ] ; then
-		shift ; HELP=1
 
-	elif [ "${1#--no-ask}" != "$1" ] ; then
+	elif [[ "$1" = "--no-ask" || "$1" = "-n" ]] ; then
 		NO_ASK=1
-	elif [ "$1" = "-n" ] ; then
-		shift ; NO_ASK=1
 
-	elif [ "${1#--check-only}" != "$1" ] ; then
+	elif [[ "$1" = "--check-only" || "$1" = "-c" ]] ; then
 		CHECK_ONLY=1
-	elif [ "$1" = "-c" ] ; then
-		shift ; CHECK_ONLY=1
+
+	elif [[ "$1" = "--debug" || "$1" = "-d" ]] ; then
+		DEBUG=1
 
 	elif [ -z "$1" ] ; then
 		break
