@@ -64,6 +64,7 @@ installDeps()
 {
 	PLATFORM="unknown"
 	PLATFORM_ARCH="unknown"
+	PLATFORM_SUPPORT=0
 	if [[ "$OSTYPE" == "linux-gnu" ]]; then
 		PLATFORM="linux"
 		PLATFORM_DISTRIBUTION="unknown"
@@ -80,18 +81,42 @@ installDeps()
 		if [ -r /etc/rc.d/init.d/functions ]; then
 			source /etc/rc.d/init.d/functions
 			[ zz`type -t passed 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="redhat"
+			PLATFORM_DISTRIBUTION=$(cat /etc/redhat-release | cut -d ' ' -f1)
 			PLATFORM_VERSION=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d '.' -f1)
+			if [ $PLATFORM_DISTRIBUTION == "CentOS" ]
+			then
+				if [ $PLATFORM_VERSION -ge 6 ]
+				then
+					PLATFORM_SUPPORT=1
+				fi
+			fi
 
 		# Then test against SUSE (must be after Redhat,
 		# I've seen rc.status on Ubuntu I think? TODO: Recheck that)
-		elif [ -r /etc/rc.status ]; then
-			source /etc/rc.status
-			[ zz`type -t rc_reset 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="suse"
+#		elif [ -r /etc/rc.status ]; then
+#			source /etc/rc.status
+#			[ zz`type -t rc_reset 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="suse"
 
 		# Then test against Debian, Ubuntu and friends
 		elif [ -r /lib/lsb/init-functions ]; then
 			source /lib/lsb/init-functions
 			[ zz`type -t log_begin_msg 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="debian"
+			PLATFORM_DISTRIBUTION=$(lsb_release -i | cut -d ':' -f2 | sed 's/\s//')
+			PLATFORM_VERSION=$(lsb_release -r | cut -d ':' -f2 | sed 's/\s//' | sed 's/\..*//')
+			if [ $PLATFORM_DISTRIBUTION == "Debian" ]
+			then
+				if [ $PLATFORM_VERSION -ge 7 ]
+				then
+					PLATFORM_SUPPORT=1
+				fi
+			fi
+			if [ $PLATFORM_DISTRIBUTION == "Ubuntu" ]
+			then
+				if [ $PLATFORM_VERSION -ge 14 ]
+				then
+					PLATFORM_SUPPORT=1
+				fi
+			fi
 
 		# Then test against Gentoo
 #		elif [ -r /etc/init.d/functions.sh ]; then
@@ -110,129 +135,126 @@ installDeps()
 #		PLATFORM="freebsd"
 	fi
 
-	if ! [ $PLATFORM == "unknown" ]
+	if [ $PLATFORM_SUPPORT == 1 ]
 	then
-		if ! [ $PLATFORM_PKG == "unknown" ]
+		echo "Installing dependences..."
+
+		CUR_USER=$(whoami)
+		if [ $CUR_USER == "root" ]
 		then
-			echo "Installing dependences..."
-			CUR_USER=$(whoami)
-			if [ $CUR_USER == "root" ]
-			then
-				SUDO=""
-			else
-				SUDO="sudo"
-			fi
-			if [ $PLATFORM_PKG == "debian" ]
-			then
-				$SUDO apt-get update
-				$SUDO apt-get install $DEPS_DEBIAN -y
-			elif [[ $PLATFORM_PKG == "redhat" && $PLATFORM_VERSION -ge 6 ]]
-			then
-#				if [ $PLATFORM_VERSION -eq 6 ]
-#				then
-#					$SUDO yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-#				elif [ $PLATFORM_VERSION -ge 7 ]
-#				then
-					$SUDO yum install epel-release -y
-#				fi
-				$SUDO yum install $DEPS_REDHAT -y
-
-				if [ $PLATFORM_VERSION -eq 6 ]
-				then
-					for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-						if [ -f "${BINARY_PATHS_ARRAY[$p]}pngcrush" ]
-						then
-							ISSET_pngcrush=1
-						fi
-					done
-					if [ $ISSET_pngcrush == 0 ]
-					then
-						wget https://downloads.sourceforge.net/project/pmt/pngcrush/old-versions/1.8/1.8.0/pngcrush-1.8.0.tar.gz
-						tar -zxvf pngcrush-1.8.0.tar.gz
-						rm pngcrush-1.8.0.tar.gz
-						cd pngcrush-1.8.0
-						make
-						$SUDO cp pngcrush /bin/
-						cd ../
-						rm -rf pngcrush-1.8.0
-					fi
-
-					for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-						if [ -f "${BINARY_PATHS_ARRAY[$p]}advpng" ]
-						then
-							ISSET_advpng=1
-						fi
-					done
-					if [ $ISSET_advpng == 0 ]
-					then
-						$SUDO yum install zlib-devel gcc-c++ -y
-						wget https://github.com/amadvance/advancecomp/releases/download/v2.0/advancecomp-2.0.tar.gz
-						tar -zxvf advancecomp-2.0.tar.gz
-						rm advancecomp-2.0.tar.gz
-						cd advancecomp-2.0
-						./configure
-						make
-						$SUDO make install
-						cd ../
-						rm -rf advancecomp-2.0
-					fi
-				fi
-			fi
-
-#			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-#				if [ -f "${BINARY_PATHS_ARRAY[$p]}djpeg" ]
-#				then
-#					ISSET_djpeg=1
-#				fi
-#			done
-#			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-#				if [ -f "${BINARY_PATHS_ARRAY[$p]}cjpeg" ]
-#				then
-#					ISSET_cjpeg=1
-#				fi
-#			done
-
-#			if [[ $ISSET_djpeg == 0 || $ISSET_cjpeg == 0 ]]
-#			then
-#				git clone https://github.com/mozilla/mozjpeg.git
-#				cd mozjpeg/
-#				autoreconf -fiv
-#				./configure
-#				if [ $PLATFORM_PKG == "debian" ]
-#				then
-#					make deb
-#					$SUDO dpkg -i mozjpeg_*.deb
-#				else
-#					make
-#					$SUDO make install
-#				fi
-#				cd ../
-#				rm -rf mozjpeg
-#			fi
-
-			if [[ $ISSET_pngout == 0 ]]
-			then
-				wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
-				tar -xf pngout-20150319-linux.tar.gz
-				rm pngout-20150319-linux.tar.gz
-				if [ $PLATFORM_ARCH == 64 ]
-				then
-					$SUDO cp pngout-20150319-linux/x86_64/pngout /bin/pngout
-				else
-					$SUDO cp pngout-20150319-linux/i686/pngout /bin/pngout
-				fi
-				rm -rf pngout-20150319-linux
-			fi
-#			echo "PLATFORM: $PLATFORM"
-#			echo "PLATFORM_PKG: $PLATFORM_PKG"
-#			echo "PLATFORM_DISTRIBUTION $PLATFORM_DISTRIBUTION"
-#			echo "PLATFORM_ARCH: $PLATFORM_ARCH"
-#			echo "PLATFORM_VERSION: $PLATFORM_VERSION"
+			SUDO=""
 		else
-			echo "Your package manager not supported! Please install dependaces manually."
-			echo "Info: $GIT_URL"
-			echo
+			SUDO="sudo"
 		fi
+
+		if [ $PLATFORM_PKG == "debian" ]
+		then
+			$SUDO apt-get update
+			$SUDO apt-get install $DEPS_DEBIAN -y
+
+		elif [[ $PLATFORM_PKG == "redhat" && $PLATFORM_VERSION -ge 6 ]]
+		then
+#			if [ $PLATFORM_VERSION -eq 6 ]
+#			then
+#				$SUDO yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+#			elif [ $PLATFORM_VERSION -ge 7 ]
+#			then
+				$SUDO yum install epel-release -y
+#			fi
+			$SUDO yum install $DEPS_REDHAT -y
+
+			if [[ $PLATFORM_DISTRIBUTION == "CentOS" && $PLATFORM_VERSION -eq 6 ]]
+			then
+				for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+					if [ -f "${BINARY_PATHS_ARRAY[$p]}pngcrush" ]
+					then
+						ISSET_pngcrush=1
+					fi
+				done
+				if [ $ISSET_pngcrush == 0 ]
+				then
+					wget https://downloads.sourceforge.net/project/pmt/pngcrush/old-versions/1.8/1.8.0/pngcrush-1.8.0.tar.gz
+					tar -zxvf pngcrush-1.8.0.tar.gz
+					rm pngcrush-1.8.0.tar.gz
+					cd pngcrush-1.8.0
+					make
+					$SUDO cp pngcrush /bin/
+					cd ../
+					rm -rf pngcrush-1.8.0
+				fi
+
+				for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+					if [ -f "${BINARY_PATHS_ARRAY[$p]}advpng" ]
+					then
+						ISSET_advpng=1
+					fi
+				done
+				if [ $ISSET_advpng == 0 ]
+				then
+					$SUDO yum install zlib-devel gcc-c++ -y
+					wget https://github.com/amadvance/advancecomp/releases/download/v2.0/advancecomp-2.0.tar.gz
+					tar -zxvf advancecomp-2.0.tar.gz
+					rm advancecomp-2.0.tar.gz
+					cd advancecomp-2.0
+					./configure
+					make
+					$SUDO make install
+					cd ../
+					rm -rf advancecomp-2.0
+				fi
+			fi
+		fi
+
+#		for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+#			if [ -f "${BINARY_PATHS_ARRAY[$p]}djpeg" ]
+#			then
+#				ISSET_djpeg=1
+#			fi
+#		done
+#		for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+#			if [ -f "${BINARY_PATHS_ARRAY[$p]}cjpeg" ]
+#			then
+#				ISSET_cjpeg=1
+#			fi
+#		done
+
+#		if [[ $ISSET_djpeg == 0 || $ISSET_cjpeg == 0 ]]
+#		then
+#			git clone https://github.com/mozilla/mozjpeg.git
+#			cd mozjpeg/
+#			autoreconf -fiv
+#			./configure
+#			if [ $PLATFORM_PKG == "debian" ]
+#			then
+#				make deb
+#				$SUDO dpkg -i mozjpeg_*.deb
+#			else
+#				make
+#				$SUDO make install
+#			fi
+#			cd ../
+#			rm -rf mozjpeg
+#		fi
+
+		if [[ $ISSET_pngout == 0 ]]
+		then
+			wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
+			tar -xf pngout-20150319-linux.tar.gz
+			rm pngout-20150319-linux.tar.gz
+			if [ $PLATFORM_ARCH == 64 ]
+			then
+				$SUDO cp pngout-20150319-linux/x86_64/pngout /bin/pngout
+			else
+				$SUDO cp pngout-20150319-linux/i686/pngout /bin/pngout
+			fi
+			rm -rf pngout-20150319-linux
+		fi
+#		echo "PLATFORM: $PLATFORM"
+#		echo "PLATFORM_PKG: $PLATFORM_PKG"
+#		echo "PLATFORM_DISTRIBUTION $PLATFORM_DISTRIBUTION"
+#		echo "PLATFORM_ARCH: $PLATFORM_ARCH"
+#		echo "PLATFORM_VERSION: $PLATFORM_VERSION"
+#		echo "PLATFORM_SUPPORT: $PLATFORM_SUPPORT"
 	else
 		echo "Your platform not supported! Please install dependaces manually."
 		echo "Info: $GIT_URL"

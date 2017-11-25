@@ -6,7 +6,7 @@ Simple bash script for lossless image optimizing JPEG, PNG and GIF images in spe
 - lossless image optimization with small image size in output;
 - script work recursively;
 - checks optimization tools on start;
-- option for automatic install dependences and optimization tools if one or more of it not found (supported deb-based linux distributions (Debian 7+ and forks, Ubuntu 14.04+ and forks) and CentOS 6+);
+- option for automatic install dependences and optimization tools if one or more of it not found (see supported distributions [here](https://github.com/zevilz/zImageOptimizer#automatical-installing-dependences));
 - readable information in output and total info after optimization;
 - no limit for file size (limit only by hardware);
 - no limit for number of files;
@@ -51,8 +51,8 @@ Notice: curent user must be root or user with sudo access.
 Start script in the optimization mode (-p|--path) or checking tools mode (-c|--check-only, recommended) if you want to install dependences automatically. It check installed tools and printing choise option dialog if one or more tools not found. Select option **Install dependences and exit** by typing appropriate number and press enter. Script install dependences based on your platform, distribution and package manager. After that restart script to recheck installed tools.
 
 Supported on:
-- Debian 7+ and forks
-- Ubuntu 14.04+ and forks
+- Debian 7+
+- Ubuntu 14.04+
 - CentOS 6+
 
 Tested on:
