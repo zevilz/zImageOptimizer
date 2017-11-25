@@ -179,40 +179,36 @@ installDeps()
 				fi
 			fi
 
-			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-				if [ -f "${BINARY_PATHS_ARRAY[$p]}djpeg" ]
-				then
-					ISSET_djpeg=1
-				fi
-			done
-			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-				if [ -f "${BINARY_PATHS_ARRAY[$p]}cjpeg" ]
-				then
-					ISSET_cjpeg=1
-				fi
-			done
-
-			if [[ $ISSET_djpeg == 0 || $ISSET_cjpeg == 0 ]]
-			then
-				git clone https://github.com/mozilla/mozjpeg.git
-				cd mozjpeg/
-				autoreconf -fiv
-				./configure
-				if [ $PLATFORM_PKG == "debian" ]
-				then
-					make deb
-					$SUDO dpkg -i mozjpeg_*.deb
-#				elif [ $PLATFORM_PKG == "redhat" ]
+#			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+#				if [ -f "${BINARY_PATHS_ARRAY[$p]}djpeg" ]
 #				then
-#					make rpm
-#					$SUDO rpm -i mozjpeg_*.rpm
-				else
-					make
-					$SUDO make install
-				fi
-				cd ../
-				rm -rf mozjpeg
-			fi
+#					ISSET_djpeg=1
+#				fi
+#			done
+#			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+#				if [ -f "${BINARY_PATHS_ARRAY[$p]}cjpeg" ]
+#				then
+#					ISSET_cjpeg=1
+#				fi
+#			done
+
+#			if [[ $ISSET_djpeg == 0 || $ISSET_cjpeg == 0 ]]
+#			then
+#				git clone https://github.com/mozilla/mozjpeg.git
+#				cd mozjpeg/
+#				autoreconf -fiv
+#				./configure
+#				if [ $PLATFORM_PKG == "debian" ]
+#				then
+#					make deb
+#					$SUDO dpkg -i mozjpeg_*.deb
+#				else
+#					make
+#					$SUDO make install
+#				fi
+#				cd ../
+#				rm -rf mozjpeg
+#			fi
 
 			if [[ $ISSET_pngout == 0 ]]
 			then

@@ -81,25 +81,6 @@ yum install epel-release -y
 yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc -y
 ```
 
-**Install MozJPEG**
-
-Notice: on CentOS 6+ older version of MozJPEG allready installed in first step. Install from sources if you want to install new version.
-
-```bash
-git clone https://github.com/mozilla/mozjpeg.git
-cd mozjpeg/
-autoreconf -fiv
-./configure
-
-# for make deb package and install
-make deb
-dpkg -i mozjpeg_*.deb
-
-# for install from sources
-make
-make install
-```
-
 **Install pngout**
 ```bash
 wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
