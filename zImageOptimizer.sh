@@ -115,8 +115,8 @@ installDeps()
 		if ! [ $PLATFORM_PKG == "unknown" ]
 		then
 			echo "Installing dependences..."
-			whoami > /dev/null
-			if [ $? == "root" ]
+			CUR_USER=$(whoami)
+			if [ $CUR_USER == "root" ]
 			then
 				SUDO=""
 			else
