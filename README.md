@@ -56,9 +56,12 @@ Supported on:
 - CentOS 6+
 
 Tested on:
+- Debian 8.9 i686 minimal
 - Debian 9.2 amd64
-- Ubuntu 14.04.5/16.04.3 amd64
-- CentOS 6.9/7.4.1708 x86_64 minimal
+- Ubuntu 14.04.5 amd64
+- Ubuntu 16.04.3 amd64
+- CentOS 6.9 x86_64 minimal
+- CentOS 7.4.1708 x86_64 minimal
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
