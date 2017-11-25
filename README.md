@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.3.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.3.0)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.4.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.4.0)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories.
 
@@ -6,7 +6,7 @@ Simple bash script for lossless image optimizing JPEG, PNG and GIF images in spe
 - lossless image optimization with small image size in output;
 - script work recursively;
 - checks optimization tools on start;
-- option for automatic install dependences and optimization tools if one or more of it not found (supported deb-based linux distributions (Debian 8+ and forks, Ubuntu 14.04+ and forks) and CentOS 6+);
+- option for automatic install dependences and optimization tools if one or more of it not found (supported deb-based linux distributions (Debian 7+ and forks, Ubuntu 14.04+ and forks) and CentOS 6+);
 - readable information in output and total info after optimization;
 - no limit for file size (limit only by hardware);
 - no limit for number of files;
@@ -51,11 +51,12 @@ Notice: curent user must be root or user with sudo access.
 Start script in the optimization mode (-p|--path) or checking tools mode (-c|--check-only, recommended) if you want to install dependences automatically. It check installed tools and printing choise option dialog if one or more tools not found. Select option **Install dependences and exit** by typing appropriate number and press enter. Script install dependences based on your platform, distribution and package manager. After that restart script to recheck installed tools.
 
 Supported on:
-- Debian 8+ and forks
+- Debian 7+ and forks
 - Ubuntu 14.04+ and forks
 - CentOS 6+
 
 Tested on:
+- Debian 7.11 i686 minimal
 - Debian 8.9 i686 minimal
 - Debian 9.2 amd64
 - Ubuntu 14.04.5 amd64
@@ -148,6 +149,7 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 25.11.2017 - 0.4.0 - added support for automatic install dependences on Debian 7.* and some bugfixes
 - 23.11.2017 - 0.3.0 - added support for automatic install dependences on CentOS 6.*
 - 22.11.2017 - 0.2.3 - some bug fixes
 - 21.11.2017 - 0.2.2 - added support for automatic install dependences on CentOS 7.*
