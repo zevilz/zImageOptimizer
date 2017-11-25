@@ -72,7 +72,7 @@ Notice: curent user must be root or user with sudo access.
 
 DEB-based:
 ```bash
-apt-get install jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc -y
+apt-get install jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc -y
 ```
 
 CentOS 6+:
