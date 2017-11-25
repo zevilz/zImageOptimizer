@@ -8,7 +8,7 @@
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
 TMP_PATH="/tmp/"
 TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng gifsicle"
-DEPS_DEBIAN="jpegoptim libjpeg-turbo-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc"
+DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc"
 DEPS_REDHAT="jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc"
 GIT_URL="https://github.com/zevilz/zImageOptimizer"
 
