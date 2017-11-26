@@ -173,14 +173,15 @@ installDeps()
 
 		elif [ $PLATFORM_PKG == "redhat" ]
 		then
-#			if [ $PLATFORM_VERSION -eq 6 ]
-#			then
-#				$SUDO yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-#			elif [ $PLATFORM_VERSION -ge 7 ]
-#			then
+
+			if [ $PLATFORM_DISTRIBUTION == "Fedora" ]
+			then
+				$SUDO dnf install epel-release -y
+				$SUDO dnf install $DEPS_REDHAT -y
+			else
 				$SUDO yum install epel-release -y
-#			fi
-			$SUDO yum install $DEPS_REDHAT -y
+				$SUDO yum install $DEPS_REDHAT -y
+			fi
 
 			if [[ $PLATFORM_DISTRIBUTION == "CentOS" && $PLATFORM_VERSION -eq 6 ]]
 			then
