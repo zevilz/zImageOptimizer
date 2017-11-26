@@ -89,10 +89,10 @@ installDeps()
 			source /etc/rc.d/init.d/functions
 			[ zz`type -t passed 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="redhat"
 			PLATFORM_DISTRIBUTION=$(cat /etc/redhat-release | cut -d ' ' -f1)
-			PLATFORM_VERSION=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d '.' -f1)
 
 			if [ $PLATFORM_DISTRIBUTION == "CentOS" ]
 			then
+				PLATFORM_VERSION=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d '.' -f1)
 				if [ $PLATFORM_VERSION -ge $MIN_VERSION_CENTOS ]
 				then
 					PLATFORM_SUPPORT=1
@@ -101,6 +101,7 @@ installDeps()
 
 			if [ $PLATFORM_DISTRIBUTION == "Fedora" ]
 			then
+				PLATFORM_VERSION=$(grep -oE '[0-9]+' /etc/redhat-release)
 				if [ $PLATFORM_VERSION -ge $MIN_VERSION_FEDORA ]
 				then
 					PLATFORM_SUPPORT=1
