@@ -7,9 +7,9 @@
 
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
 TMP_PATH="/tmp/"
-TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng gifsicle"
-DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc"
-DEPS_REDHAT="jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc"
+TOOLS="jpegoptim jpegtran djpeg cjpeg convert pngcrush optipng pngout advpng gifsicle"
+DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle imagemagick wget autoconf automake libtool nasm make pkg-config git bc"
+DEPS_REDHAT="jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle ImageMagick wget autoconf automake libtool rpm-build nasm make git bc"
 GIT_URL="https://github.com/zevilz/zImageOptimizer"
 
 # Min versions of distributions. Must be integer.
@@ -322,6 +322,10 @@ optimMozjpeg()
 	cjpeg -optimize -progressive -outfile "$1" $TMP_PATH"$(basename "$1")" > /dev/null
 	rm $TMP_PATH"$(basename "$1")"
 }
+optimConvert()
+{
+	convert $1 -background Black -alpha Background $1 > /dev/null
+}
 optimPngcrush()
 {
 	pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -reduce -q -ow "$1" > /dev/null
@@ -554,6 +558,11 @@ find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JP
 	elif [[ $EXT == "png" || $EXT == "PNG" ]]
 	then
 		echo -n " "
+
+		if [ $ISSET_convert == 1 ]
+		then
+			optimConvert "$IMAGE"
+		fi
 
 		if [ $ISSET_pngcrush == 1 ]
 		then
