@@ -12,6 +12,12 @@ DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget 
 DEPS_REDHAT="jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc"
 GIT_URL="https://github.com/zevilz/zImageOptimizer"
 
+# Min versions of distributions. Must be integer.
+MIN_VERSION_DEBIAN=7
+MIN_VERSION_UBUNTU=14
+MIN_VERSION_CENTOS=6
+MIN_VERSION_FEDORA=24
+
 SETCOLOR_SUCCESS="echo -en \\033[1;32m"
 SETCOLOR_FAILURE="echo -en \\033[1;31m"
 SETCOLOR_NORMAL="echo -en \\033[0;39m"
@@ -79,13 +85,23 @@ installDeps()
 
 		# First test against Fedora / RHEL / CentOS / generic Redhat derivative
 		if [ -r /etc/rc.d/init.d/functions ]; then
+
 			source /etc/rc.d/init.d/functions
 			[ zz`type -t passed 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="redhat"
 			PLATFORM_DISTRIBUTION=$(cat /etc/redhat-release | cut -d ' ' -f1)
 			PLATFORM_VERSION=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d '.' -f1)
+
 			if [ $PLATFORM_DISTRIBUTION == "CentOS" ]
 			then
-				if [ $PLATFORM_VERSION -ge 6 ]
+				if [ $PLATFORM_VERSION -ge $MIN_VERSION_CENTOS ]
+				then
+					PLATFORM_SUPPORT=1
+				fi
+			fi
+
+			if [ $PLATFORM_DISTRIBUTION == "Fedora" ]
+			then
+				if [ $PLATFORM_VERSION -ge $MIN_VERSION_FEDORA ]
 				then
 					PLATFORM_SUPPORT=1
 				fi
@@ -99,20 +115,23 @@ installDeps()
 
 		# Then test against Debian, Ubuntu and friends
 		elif [ -r /lib/lsb/init-functions ]; then
+
 			source /lib/lsb/init-functions
 			[ zz`type -t log_begin_msg 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="debian"
 			PLATFORM_DISTRIBUTION=$(lsb_release -i | cut -d ':' -f2 | sed 's/\s//')
 			PLATFORM_VERSION=$(lsb_release -r | cut -d ':' -f2 | sed 's/\s//' | sed 's/\..*//')
+
 			if [ $PLATFORM_DISTRIBUTION == "Debian" ]
 			then
-				if [ $PLATFORM_VERSION -ge 7 ]
+				if [ $PLATFORM_VERSION -ge $MIN_VERSION_DEBIAN ]
 				then
 					PLATFORM_SUPPORT=1
 				fi
 			fi
+
 			if [ $PLATFORM_DISTRIBUTION == "Ubuntu" ]
 			then
-				if [ $PLATFORM_VERSION -ge 14 ]
+				if [ $PLATFORM_VERSION -ge $MIN_VERSION_UBUNTU ]
 				then
 					PLATFORM_SUPPORT=1
 				fi
@@ -152,7 +171,7 @@ installDeps()
 			$SUDO apt-get update
 			$SUDO apt-get install $DEPS_DEBIAN -y
 
-		elif [[ $PLATFORM_PKG == "redhat" && $PLATFORM_VERSION -ge 6 ]]
+		elif [ $PLATFORM_PKG == "redhat" ]
 		then
 #			if [ $PLATFORM_VERSION -eq 6 ]
 #			then
