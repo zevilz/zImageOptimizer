@@ -51,18 +51,27 @@ Notice: curent user must be root or user with sudo access.
 Start script in the optimization mode (-p|--path) or checking tools mode (-c|--check-only, recommended) if you want to install dependences automatically. It check installed tools and printing choise option dialog if one or more tools not found. Select option **Install dependences and exit** by typing appropriate number and press enter. Script install dependences based on your platform, distribution and package manager. After that restart script to recheck installed tools.
 
 Supported on:
-- Debian 7+
-- Ubuntu 14.04+
-- CentOS 6+
+- DEB-based linux distributions
+  - Debian 7+
+  - Ubuntu 14.04+
+- RPM-based linux distributions
+  - CentOS 6+
+  - Fedora 24+
 
 Tested on:
-- Debian 7.11 i686 minimal
-- Debian 8.9 i686 minimal
-- Debian 9.2 amd64
-- Ubuntu 14.04.5 amd64
-- Ubuntu 16.04.3 amd64
-- CentOS 6.9 x86_64 minimal
-- CentOS 7.4.1708 x86_64 minimal
+- DEB-based linux distributions
+	- Debian 7.11 i686 minimal
+	- Debian 8.9 i686 minimal
+	- Debian 9.2 amd64
+	- Ubuntu 14.04.5 amd64
+	- Ubuntu 16.04.3 amd64
+- RPM-based linux distributions
+	- CentOS 6.9 x86_64 minimal
+	- CentOS 7.4.1708 x86_64 minimal
+	- Fedora 24 i686 minimal
+	- Fedora 25 x86_64 minimal
+	- Fedora 26 x86_64 minimal
+	- Fedora 27 x86_64 workstation
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 

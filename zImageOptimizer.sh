@@ -15,8 +15,9 @@ GIT_URL="https://github.com/zevilz/zImageOptimizer"
 # Min versions of distributions. Must be integer.
 MIN_VERSION_DEBIAN=7
 MIN_VERSION_UBUNTU=14
-MIN_VERSION_CENTOS=6
 MIN_VERSION_FEDORA=24
+MIN_VERSION_RHEL=6
+MIN_VERSION_CENTOS=6
 
 SETCOLOR_SUCCESS="echo -en \\033[1;32m"
 SETCOLOR_FAILURE="echo -en \\033[1;31m"
@@ -90,19 +91,33 @@ installDeps()
 			[ zz`type -t passed 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="redhat"
 			PLATFORM_DISTRIBUTION=$(cat /etc/redhat-release | cut -d ' ' -f1)
 
-			if [ $PLATFORM_DISTRIBUTION == "CentOS" ]
+			if [ $PLATFORM_DISTRIBUTION == "Fedora" ]
 			then
-				PLATFORM_VERSION=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d '.' -f1)
-				if [ $PLATFORM_VERSION -ge $MIN_VERSION_CENTOS ]
+				PLATFORM_VERSION=$(grep -oE '[0-9]+' /etc/redhat-release)
+				if [ $PLATFORM_VERSION -ge $MIN_VERSION_FEDORA ]
 				then
 					PLATFORM_SUPPORT=1
 				fi
 			fi
 
-			if [ $PLATFORM_DISTRIBUTION == "Fedora" ]
+			if [ $PLATFORM_DISTRIBUTION == "Red" ]
 			then
-				PLATFORM_VERSION=$(grep -oE '[0-9]+' /etc/redhat-release)
-				if [ $PLATFORM_VERSION -ge $MIN_VERSION_FEDORA ]
+				RHEL_RECHECK=$(cat /etc/redhat-release | cut -d ' ' -f1-4)
+				if [ $RHEL_RECHECK == "Red Hat Enterprise Linux" ]
+				then
+					PLATFORM_DISTRIBUTION="RHEL"
+					PLATFORM_VERSION=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d '.' -f1)
+					if [ $PLATFORM_VERSION -ge $MIN_VERSION_RHEL ]
+					then
+						PLATFORM_SUPPORT=1
+					fi
+				fi
+			fi
+
+			if [ $PLATFORM_DISTRIBUTION == "CentOS" ]
+			then
+				PLATFORM_VERSION=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d '.' -f1)
+				if [ $PLATFORM_VERSION -ge $MIN_VERSION_CENTOS ]
 				then
 					PLATFORM_SUPPORT=1
 				fi
@@ -179,12 +194,16 @@ installDeps()
 			then
 				$SUDO dnf install epel-release -y
 				$SUDO dnf install $DEPS_REDHAT -y
+			elif [ $PLATFORM_DISTRIBUTION == "RHEL" ]
+			then
+				$SUDO yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(rpm -E '%{rhel}').noarch.rpm -y
+				$SUDO yum install $DEPS_REDHAT -y
 			else
 				$SUDO yum install epel-release -y
 				$SUDO yum install $DEPS_REDHAT -y
 			fi
 
-			if [[ $PLATFORM_DISTRIBUTION == "CentOS" && $PLATFORM_VERSION -eq 6 ]]
+			if [[ $PLATFORM_DISTRIBUTION == "CentOS" && $PLATFORM_VERSION -eq 6 || $PLATFORM_DISTRIBUTION == "RHEL" && $PLATFORM_VERSION -eq 6 ]]
 			then
 				for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
 					if [ -f "${BINARY_PATHS_ARRAY[$p]}pngcrush" ]
