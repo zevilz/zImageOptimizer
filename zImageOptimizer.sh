@@ -103,15 +103,15 @@ installDeps()
 			if [ $PLATFORM_DISTRIBUTION == "Red" ]
 			then
 				RHEL_RECHECK=$(cat /etc/redhat-release | cut -d ' ' -f1-4)
-				if [ $RHEL_RECHECK == "Red Hat Enterprise Linux" ]
-				then
+#				if [ $RHEL_RECHECK == "Red Hat Enterprise Linux" ]
+#				then
 					PLATFORM_DISTRIBUTION="RHEL"
 					PLATFORM_VERSION=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d '.' -f1)
 					if [ $PLATFORM_VERSION -ge $MIN_VERSION_RHEL ]
 					then
 						PLATFORM_SUPPORT=1
 					fi
-				fi
+#				fi
 			fi
 
 			if [ $PLATFORM_DISTRIBUTION == "CentOS" ]
