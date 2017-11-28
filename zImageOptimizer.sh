@@ -171,7 +171,7 @@ installDeps()
 	elif [[ "$OSTYPE" == "FreeBSD"* ]]; then
 
 		PLATFORM="freebsd"
-		PLATFORM_PKG="-"
+		PLATFORM_PKG="pkg"
 		PLATFORM_DISTRIBUTION="FreeBSD"
 
 #		if [ $(uname -m) == 'amd64' ]; then
