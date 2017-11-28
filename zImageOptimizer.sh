@@ -197,6 +197,7 @@ installDeps()
 			elif [ $PLATFORM_DISTRIBUTION == "RHEL" ]
 			then
 				$SUDO yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-$PLATFORM_VERSION.noarch.rpm -y
+				echo "Enabling rhel-$PLATFORM_VERSION-server-optional-rpms..."
 				$SUDO subscription-manager repos --enable rhel-$PLATFORM_VERSION-server-optional-rpms
 				$SUDO yum install $DEPS_REDHAT -y
 			else
