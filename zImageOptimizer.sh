@@ -18,7 +18,7 @@ MIN_VERSION_UBUNTU=14
 MIN_VERSION_FEDORA=24
 MIN_VERSION_RHEL=6
 MIN_VERSION_CENTOS=6
-MIN_VERSION_FREEBSD=11
+MIN_VERSION_FREEBSD=666
 
 SETCOLOR_SUCCESS="echo -en \\033[1;32m"
 SETCOLOR_FAILURE="echo -en \\033[1;31m"
@@ -174,14 +174,18 @@ installDeps()
 		PLATFORM_PKG="-"
 		PLATFORM_DISTRIBUTION="FreeBSD"
 
-		if [ $(uname -m) == 'amd64' ]; then
-			PLATFORM_ARCH=64
-		else
-			PLATFORM_ARCH=32
-		fi
+#		if [ $(uname -m) == 'amd64' ]; then
+#			PLATFORM_ARCH=64
+#		else
+#			PLATFORM_ARCH=32
+#		fi
+		PLATFORM_ARCH=$(getconf LONG_BIT)
 
-		PLATFORM_VERSION="unknown"
-		PLATFORM_SUPPORT=1
+		PLATFORM_VERSION=$(freebsd-version | cut -d '.' -f1)
+		if [ $PLATFORM_VERSION -ge $MIN_VERSION_FREEBSD ]
+		then
+			PLATFORM_SUPPORT=1
+		fi
 
 	fi
 
