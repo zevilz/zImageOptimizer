@@ -168,7 +168,7 @@ installDeps()
 #	elif [[ "$OSTYPE" == "darwin"* ]]; then
 #		PLATFORM="macos"
 
-	elif [[ "$OSTYPE" == "freebsd"* ]]; then
+	elif [[ "$OSTYPE" == "FreeBSD"* ]]; then
 
 		PLATFORM="freebsd"
 		PLATFORM_PKG="-"
