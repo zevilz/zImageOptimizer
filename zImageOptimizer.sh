@@ -645,7 +645,8 @@ SAVED_SIZE=0
 find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JPG' -or -name '*.JPEG' -or -name '*.GIF' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
 	echo -n "$IMAGE"
 	echo -n '...'
-	SIZE_BEFORE=$(stat "$IMAGE" -c %s)
+	#SIZE_BEFORE=$(stat "$IMAGE" -c %s)
+	SIZE_BEFORE=$(wc -c "$IMAGE" | awk '{print $1}')
 	SIZE_BEFORE_SCALED=$(echo "scale=1; $SIZE_BEFORE/1024" | bc | sed 's/^\./0./')
 	INPUT=$(echo "$INPUT+$SIZE_BEFORE" | bc)
 
@@ -706,7 +707,8 @@ find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JP
 		fi
 	fi
 
-	SIZE_AFTER=$(stat "$IMAGE" -c %s)
+	#SIZE_AFTER=$(stat "$IMAGE" -c %s)
+	SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
 	SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
 	OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
 	if [ $(echo "scale=0; $SIZE_BEFORE/100" | bc) -le $(echo "scale=0; $SIZE_AFTER/100" | bc) ]
