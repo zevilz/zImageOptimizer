@@ -18,6 +18,7 @@ MIN_VERSION_UBUNTU=14
 MIN_VERSION_FEDORA=24
 MIN_VERSION_RHEL=6
 MIN_VERSION_CENTOS=6
+MIN_VERSION_FREEBSD=11
 
 SETCOLOR_SUCCESS="echo -en \\033[1;32m"
 SETCOLOR_FAILURE="echo -en \\033[1;31m"
@@ -166,8 +167,22 @@ installDeps()
 
 #	elif [[ "$OSTYPE" == "darwin"* ]]; then
 #		PLATFORM="macos"
-#	elif [[ "$OSTYPE" == "freebsd"* ]]; then
-#		PLATFORM="freebsd"
+
+	elif [[ "$OSTYPE" == "freebsd"* ]]; then
+
+		PLATFORM="freebsd"
+		PLATFORM_PKG="-"
+		PLATFORM_DISTRIBUTION="FreeBSD"
+
+		if [ $(uname -m) == 'amd64' ]; then
+			PLATFORM_ARCH=64
+		else
+			PLATFORM_ARCH=32
+		fi
+
+		PLATFORM_VERSION="unknown"
+		PLATFORM_SUPPORT=1
+
 	fi
 
 	if [ $PLATFORM_SUPPORT == 1 ]
@@ -182,116 +197,190 @@ installDeps()
 			SUDO="sudo"
 		fi
 
-		if [ $PLATFORM_PKG == "debian" ]
+		if [ $PLATFORM == "linux" ]
 		then
-			$SUDO apt-get update
-			$SUDO apt-get install $DEPS_DEBIAN -y
-
-		elif [ $PLATFORM_PKG == "redhat" ]
-		then
-
-			if [ $PLATFORM_DISTRIBUTION == "Fedora" ]
+			if [ $PLATFORM_PKG == "debian" ]
 			then
-				$SUDO dnf install epel-release -y
-				$SUDO dnf install $DEPS_REDHAT -y
-			elif [ $PLATFORM_DISTRIBUTION == "RHEL" ]
-			then
-				$SUDO yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-$PLATFORM_VERSION.noarch.rpm -y
-				echo
-				echo -n "Enabling rhel-$PLATFORM_VERSION-server-optional-rpms repository..."
-				$SUDO subscription-manager repos --enable rhel-$PLATFORM_VERSION-server-optional-rpms
-				$SUDO yum install $DEPS_REDHAT -y
-			else
-				$SUDO yum install epel-release -y
-				$SUDO yum install $DEPS_REDHAT -y
-			fi
+				$SUDO apt-get update
+				$SUDO apt-get install $DEPS_DEBIAN -y
 
-			if [[ $PLATFORM_DISTRIBUTION == "CentOS" && $PLATFORM_VERSION -eq 6 || $PLATFORM_DISTRIBUTION == "RHEL" && $PLATFORM_VERSION -eq 6 ]]
+			elif [ $PLATFORM_PKG == "redhat" ]
 			then
-				for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-					if [ -f "${BINARY_PATHS_ARRAY[$p]}pngcrush" ]
-					then
-						ISSET_pngcrush=1
-					fi
-				done
-				if [ $ISSET_pngcrush == 0 ]
+
+				if [ $PLATFORM_DISTRIBUTION == "Fedora" ]
 				then
-					wget https://downloads.sourceforge.net/project/pmt/pngcrush/old-versions/1.8/1.8.0/pngcrush-1.8.0.tar.gz
-					tar -zxvf pngcrush-1.8.0.tar.gz
-					rm pngcrush-1.8.0.tar.gz
-					cd pngcrush-1.8.0
-					make
-					$SUDO cp pngcrush /bin/
-					cd ../
-					rm -rf pngcrush-1.8.0
+					$SUDO dnf install epel-release -y
+					$SUDO dnf install $DEPS_REDHAT -y
+				elif [ $PLATFORM_DISTRIBUTION == "RHEL" ]
+				then
+					$SUDO yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-$PLATFORM_VERSION.noarch.rpm -y
+					echo
+					echo -n "Enabling rhel-$PLATFORM_VERSION-server-optional-rpms repository..."
+					$SUDO subscription-manager repos --enable rhel-$PLATFORM_VERSION-server-optional-rpms
+					$SUDO yum install $DEPS_REDHAT -y
+				else
+					$SUDO yum install epel-release -y
+					$SUDO yum install $DEPS_REDHAT -y
 				fi
 
-				for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-					if [ -f "${BINARY_PATHS_ARRAY[$p]}advpng" ]
-					then
-						ISSET_advpng=1
-					fi
-				done
-				if [ $ISSET_advpng == 0 ]
+				if [[ $PLATFORM_DISTRIBUTION == "CentOS" && $PLATFORM_VERSION -eq 6 || $PLATFORM_DISTRIBUTION == "RHEL" && $PLATFORM_VERSION -eq 6 ]]
 				then
-					$SUDO yum install zlib-devel gcc-c++ -y
-					wget https://github.com/amadvance/advancecomp/releases/download/v2.0/advancecomp-2.0.tar.gz
-					tar -zxvf advancecomp-2.0.tar.gz
-					rm advancecomp-2.0.tar.gz
-					cd advancecomp-2.0
-					./configure
-					make
-					$SUDO make install
-					cd ../
-					rm -rf advancecomp-2.0
+					for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+						if [ -f "${BINARY_PATHS_ARRAY[$p]}pngcrush" ]
+						then
+							ISSET_pngcrush=1
+						fi
+					done
+					if [ $ISSET_pngcrush == 0 ]
+					then
+						wget https://downloads.sourceforge.net/project/pmt/pngcrush/old-versions/1.8/1.8.0/pngcrush-1.8.0.tar.gz
+						tar -zxvf pngcrush-1.8.0.tar.gz
+						rm pngcrush-1.8.0.tar.gz
+						cd pngcrush-1.8.0
+						make
+						$SUDO cp pngcrush /bin/
+						cd ../
+						rm -rf pngcrush-1.8.0
+					fi
+
+					for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+						if [ -f "${BINARY_PATHS_ARRAY[$p]}advpng" ]
+						then
+							ISSET_advpng=1
+						fi
+					done
+					if [ $ISSET_advpng == 0 ]
+					then
+						$SUDO yum install zlib-devel gcc-c++ -y
+						wget https://github.com/amadvance/advancecomp/releases/download/v2.0/advancecomp-2.0.tar.gz
+						tar -zxvf advancecomp-2.0.tar.gz
+						rm advancecomp-2.0.tar.gz
+						cd advancecomp-2.0
+						./configure
+						make
+						$SUDO make install
+						cd ../
+						rm -rf advancecomp-2.0
+					fi
 				fi
 			fi
-		fi
 
-#		for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-#			if [ -f "${BINARY_PATHS_ARRAY[$p]}djpeg" ]
-#			then
-#				ISSET_djpeg=1
-#			fi
-#		done
-#		for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-#			if [ -f "${BINARY_PATHS_ARRAY[$p]}cjpeg" ]
-#			then
-#				ISSET_cjpeg=1
-#			fi
-#		done
+	#		for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+	#			if [ -f "${BINARY_PATHS_ARRAY[$p]}djpeg" ]
+	#			then
+	#				ISSET_djpeg=1
+	#			fi
+	#		done
+	#		for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+	#			if [ -f "${BINARY_PATHS_ARRAY[$p]}cjpeg" ]
+	#			then
+	#				ISSET_cjpeg=1
+	#			fi
+	#		done
 
-#		if [[ $ISSET_djpeg == 0 || $ISSET_cjpeg == 0 ]]
-#		then
-#			git clone https://github.com/mozilla/mozjpeg.git
-#			cd mozjpeg/
-#			autoreconf -fiv
-#			./configure
-#			if [ $PLATFORM_PKG == "debian" ]
-#			then
-#				make deb
-#				$SUDO dpkg -i mozjpeg_*.deb
-#			else
-#				make
-#				$SUDO make install
-#			fi
-#			cd ../
-#			rm -rf mozjpeg
-#		fi
+	#		if [[ $ISSET_djpeg == 0 || $ISSET_cjpeg == 0 ]]
+	#		then
+	#			git clone https://github.com/mozilla/mozjpeg.git
+	#			cd mozjpeg/
+	#			autoreconf -fiv
+	#			./configure
+	#			if [ $PLATFORM_PKG == "debian" ]
+	#			then
+	#				make deb
+	#				$SUDO dpkg -i mozjpeg_*.deb
+	#			else
+	#				make
+	#				$SUDO make install
+	#			fi
+	#			cd ../
+	#			rm -rf mozjpeg
+	#		fi
 
-		if [[ $ISSET_pngout == 0 ]]
-		then
-			wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
-			tar -xf pngout-20150319-linux.tar.gz
-			rm pngout-20150319-linux.tar.gz
-			if [ $PLATFORM_ARCH == 64 ]
+			if [[ $ISSET_pngout == 0 ]]
 			then
-				$SUDO cp pngout-20150319-linux/x86_64/pngout /bin/pngout
-			else
-				$SUDO cp pngout-20150319-linux/i686/pngout /bin/pngout
+				wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
+				tar -xf pngout-20150319-linux.tar.gz
+				rm pngout-20150319-linux.tar.gz
+				if [ $PLATFORM_ARCH == 64 ]
+				then
+					$SUDO cp pngout-20150319-linux/x86_64/pngout /bin/pngout
+				else
+					$SUDO cp pngout-20150319-linux/i686/pngout /bin/pngout
+				fi
+				rm -rf pngout-20150319-linux
 			fi
-			rm -rf pngout-20150319-linux
+
+		elif [ $PLATFORM == "freebsd" ]
+		then
+
+#			# wget
+#			cd /usr/ports/ftp/wget/
+#			make BATCH=yes install clean
+
+#			# git
+#			cd /usr/ports/devel/git/
+#			make BATCH=yes install clean
+
+			# jpegoptim
+			if [[ $ISSET_jpegoptim == 0 ]]
+			then
+				cd /usr/ports/graphics/jpegoptim/
+				make BATCH=yes install clean
+			fi
+
+			# jpegtran djpeg cjpeg
+			if [[ $ISSET_djpeg == 0 || $ISSET_cjpeg == 0 || $ISSET_jpegtran == 0 ]]
+			then
+				cd /usr/ports/graphics/jpeg/
+				make BATCH=yes install clean
+			fi
+
+			# pngcrush
+			if [[ $ISSET_pngcrush == 0 ]]
+			then
+				cd /usr/ports/graphics/pngcrush/
+				make BATCH=yes install clean
+			fi
+
+			# optipng
+			if [[ $ISSET_optipng == 0 ]]
+			then
+				cd /usr/ports/graphics/optipng/
+				make BATCH=yes install clean
+			fi
+
+			# advpng
+			if [[ $ISSET_advpng == 0 ]]
+			then
+				cd /usr/ports/archivers/advancecomp/
+				make BATCH=yes install clean
+			fi
+
+			# gifsicle
+			if [[ $ISSET_gifsicle == 0 ]]
+			then
+				cd /usr/ports/graphics/gifsicle/
+				make BATCH=yes install clean
+			fi
+
+			# pngout
+			if [[ $ISSET_pngout == 0 ]]
+			then
+				cd ~
+				wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
+				tar -xf pngout-20150319-linux.tar.gz
+				rm pngout-20150319-linux.tar.gz
+				if [ $PLATFORM_ARCH == 64 ]
+				then
+					$SUDO cp pngout-20150319-linux/x86_64/pngout /bin/pngout
+				else
+					$SUDO cp pngout-20150319-linux/i686/pngout /bin/pngout
+				fi
+				rm -rf pngout-20150319-linux
+			fi
+
 		fi
+
 	else
 		echo "Your platform not supported! Please install dependaces manually."
 		echo "Info: $GIT_URL"
