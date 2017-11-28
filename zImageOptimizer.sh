@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.5.0
+# Version: 0.6.0
 
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
 TMP_PATH="/tmp/"
@@ -196,7 +196,7 @@ installDeps()
 				$SUDO dnf install $DEPS_REDHAT -y
 			elif [ $PLATFORM_DISTRIBUTION == "RHEL" ]
 			then
-				$SUDO yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(rpm -E '%{rhel}').noarch.rpm -y
+				$SUDO yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-$PLATFORM_VERSION.noarch.rpm -y
 				$SUDO subscription-manager repos --enable rhel-$PLATFORM_VERSION-server-optional-rpms
 				$SUDO yum install $DEPS_REDHAT -y
 			else

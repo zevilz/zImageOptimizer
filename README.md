@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.5.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.5.0)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.6.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.6.0)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories.
 
@@ -55,6 +55,7 @@ Supported on:
   - Debian 7+
   - Ubuntu 14.04+
 - RPM-based linux distributions
+  - RHEL 6+
   - CentOS 6+
   - Fedora 24+
 
@@ -66,6 +67,8 @@ Tested on:
 	- Ubuntu 14.04.5 amd64
 	- Ubuntu 16.04.3 amd64
 - RPM-based linux distributions
+	- RHEL 6.9 i686 minimal
+	- RHEL 7.4 x86_64 server
 	- CentOS 6.9 x86_64 minimal
 	- CentOS 7.4.1708 x86_64 minimal
 	- Fedora 24 i686 minimal
@@ -85,10 +88,23 @@ DEB-based:
 apt-get install jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc -y
 ```
 
+RHEL 6+:
+```bash
+yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(rpm -E '%{rhel}').noarch.rpm -y
+subscription-manager repos --enable rhel-$(rpm -E '%{rhel}')-server-optional-rpms
+yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc -y
+```
+
 CentOS 6+:
 ```bash
 yum install epel-release -y
 yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc -y
+```
+
+Fedora 24+:
+```bash
+dnf install epel-release -y
+dnf install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc -y
 ```
 
 **Install pngout**
@@ -100,7 +116,7 @@ cp pngout-20150319-linux/x86_64/pngout /bin/pngout
 rm -rf pngout-20150319-linux
 ```
 
-**Install pngcrush (CentOS 6.*)**
+**Install pngcrush (RHEL/CentOS 6.*)**
 ```bash
 wget https://downloads.sourceforge.net/project/pmt/pngcrush/old-versions/1.8/1.8.0/pngcrush-1.8.0.tar.gz
 tar -zxvf pngcrush-1.8.0.tar.gz
@@ -112,7 +128,7 @@ cd ../
 rm -rf pngcrush-1.8.0
 ```
 
-**Install advpng (CentOS 6.*)**
+**Install advpng (RHEL/CentOS 6.*)**
 ```bash
 yum install zlib-devel gcc-c++ -y
 wget https://github.com/amadvance/advancecomp/releases/download/v2.0/advancecomp-2.0.tar.gz
@@ -158,6 +174,7 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 28.11.2017 - 0.6.0 - added support for automatic install dependences on RHEL 6+ and Fedora 24+
 - 25.11.2017 - 0.5.0 - bug fixes and code refactoring
 - 25.11.2017 - 0.4.0 - added support for automatic install dependences on Debian 7.* and some bugfixes
 - 23.11.2017 - 0.3.0 - added support for automatic install dependences on CentOS 6.*
