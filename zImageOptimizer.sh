@@ -376,7 +376,7 @@ installDeps()
 				rm pngout-20150319-bsd.tar.gz
 				if [ $PLATFORM_ARCH == 64 ]
 				then
-					$SUDO cp pngout-20150319-linux/x86_64/pngout /bin/pngout
+					$SUDO cp pngout-20150319-linux/amd64/pngout /bin/pngout
 				else
 					$SUDO cp pngout-20150319-linux/i686/pngout /bin/pngout
 				fi
