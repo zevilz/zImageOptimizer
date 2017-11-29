@@ -371,16 +371,16 @@ installDeps()
 			if [[ $ISSET_pngout == 0 ]]
 			then
 				cd ~
-				wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
-				tar -xf pngout-20150319-linux.tar.gz
-				rm pngout-20150319-linux.tar.gz
+				wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-bsd.tar.gz
+				tar -xf pngout-20150319-bsd.tar.gz
+				rm pngout-20150319-bsd.tar.gz
 				if [ $PLATFORM_ARCH == 64 ]
 				then
 					$SUDO cp pngout-20150319-linux/x86_64/pngout /bin/pngout
 				else
 					$SUDO cp pngout-20150319-linux/i686/pngout /bin/pngout
 				fi
-				rm -rf pngout-20150319-linux
+				rm -rf pngout-20150319-bsd
 			fi
 
 		fi
