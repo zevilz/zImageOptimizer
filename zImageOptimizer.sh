@@ -443,7 +443,7 @@ optimConvert()
 }
 optimPngcrush()
 {
-	pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -reduce -q -ow "$1" > /dev/null
+	pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -reduce -q -s -ow "$1" > /dev/null
 }
 optimOptipng()
 {
