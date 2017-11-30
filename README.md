@@ -141,7 +141,7 @@ wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-bsd.tar.gz
 tar -xf pngout-20150319-bsd.tar.gz
 rm pngout-20150319-bsd.tar.gz
 cp pngout-20150319-bsd/i686/pngout /bin/pngout    # for i686 arch
-cp pngout-20150319-bsd/amd64/pngout /bin/pngout   # fot amd64 arch
+cp pngout-20150319-bsd/amd64/pngout /bin/pngout   # for amd64 arch
 rm -rf pngout-20150319-bsd
 ```
 
