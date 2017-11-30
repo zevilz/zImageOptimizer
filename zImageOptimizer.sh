@@ -198,6 +198,25 @@ installDeps()
 
 	fi
 
+	if [ $DEBUG == 1 ]
+	then
+		echo "Platform info:"
+		echo
+		echo "PLATFORM: $PLATFORM"
+		echo "PLATFORM_PKG: $PLATFORM_PKG"
+		echo "PLATFORM_DISTRIBUTION $PLATFORM_DISTRIBUTION"
+		echo "PLATFORM_ARCH: $PLATFORM_ARCH"
+		echo "PLATFORM_VERSION: $PLATFORM_VERSION"
+		if [ $PLATFORM == "freebsd" ]
+		then
+		echo "PLATFORM_SUBVERSION: $PLATFORM_SUBVERSION"
+		fi
+		echo "PLATFORM_SUPPORT: $PLATFORM_SUPPORT"
+		echo
+		sayWait
+		echo
+	fi
+
 	if [ $PLATFORM_SUPPORT == 1 ]
 	then
 		echo "Installing dependences..."
@@ -410,19 +429,6 @@ installDeps()
 	else
 		echo "Your platform not supported! Please install dependaces manually."
 		echo "Info: $GIT_URL"
-		echo
-	fi
-
-	if [ $DEBUG == 1 ]
-	then
-		echo "Platform info:"
-		echo
-		echo "PLATFORM: $PLATFORM"
-		echo "PLATFORM_PKG: $PLATFORM_PKG"
-		echo "PLATFORM_DISTRIBUTION $PLATFORM_DISTRIBUTION"
-		echo "PLATFORM_ARCH: $PLATFORM_ARCH"
-		echo "PLATFORM_VERSION: $PLATFORM_VERSION"
-		echo "PLATFORM_SUPPORT: $PLATFORM_SUPPORT"
 		echo
 	fi
 }
