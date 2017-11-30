@@ -764,7 +764,7 @@ echo
 
 echo -n "You save: "
 readableSize $SAVED_SIZE
-echo
+echo " $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
 )
 
 echo
