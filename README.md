@@ -1,6 +1,6 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.6.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.6.0)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.7.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
 
-Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories.
+Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories on Linux and FreeBSD.
 
 ## Features
 - lossless image optimization with small image size in output;
@@ -51,69 +51,96 @@ Notice: curent user must be root or user with sudo access.
 Start script in the optimization mode (-p|--path) or checking tools mode (-c|--check-only, recommended) if you want to install dependences automatically. It check installed tools and printing choise option dialog if one or more tools not found. Select option **Install dependences and exit** by typing appropriate number and press enter. Script install dependences based on your platform, distribution and package manager. After that restart script to recheck installed tools.
 
 Supported on:
-- DEB-based linux distributions
+- DEB-based linux distributions (i686/amd64)
   - Debian 7+
   - Ubuntu 14.04+
-- RPM-based linux distributions
+- RPM-based linux distributions (i686/x86_64)
   - RHEL 6+
   - CentOS 6+
   - Fedora 24+
+- FreeBSD 10.3/10.4/11.1 (i686/amd64)
 
 Tested on:
 - DEB-based linux distributions
-	- Debian 7.11 i686 minimal
-	- Debian 8.9 i686 minimal
-	- Debian 9.2 amd64
-	- Ubuntu 14.04.5 amd64
-	- Ubuntu 16.04.3 amd64
+  - Debian 7.11 i686 minimal
+  - Debian 8.9 i686 minimal
+  - Debian 9.2 amd64
+  - Ubuntu 14.04.5 amd64
+  - Ubuntu 16.04.3 amd64
 - RPM-based linux distributions
-	- RHEL 6.9 i686 minimal
-	- RHEL 7.4 x86_64 server
-	- CentOS 6.9 x86_64 minimal
-	- CentOS 7.4.1708 x86_64 minimal
-	- Fedora 24 i686 minimal
-	- Fedora 25 x86_64 minimal
-	- Fedora 26 x86_64 minimal
-	- Fedora 27 x86_64 workstation
+  - RHEL 6.9 i686 minimal
+  - RHEL 7.4 x86_64 server
+  - CentOS 6.9 x86_64 minimal
+  - CentOS 7.4.1708 x86_64 minimal
+  - Fedora 24 i686 minimal
+  - Fedora 25 x86_64 minimal
+  - Fedora 26 x86_64 minimal
+  - Fedora 27 x86_64 workstation
+- FreeBSD
+  - 10.3 i686
+  - 11.1 amd64
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
 ## Manual installing dependences
 Notice: curent user must be root or user with sudo access.
 
-**Install following packages from repositories**
+**Install following packages from repositories/ports**
 
 DEB-based:
 ```bash
 apt-get install jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
 ```
 
-RHEL 6+:
+RHEL:
 ```bash
 yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(rpm -E '%{rhel}').noarch.rpm -y
 subscription-manager repos --enable rhel-$(rpm -E '%{rhel}')-server-optional-rpms
 yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
 ```
 
-CentOS 6+:
+CentOS:
 ```bash
 yum install epel-release -y
 yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
 ```
 
-Fedora 24+:
+Fedora:
 ```bash
 dnf install epel-release -y
 dnf install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
 ```
 
+FreeBSD:
+```bash
+wget (/usr/ports/ftp/wget)
+jpegoptim (/usr/ports/graphics/jpegoptim)
+jpeg (/usr/ports/graphics/jpeg)
+pngcrush (/usr/ports/graphics/pngcrush)
+optipng (/usr/ports/graphics/optipng)
+advancecomp (/usr/ports/archivers/advancecomp)
+gifsicle (/usr/ports/graphics/gifsicle)
+```
+
 **Install pngout**
+Linux:
 ```bash
 wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
 tar -xf pngout-20150319-linux.tar.gz
 rm pngout-20150319-linux.tar.gz
-cp pngout-20150319-linux/x86_64/pngout /bin/pngout
+cp pngout-20150319-linux/i686/pngout /bin/pngout     # for i686 arch
+cp pngout-20150319-linux/x86_64/pngout /bin/pngout   # for x86_64/amd64 arch
 rm -rf pngout-20150319-linux
+```
+
+FreeBSD:
+```bash
+wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-bsd.tar.gz
+tar -xf pngout-20150319-bsd.tar.gz
+rm pngout-20150319-bsd.tar.gz
+cp pngout-20150319-bsd/i686/pngout /bin/pngout    # for i686 arch
+cp pngout-20150319-bsd/amd64/pngout /bin/pngout   $ fot amd64 arch
+rm -rf pngout-20150319-bsd
 ```
 
 **Install pngcrush (RHEL/CentOS 6.*)**
@@ -174,6 +201,7 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 30.11.2017 - 0.7.0 -  
 - 28.11.2017 - 0.6.0 - added support for automatic install dependences on RHEL 6+ and Fedora 24+
 - 25.11.2017 - 0.5.0 - bug fixes and code refactoring
 - 25.11.2017 - 0.4.0 - added support for automatic install dependences on Debian 7.* and some bugfixes

@@ -37,7 +37,7 @@ cdAndCheck()
 {
 	cd "$1" 2>/dev/null
 	if ! [ "$(pwd)" = "$1" ] ; then
-		echo "Can't get up in a directory $1 or an excess slash in the end of path. Exiting..." 1>&2
+		echo "Can't get up in a directory $1. Exiting..." 1>&2
 		exit 1
 	fi
 }
@@ -538,6 +538,7 @@ fi
 
 if [ $CHECK_ONLY == 0 ]
 then
+	path=$(echo "$path" | sed 's/\/$//')
 	checkParm "$path" "Path to files not set (-p|--path)"
 	checkDir "$path"
 	cdAndCheck "$path"
@@ -667,7 +668,7 @@ INPUT=0
 OUTPUT=0
 SAVED_SIZE=0
 
-find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JPG' -or -name '*.JPEG' -or -name '*.GIF' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
+find "$path" \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JPG' -or -name '*.JPEG' -or -name '*.GIF' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
 	echo -n "$IMAGE"
 	echo -n '...'
 	#SIZE_BEFORE=$(stat "$IMAGE" -c %s) # only for linux
@@ -764,7 +765,7 @@ echo
 
 echo -n "You save: "
 readableSize $SAVED_SIZE
-echo " $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
+echo " / $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
 )
 
 echo
