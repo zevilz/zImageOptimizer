@@ -20,7 +20,7 @@ MIN_VERSION_RHEL=6
 MIN_VERSION_CENTOS=6
 
 # Spacese separated supported versions of distributions.
-SUPPORTED_VERSIONS_FREEBSD="10.4 11.1"
+SUPPORTED_VERSIONS_FREEBSD="10.3 10.4 11.1"
 
 SETCOLOR_SUCCESS="echo -en \\033[1;32m"
 SETCOLOR_FAILURE="echo -en \\033[1;31m"
