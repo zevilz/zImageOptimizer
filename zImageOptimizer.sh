@@ -8,8 +8,8 @@
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
 TMP_PATH="/tmp/"
 TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng gifsicle"
-DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc"
-DEPS_REDHAT="jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc"
+DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc" # pkg-config git nasm
+DEPS_REDHAT="jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc" # rpm-build git nasm
 GIT_URL="https://github.com/zevilz/zImageOptimizer"
 
 # Min versions of distributions. Must be integer.
@@ -19,6 +19,10 @@ MIN_VERSION_FEDORA=24
 MIN_VERSION_RHEL=6
 MIN_VERSION_CENTOS=6
 MIN_VERSION_FREEBSD=11
+MIN_SUB_VERSION_FREEBSD=3
+
+# Spacese separated supported versions of distributions.
+#SUPPORTED_VERSIONS_FREEBSD="10.3 11.1"
 
 SETCOLOR_SUCCESS="echo -en \\033[1;32m"
 SETCOLOR_FAILURE="echo -en \\033[1;31m"
@@ -182,9 +186,14 @@ installDeps()
 		PLATFORM_ARCH=$(getconf LONG_BIT)
 
 		PLATFORM_VERSION=$(freebsd-version | cut -d '.' -f1)
+		PLATFORM_SUBVERSION=$(freebsd-version | cut -d '-' -f1 | cut -d '.' -f2)
 		if [ $PLATFORM_VERSION -ge $MIN_VERSION_FREEBSD ]
 		then
 			PLATFORM_SUPPORT=1
+			if [[ $PLATFORM_VERSION -eq $MIN_VERSION_FREEBSD && $PLATFORM_SUBVERSION -lt $MIN_SUBVERSION_FREEBSD ]]
+			then
+				PLATFORM_SUPPORT=0
+			fi
 		fi
 
 	fi
@@ -317,57 +326,70 @@ installDeps()
 		elif [ $PLATFORM == "freebsd" ]
 		then
 
-#			# wget
-#			cd /usr/ports/ftp/wget/
-#			make BATCH=yes install clean
+#			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+#				if [ -f "${BINARY_PATHS_ARRAY[$p]}git" ]
+#				then
+#					ISSET_git=1
+#				else
+#					ISSET_git=0
+#				fi
+#			done
+#			if [[ $ISSET_git == 0 ]]
+#			then
+#				cd /usr/ports/devel/git/
+#				make BATCH=yes install clean
+#			fi
 
-#			# git
-#			cd /usr/ports/devel/git/
-#			make BATCH=yes install clean
+			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+				if [ -f "${BINARY_PATHS_ARRAY[$p]}wget" ]
+				then
+					ISSET_wget=1
+				else
+					ISSET_wget=0
+				fi
+			done
+			if [[ $ISSET_wget == 0 ]]
+			then
+				cd /usr/ports/ftp/wget/
+				make BATCH=yes install clean
+			fi
 
-			# jpegoptim
 			if [[ $ISSET_jpegoptim == 0 ]]
 			then
 				cd /usr/ports/graphics/jpegoptim/
 				make BATCH=yes install clean
 			fi
 
-			# jpegtran djpeg cjpeg
 			if [[ $ISSET_djpeg == 0 || $ISSET_cjpeg == 0 || $ISSET_jpegtran == 0 ]]
 			then
 				cd /usr/ports/graphics/jpeg/
 				make BATCH=yes install clean
 			fi
 
-			# pngcrush
 			if [[ $ISSET_pngcrush == 0 ]]
 			then
 				cd /usr/ports/graphics/pngcrush/
 				make BATCH=yes install clean
 			fi
 
-			# optipng
 			if [[ $ISSET_optipng == 0 ]]
 			then
 				cd /usr/ports/graphics/optipng/
 				make BATCH=yes install clean
 			fi
 
-			# advpng
 			if [[ $ISSET_advpng == 0 ]]
 			then
 				cd /usr/ports/archivers/advancecomp/
 				make BATCH=yes install clean
 			fi
 
-			# gifsicle
 			if [[ $ISSET_gifsicle == 0 ]]
 			then
 				cd /usr/ports/graphics/gifsicle/
 				make BATCH=yes install clean
 			fi
 
-			# pngout
 			if [[ $ISSET_pngout == 0 ]]
 			then
 				cd ~
@@ -466,7 +488,7 @@ optimAdvpng()
 optimGifsicle()
 {
 	gifsicle --optimize=3 -b "$1" > /dev/null
-	#gifsicle --optimize=3 --lossy=30 -b "$IMAGE"
+	#gifsicle --optimize=3 --lossy=30 -b "$IMAGE" # for lossy optimize
 }
 readableSize()
 {
@@ -645,7 +667,7 @@ SAVED_SIZE=0
 find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JPG' -or -name '*.JPEG' -or -name '*.GIF' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
 	echo -n "$IMAGE"
 	echo -n '...'
-	#SIZE_BEFORE=$(stat "$IMAGE" -c %s)
+	#SIZE_BEFORE=$(stat "$IMAGE" -c %s) # only for linux
 	SIZE_BEFORE=$(wc -c "$IMAGE" | awk '{print $1}')
 	SIZE_BEFORE_SCALED=$(echo "scale=1; $SIZE_BEFORE/1024" | bc | sed 's/^\./0./')
 	INPUT=$(echo "$INPUT+$SIZE_BEFORE" | bc)
@@ -707,7 +729,7 @@ find $path \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JP
 		fi
 	fi
 
-	#SIZE_AFTER=$(stat "$IMAGE" -c %s)
+	#SIZE_AFTER=$(stat "$IMAGE" -c %s) # only for linux
 	SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
 	SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
 	OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)

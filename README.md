@@ -85,26 +85,26 @@ Notice: curent user must be root or user with sudo access.
 
 DEB-based:
 ```bash
-apt-get install jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool nasm make pkg-config git bc -y
+apt-get install jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
 ```
 
 RHEL 6+:
 ```bash
 yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(rpm -E '%{rhel}').noarch.rpm -y
 subscription-manager repos --enable rhel-$(rpm -E '%{rhel}')-server-optional-rpms
-yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc -y
+yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
 ```
 
 CentOS 6+:
 ```bash
 yum install epel-release -y
-yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc -y
+yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
 ```
 
 Fedora 24+:
 ```bash
 dnf install epel-release -y
-dnf install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool rpm-build nasm make git bc -y
+dnf install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
 ```
 
 **Install pngout**
