@@ -549,7 +549,12 @@ TOOLS_ARRAY=($TOOLS)
 ALL_FOUND=1
 
 echo
-echo "Checking tools..."
+echo -n "Checking tools"
+if [ $DEBUG == 1 ]
+then
+	echo -n " in paths $BINARY_PATHS"
+fi
+echo "..."
 
 for t in "${!TOOLS_ARRAY[@]}" ; do
 	FOUND=0
@@ -563,8 +568,13 @@ for t in "${!TOOLS_ARRAY[@]}" ; do
 	if [ $FOUND == 1 ]
 	then
 		$SETCOLOR_SUCCESS
-		echo "[FOUND]"
+		echo -n "[FOUND]"
 		$SETCOLOR_NORMAL
+		if [ $DEBUG == 1 ]
+		then
+			echo -n " ${BINARY_PATHS_ARRAY[$p]}${TOOLS_ARRAY[$t]}"
+		fi
+		echo
 		tool=${TOOLS_ARRAY[$t]}
 		declare ISSET_$tool=1
 	else
