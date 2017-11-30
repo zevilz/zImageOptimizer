@@ -111,6 +111,8 @@ dnf install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoco
 ```
 
 FreeBSD:
+
+Install following ports
 ```bash
 wget (/usr/ports/ftp/wget)
 jpegoptim (/usr/ports/graphics/jpegoptim)
@@ -122,6 +124,7 @@ gifsicle (/usr/ports/graphics/gifsicle)
 ```
 
 **Install pngout**
+
 Linux:
 ```bash
 wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
