@@ -57,7 +57,7 @@ Supported on:
   - RHEL 6+
   - CentOS 6+
   - Fedora 24+
-- FreeBSD 10.3/10.4/11.1 (i686/amd64)
+- FreeBSD 10.3 / 10.4 / 11.1 (i686/amd64)
 
 Tested on:
 - DEB-based linux distributions
