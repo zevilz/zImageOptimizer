@@ -15,18 +15,17 @@ Simple bash script for lossless image optimizing JPEG, PNG and GIF images in spe
 
 ## Tools
 JPEG:
-- jpegoptim
-- jpegtran
-- [MozJPEG](https://github.com/mozilla/mozjpeg.git)
+- [jpegoptim](http://www.kokkonen.net/tjko/projects.html)
+- jpegtran, djpeg and cjpeg (from [libjpeg library](http://www.ijg.org/))
 
 PNG:
-- pngcrush (v1.7.22+)
-- optipng (v0.7+)
+- [pngcrush](http://pmt.sourceforge.net/pngcrush/) (v1.7.22+)
+- [optipng](http://optipng.sourceforge.net/) (v0.7+)
 - [pngout](http://www.jonof.id.au/kenutils)
-- advpng
+- advpng (from [AdvanceCOMP library](http://www.advancemame.it/comp-readme.html))
 
 GIF:
-- gifsicle
+- [gifsicle](http://www.lcdf.org/gifsicle/)
 
 One or more tools required for optimization.
 
@@ -41,7 +40,7 @@ bash zImageOptimizer.sh --path=/path/to/files
 
 Supported parameters:
 - -h, --help        - shows help
-- -p, --path        - specify input directory without slash in the end of path
+- -p, --path        - specify input directory with or without slash in the end of path
 - -n, --no-ask      - execute script without any questions and users actions
 - -c, --check-only  - only check tools with an opportunity to install dependences (all parameters will be ignored with this)
 
@@ -201,7 +200,7 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
-- 30.11.2017 - 0.7.0 -  
+- 30.11.2017 - 0.7.0 - added support for workin script on FreeBSD, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
 - 28.11.2017 - 0.6.0 - added support for automatic install dependences on RHEL 6+ and Fedora 24+
 - 25.11.2017 - 0.5.0 - bug fixes and code refactoring
 - 25.11.2017 - 0.4.0 - added support for automatic install dependences on Debian 7.* and some bugfixes

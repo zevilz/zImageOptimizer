@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.6.0
+# Version: 0.7.0
 
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
 TMP_PATH="/tmp/"
@@ -423,15 +423,17 @@ usage()
 	echo
 	echo "Usage: bash $0 [options]"
 	echo
-	echo "Script to optimize JPG and PNG images in a directory."
+	echo "Simple image optimizer for JPEG, PNG and GIF images."
 	echo
 	echo "Options:"
 	echo
 	echo "	-h, --help         shows this help"
 	echo
-	echo "	-p, --path [dir]   specify input directory"
+	echo "	-p, --path [dir]   specify input directory with or without slash "
+	echo "	                   in the end of path"
 	echo
-	echo "	-n, --no-ask       execute script without any questions and users actions"
+	echo "	-n, --no-ask       execute script without any questions and users "
+	echo "	                   actions"
 	echo
 	echo "	-c, --check-only   only check tools with an opportunity to install "
 	echo "	                   dependences (all parameters will be ignored with this)"
