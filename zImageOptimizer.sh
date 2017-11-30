@@ -552,7 +552,7 @@ echo
 echo -n "Checking tools"
 if [ $DEBUG == 1 ]
 then
-	echo -n " in paths $BINARY_PATHS"
+	echo -n " in $BINARY_PATHS"
 fi
 echo "..."
 
@@ -563,6 +563,7 @@ for t in "${!TOOLS_ARRAY[@]}" ; do
 		if [ -f "${BINARY_PATHS_ARRAY[$p]}${TOOLS_ARRAY[$t]}" ]
 		then
 			FOUND=1
+			TOOL_PATH="${BINARY_PATHS_ARRAY[$p]}${TOOLS_ARRAY[$t]}"
 		fi
 	done
 	if [ $FOUND == 1 ]
@@ -572,7 +573,7 @@ for t in "${!TOOLS_ARRAY[@]}" ; do
 		$SETCOLOR_NORMAL
 		if [ $DEBUG == 1 ]
 		then
-			echo -n " ${BINARY_PATHS_ARRAY[$p]}${TOOLS_ARRAY[$t]}"
+			echo -n " $TOOL_PATH"
 		fi
 		echo
 		tool=${TOOLS_ARRAY[$t]}
