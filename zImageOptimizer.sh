@@ -214,7 +214,6 @@ installDeps()
 		echo "PLATFORM_SUPPORT: $PLATFORM_SUPPORT"
 		echo
 		sayWait
-		echo
 	fi
 
 	if [ $PLATFORM_SUPPORT == 1 ]
