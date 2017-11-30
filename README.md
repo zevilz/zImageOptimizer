@@ -203,7 +203,7 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
-- 30.11.2017 - 0.7.0 - added support for workin script on FreeBSD, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
+- 30.11.2017 - 0.7.0 - added support for working script on FreeBSD, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
 - 28.11.2017 - 0.6.0 - added support for automatic install dependences on RHEL 6+ and Fedora 24+
 - 25.11.2017 - 0.5.0 - bug fixes and code refactoring
 - 25.11.2017 - 0.4.0 - added support for automatic install dependences on Debian 7.* and some bugfixes
