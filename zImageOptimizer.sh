@@ -449,11 +449,11 @@ usage()
 	echo "	-c, --check-only     only check tools with an opportunity to install "
 	echo "	                     dependences (all parameters will be ignored with this)"
 	echo
-	echo "	-t, --time           period (not working now)"
+	echo "	-t, --time           period (testing)"
 	echo
-	echo "	-n, --new-only       find only new images (not working now)"
+	echo "	-n, --new-only       find only new images (testing)"
 	echo
-	echo "	-m, --time-marker    time marker. work only with -n|--new-only (not working now)"
+	echo "	-m, --time-marker    time marker. work only with -n|--new-only (testing)"
 	echo
 }
 getTimeMarkerPath()
