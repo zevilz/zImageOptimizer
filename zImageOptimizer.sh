@@ -501,16 +501,16 @@ getTimeMarkerPath()
 }
 checkTimeMarkerPermissions()
 {
-#	TIME_MARKER_MODIFIED=$(date -r "$1" +%s)
+	TIME_MARKER_MODIFIED=$(date -r "$1" +%s)
 	touch -m "$1" 2>/dev/null
-#	TIME_MARKER_MODIFIED_NEW=$(date -r "$1" +%s)
-#	if [ $TIME_MARKER_MODIFIED -eq $TIME_MARKER_MODIFIED_NEW ]
-#	then
-#		echo "Current user have no permissions to modify time marker. Exiting..." 1>&2
-#		exit 1
-#	else
+	TIME_MARKER_MODIFIED_NEW=$(date -r "$1" +%s)
+	if [ $TIME_MARKER_MODIFIED -eq $TIME_MARKER_MODIFIED_NEW ]
+	then
+		echo "Current user have no permissions to modify time marker. Exiting..." 1>&2
+		exit 1
+	else
 		touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED) "$1" 2>/dev/null
-#	fi
+	fi
 }
 updateTimeMarker()
 {
