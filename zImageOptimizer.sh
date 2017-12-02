@@ -5,12 +5,15 @@
 # License: MIT
 # Version: 0.7.0
 
+# Define default vars
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
 TMP_PATH="/tmp/"
 TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng gifsicle"
-DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc" # pkg-config git nasm
-DEPS_REDHAT="jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc" # rpm-build git nasm
+DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc"
+DEPS_REDHAT="jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc"
 GIT_URL="https://github.com/zevilz/zImageOptimizer"
+TIME_MARKER_PATH=""
+TIME_MARKER_NAME=".timeMarker"
 
 # Min versions of distributions. Must be integer.
 MIN_VERSION_DEBIAN=7
@@ -37,7 +40,11 @@ cdAndCheck()
 {
 	cd "$1" 2>/dev/null
 	if ! [ "$(pwd)" = "$1" ] ; then
-		echo "Can't get up in a directory $1. Exiting..." 1>&2
+		if [ -z "$2" ] ; then
+			echo "Can't get up in a directory $1. Exiting..." 1>&2
+		else
+			echo "$2" 1>&2
+		fi
 		exit 1
 	fi
 }
@@ -55,12 +62,16 @@ checkDir()
 checkDirPermissions()
 {
 	cd "$1" 2>/dev/null
-	touch test 2>/dev/null
-	if ! [ -f "$1/test" ] ; then
-		echo "Current user have no permissions to directory $1. Exiting..." 1>&2
+	touch checkDirPermissions 2>/dev/null
+	if ! [ -f "$1/checkDirPermissions" ] ; then
+		if [ -z "$2" ] ; then
+			echo "Current user have no permissions to directory $1. Exiting..." 1>&2
+		else
+			echo "$2" 1>&2
+		fi
 		exit 1
 	else
-		rm "$1/test"
+		rm "$1/checkDirPermissions"
 	fi
 }
 checkParm()
@@ -427,17 +438,76 @@ usage()
 	echo
 	echo "Options:"
 	echo
-	echo "	-h, --help         shows this help"
+	echo "	-h, --help           shows this help"
 	echo
-	echo "	-p, --path [dir]   specify input directory with or without slash "
-	echo "	                   in the end of path"
+	echo "	-p, --path [dir]     specify input directory with or without slash "
+	echo "	                     in the end of path"
 	echo
-	echo "	-n, --no-ask       execute script without any questions and users "
-	echo "	                   actions"
+	echo "	-q, --quiet          execute script without any questions and users "
+	echo "	                     actions"
 	echo
-	echo "	-c, --check-only   only check tools with an opportunity to install "
-	echo "	                   dependences (all parameters will be ignored with this)"
+	echo "	-c, --check-only     only check tools with an opportunity to install "
+	echo "	                     dependences (all parameters will be ignored with this)"
 	echo
+	echo "	-t, --time           period (not working now)"
+	echo
+	echo "	-n, --new-only       find only new images (not working now)"
+	echo
+	echo "	-m, --time-marker    time marker. work only with -n|--new-only (not working now)"
+	echo
+}
+getTimeMarkerPath()
+{
+	TIME_MARKER_PATH=$(echo "$TIME_MARKER_PATH" | sed 's/\/$//')
+	if [ -z $TIME_MARKER ]
+	then
+		if [ -z $TIME_MARKER_PATH ]
+		then
+			echo "$DIR_PATH/$TIME_MARKER_NAME"
+		else
+			echo "$TIME_MARKER_PATH/$TIME_MARKER_NAME"
+		fi
+	else
+		if [[ $TIME_MARKER == *\/* ]]
+		then
+			echo "$TIME_MARKER"
+		else
+			if [ -z $TIME_MARKER_PATH ]
+			then
+				echo "$DIR_PATH/$TIME_MARKER"
+			else
+				echo "$TIME_MARKER_PATH/$TIME_MARKER"
+			fi
+		fi
+	fi
+}
+checkTimeMarkerPermissions()
+{
+	TIME_MARKER_MODIFIED=$(date -r "$1" +%s)
+	touch -m "$1" 2>/dev/null
+	TIME_MARKER_MODIFIED_NEW=$(date -r "$1" +%s)
+	if [ $TIME_MARKER_MODIFIED -eq $TIME_MARKER_MODIFIED_NEW ]
+	then
+		echo "Current user have no permissions to modify time marker. Exiting..." 1>&2
+		exit 1
+	else
+		touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED) "$1" 2>/dev/null
+	fi
+}
+updateTimeMarker()
+{
+	if [ $NEW_ONLY -eq 1 ]
+	then
+		sleep 1
+		touch -m "$TIME_MARKER_FULL_PATH" >/dev/null
+		echo
+		if [ $TIME_MARKER_ISSET -eq 1 ]
+		then
+			echo "Time marker updated."
+		else
+			echo "Time marker created."
+		fi
+	fi
 }
 optimJpegoptim()
 {
@@ -459,7 +529,9 @@ optimConvert()
 }
 optimPngcrush()
 {
-	pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -reduce -q -s -ow "$1" > /dev/null
+	IMAGE="$1"
+	cd $(dirname "$IMAGE")
+	pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -reduce -q -s -ow "$IMAGE" > /dev/null
 }
 optimOptipng()
 {
@@ -497,26 +569,43 @@ readableSize()
 	fi
 }
 
+# Define inner default vars. Don't change them!
 DEBUG=0
 HELP=0
 NO_ASK=0
 CHECK_ONLY=0
+PERIOD=0
+NEW_ONLY=0
+TIME_MARKER=""
 PARAMS_NUM=$#
 
 while [ 1 ] ; do
 	if [ "${1#--path=}" != "$1" ] ; then
-		path="${1#--path=}"
+		DIR_PATH="${1#--path=}"
 	elif [ "$1" = "-p" ] ; then
-		shift ; path="$1"
+		shift ; DIR_PATH="$1"
+
+	elif [ "${1#--time=}" != "$1" ] ; then
+		PERIOD="${1#--time=}"
+	elif [ "$1" = "-t" ] ; then
+		shift ; PERIOD="$1"
+
+	elif [ "${1#--time-marker=}" != "$1" ] ; then
+		TIME_MARKER="${1#--time-marker=}"
+	elif [ "$1" = "-m" ] ; then
+		shift ; TIME_MARKER="$1"
 
 	elif [[ "$1" = "--help" || "$1" = "-h" ]] ; then
 		HELP=1
 
-	elif [[ "$1" = "--no-ask" || "$1" = "-n" ]] ; then
+	elif [[ "$1" = "--quiet" || "$1" = "-q" ]] ; then
 		NO_ASK=1
 
 	elif [[ "$1" = "--check-only" || "$1" = "-c" ]] ; then
 		CHECK_ONLY=1
+
+	elif [[ "$1" = "--new-only" || "$1" = "-n" ]] ; then
+		NEW_ONLY=1
 
 	elif [[ "$1" = "--debug" || "$1" = "-d" ]] ; then
 		DEBUG=1
@@ -538,13 +627,66 @@ then
 	exit 1
 fi
 
-if [ $CHECK_ONLY == 0 ]
+if [ $CHECK_ONLY -eq 0 ]
 then
-	path=$(echo "$path" | sed 's/\/$//')
-	checkParm "$path" "Path to files not set (-p|--path)"
-	checkDir "$path"
-	cdAndCheck "$path"
-	checkDirPermissions "$path"
+	DIR_PATH=$(echo "$DIR_PATH" | sed 's/\/$//')
+	checkParm "$DIR_PATH" "Path to files not set. Exiting..."
+	checkDir "$DIR_PATH"
+	cdAndCheck "$DIR_PATH"
+	checkDirPermissions "$DIR_PATH"
+
+	if [[ $PERIOD -gt 0 && $NEW_ONLY -gt 0 ]]
+	then
+		echo "It is impossible to use parameters -t(--time) and -n(--new-only) together. Set only one of it. Exiting..."
+		exit 1
+	fi
+
+	if ! [[ $PERIOD =~ ^-?[0-9]+$ ]]
+	then
+		echo "Period must be integer. Exiting..."
+		exit 1
+	fi
+
+	if [ $PERIOD -gt 0 ]
+	then
+		echo
+		echo "Detecting find images modified last $PERIOD days."
+		FIND_INCLUDE="-mtime -$PERIOD"
+	elif [ $NEW_ONLY -eq 1 ]
+	then
+		echo
+		echo "Detecting using time marker. Will be find images newer than time marker."
+		echo -n "Checking marker..."
+		TIME_MARKER_FULL_PATH=$(getTimeMarkerPath)
+		TIME_MARKER_FULL_PATH_DIR=$(dirname "$TIME_MARKER_FULL_PATH")
+		TIME_MARKER_FULL_PATH_NAME=$(basename "$TIME_MARKER_FULL_PATH")
+		checkDir "$TIME_MARKER_FULL_PATH_DIR" "Directory for marker not found. Exiting..."
+		cdAndCheck "$TIME_MARKER_FULL_PATH_DIR" "Can't get up in a directory for marker. Exiting..."
+		checkDirPermissions "$TIME_MARKER_FULL_PATH_DIR" "Current user have no permissions to directory for marker. Exiting..."
+		if [ -f "$TIME_MARKER_FULL_PATH" ]
+		then
+			checkTimeMarkerPermissions "$TIME_MARKER_FULL_PATH"
+			$SETCOLOR_SUCCESS
+			echo -n "[FOUND]"
+			$SETCOLOR_NORMAL
+			FIND_INCLUDE="-newer $TIME_MARKER_FULL_PATH"
+			TIME_MARKER_ISSET=1
+		else
+			$SETCOLOR_FAILURE
+			echo "[NOT FOUND]"
+			$SETCOLOR_NORMAL
+			echo -n "Time marker will be created after optimizing."
+			FIND_INCLUDE=""
+			TIME_MARKER_ISSET=0
+		fi
+		if [ $DEBUG -eq 1 ]
+		then
+			echo -n " ($TIME_MARKER_FULL_PATH)"
+		fi
+		echo
+	else
+		FIND_INCLUDE=""
+	fi
 fi
 
 BINARY_PATHS_ARRAY=($BINARY_PATHS)
@@ -664,110 +806,127 @@ else
 	fi
 fi
 
-echo "Optimizing..."
+IMAGES=`\
+find "$DIR_PATH" $FIND_INCLUDE \( \
+-name '*.jpg' -or \
+-name '*.jpeg' -or \
+-name '*.gif' -or \
+-name '*.JPG' -or \
+-name '*.JPEG' -or \
+-name '*.GIF' -or \
+-name '*.png' -or \
+-name '*.PNG' \
+\)`
 
-INPUT=0
-OUTPUT=0
-SAVED_SIZE=0
+if ! [ -z "$IMAGES" ]
+then
+	echo "Optimizing..."
 
-find "$path" \( -name '*.jpg' -or -name '*.jpeg' -or -name '*.gif' -or -name '*.JPG' -or -name '*.JPEG' -or -name '*.GIF' -or -name '*.png' -or -name '*.PNG' \) | ( while read IMAGE ; do
-	echo -n "$IMAGE"
-	echo -n '...'
-	#SIZE_BEFORE=$(stat "$IMAGE" -c %s) # only for linux
-	SIZE_BEFORE=$(wc -c "$IMAGE" | awk '{print $1}')
-	SIZE_BEFORE_SCALED=$(echo "scale=1; $SIZE_BEFORE/1024" | bc | sed 's/^\./0./')
-	INPUT=$(echo "$INPUT+$SIZE_BEFORE" | bc)
+	INPUT=0
+	OUTPUT=0
+	SAVED_SIZE=0
 
-	EXT=${IMAGE##*.}
+	echo "$IMAGES" | ( while read IMAGE ; do
+		echo -n "$IMAGE"
+		echo -n '...'
+		SIZE_BEFORE=$(wc -c "$IMAGE" | awk '{print $1}')
+		SIZE_BEFORE_SCALED=$(echo "scale=1; $SIZE_BEFORE/1024" | bc | sed 's/^\./0./')
+		INPUT=$(echo "$INPUT+$SIZE_BEFORE" | bc)
 
-	if [[ $EXT == "jpg" || $EXT == "jpeg" || $EXT == "JPG" || $EXT == "JPEG" ]]
-	then
-		echo -n " "
+		EXT=${IMAGE##*.}
 
-		if [ $ISSET_jpegoptim == 1 ]
+		if [[ $EXT == "jpg" || $EXT == "jpeg" || $EXT == "JPG" || $EXT == "JPEG" ]]
 		then
-			optimJpegoptim "$IMAGE"
+			echo -n " "
+
+			if [ $ISSET_jpegoptim == 1 ]
+			then
+				optimJpegoptim "$IMAGE"
+			fi
+
+			if [ $ISSET_jpegtran == 1 ]
+			then
+				optimJpegtran "$IMAGE"
+			fi
+
+			if [[ $ISSET_djpeg == 1 && $ISSET_cjpeg == 1 ]]
+			then
+				optimMozjpeg "$IMAGE"
+			fi
+
+		elif [[ $EXT == "png" || $EXT == "PNG" ]]
+		then
+			echo -n " "
+
+	#		if [ $ISSET_convert == 1 ]
+	#		then
+	#			optimConvert "$IMAGE"
+	#		fi
+
+			if [ $ISSET_pngcrush == 1 ]
+			then
+				optimPngcrush "$IMAGE"
+			fi
+
+			if [ $ISSET_optipng == 1 ]
+			then
+				optimOptipng "$IMAGE"
+			fi
+
+			if [ $ISSET_pngout == 1 ]
+			then
+				optimPngout "$IMAGE"
+			fi
+
+			if [ $ISSET_advpng == 1 ]
+			then
+				optimAdvpng "$IMAGE"
+			fi
+		elif [[ $EXT == "gif" || $EXT == "GIF" ]]
+		then
+			if [ $ISSET_gifsicle == 1 ]
+			then
+				optimGifsicle "$IMAGE"
+			fi
 		fi
 
-		if [ $ISSET_jpegtran == 1 ]
+		SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
+		SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
+		OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
+		if [ $(echo "scale=0; $SIZE_BEFORE/100" | bc) -le $(echo "scale=0; $SIZE_AFTER/100" | bc) ]
 		then
-			optimJpegtran "$IMAGE"
+			$SETCOLOR_FAILURE
+			echo -n "[NOT OPTIMIZED]"
+			$SETCOLOR_NORMAL
+			echo -n " ${SIZE_AFTER_SCALED}Kb"
+		else
+			$SETCOLOR_SUCCESS
+			echo -n "[OPTIMIZED]"
+			$SETCOLOR_NORMAL
+			echo -n " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
+			SIZE_DIFF=$(echo "$SIZE_BEFORE-$SIZE_AFTER" | bc)
+			SAVED_SIZE=$(echo "$SAVED_SIZE+$SIZE_DIFF" | bc)
 		fi
+		echo
+	done
 
-		if [[ $ISSET_djpeg == 1 && $ISSET_cjpeg == 1 ]]
-		then
-			optimMozjpeg "$IMAGE"
-		fi
-
-	elif [[ $EXT == "png" || $EXT == "PNG" ]]
-	then
-		echo -n " "
-
-#		if [ $ISSET_convert == 1 ]
-#		then
-#			optimConvert "$IMAGE"
-#		fi
-
-		if [ $ISSET_pngcrush == 1 ]
-		then
-			optimPngcrush "$IMAGE"
-		fi
-
-		if [ $ISSET_optipng == 1 ]
-		then
-			optimOptipng "$IMAGE"
-		fi
-
-		if [ $ISSET_pngout == 1 ]
-		then
-			optimPngout "$IMAGE"
-		fi
-
-		if [ $ISSET_advpng == 1 ]
-		then
-			optimAdvpng "$IMAGE"
-		fi
-	elif [[ $EXT == "gif" || $EXT == "GIF" ]]
-	then
-		if [ $ISSET_gifsicle == 1 ]
-		then
-			optimGifsicle "$IMAGE"
-		fi
-	fi
-
-	#SIZE_AFTER=$(stat "$IMAGE" -c %s) # only for linux
-	SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
-	SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
-	OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
-	if [ $(echo "scale=0; $SIZE_BEFORE/100" | bc) -le $(echo "scale=0; $SIZE_AFTER/100" | bc) ]
-	then
-		$SETCOLOR_FAILURE
-		echo -n "[NOT OPTIMIZED]"
-		$SETCOLOR_NORMAL
-		echo -n " ${SIZE_AFTER_SCALED}Kb"
-	else
-		$SETCOLOR_SUCCESS
-		echo -n "[OPTIMIZED]"
-		$SETCOLOR_NORMAL
-		echo -n " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
-		SIZE_DIFF=$(echo "$SIZE_BEFORE-$SIZE_AFTER" | bc)
-		SAVED_SIZE=$(echo "$SAVED_SIZE+$SIZE_DIFF" | bc)
-	fi
 	echo
-done
+	echo -n "Input: "
+	readableSize $INPUT
+	echo
+
+	echo -n "Output: "
+	readableSize $OUTPUT
+	echo
+
+	echo -n "You save: "
+	readableSize $SAVED_SIZE
+	echo " / $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
+	)
+	updateTimeMarker
+else
+	echo "No input images found."
+fi
 
 echo
-echo -n "Input: "
-readableSize $INPUT
-echo
-
-echo -n "Output: "
-readableSize $OUTPUT
-echo
-
-echo -n "You save: "
-readableSize $SAVED_SIZE
-echo " / $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
-)
-
-echo
+exit 0
