@@ -438,22 +438,30 @@ usage()
 	echo
 	echo "Options:"
 	echo
-	echo "	-h, --help           shows this help"
+	echo "	-h, --help           Shows this help."
 	echo
-	echo "	-p, --path [dir]     specify input directory with or without slash "
-	echo "	                     in the end of path"
+	echo "	-p, --path [dir]     Specify input directory with or without slash "
+	echo "	                     in the end of path."
 	echo
-	echo "	-q, --quiet          execute script without any questions and users "
-	echo "	                     actions"
+	echo "	-q, --quiet          Execute script without any questions and users "
+	echo "	                     actions."
 	echo
-	echo "	-c, --check-only     only check tools with an opportunity to install "
-	echo "	                     dependences (all parameters will be ignored with this)"
+	echo "	-c, --check-only     Only check tools with an opportunity to install "
+	echo "	                     dependences. All parameters will be ignored with this."
 	echo
-	echo "	-t, --time           period (testing)"
+	echo "	-t, --time           Period for which to look for files by last modified "
+	echo "	                     time. Must be set in minutes (10m, 30m etc.) or "
+	echo "	                     hours (1h, 10h etc.) or days (1d, 30d etc.). (testing)"
 	echo
-	echo "	-n, --new-only       find only new images (testing)"
+	echo "	-n, --new-only       Find only new images basis on special time marker file which "
+	echo "	                     created/modified in the end of last optimizing. Recommended "
+	echo "	                     for cron usage to avoid repeated optimization already "
+	echo "	                     optimized files. Time marker automatically creates "
+	echo "	                     with first script running with this option. By default "
+	echo "	                     time marker creates in working directory "
+	echo "	                     which set as inpit path. (testing)"
 	echo
-	echo "	-m, --time-marker    time marker. work only with -n|--new-only (testing)"
+	echo "	-m, --time-marker    Custom path/name of time marker file. work only with -n|--new-only (testing)"
 	echo
 }
 getTimeMarkerPath()
