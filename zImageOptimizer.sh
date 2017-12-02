@@ -635,23 +635,37 @@ then
 	cdAndCheck "$DIR_PATH"
 	checkDirPermissions "$DIR_PATH"
 
-	if [[ $PERIOD -gt 0 && $NEW_ONLY -gt 0 ]]
+	if [[ $PERIOD != 0 && $NEW_ONLY -gt 0 ]]
 	then
 		echo "It is impossible to use parameters -t(--time) and -n(--new-only) together. Set only one of it. Exiting..."
 		exit 1
 	fi
 
-	if ! [[ $PERIOD =~ ^-?[0-9]+$ ]]
+	if ! [[ $PERIOD =~ ^-?[0-9]+(m|h|d)$ ]]
 	then
-		echo "Period must be integer. Exiting..."
+		echo "Wrong format of period. Exiting..."
 		exit 1
 	fi
 
-	if [ $PERIOD -gt 0 ]
+	if [ $PERIOD != 0 ]
 	then
-		echo
-		echo "Detecting find images modified last $PERIOD days."
-		FIND_INCLUDE="-mtime -$PERIOD"
+		PERIOD_VAL=$(echo "$PERIOD" | sed 's/.$//')
+		if [ $(echo "$PERIOD" | sed 's/[^mhd]*//') == "m" ]
+		then
+			PERIOD_UNIT="m"
+			FIND_INCLUDE="-mmin -$PERIOD_VAL"
+		elif [ $(echo "$PERIOD" | sed 's/[^mhd]*//') == "h" ]
+		then
+			PERIOD_UNIT="h"
+			let PERIOD_VAL_H=$PERIOD_VAL*60
+			FIND_INCLUDE="-mmin -$PERIOD_VAL_H"
+		elif [ $(echo "$PERIOD" | sed 's/[^mhd]*//') == "d" ]
+		then
+			PERIOD_UNIT="d"
+			FIND_INCLUDE="-mtime -$PERIOD_VAL"
+		fi
+		echo $PERIOD_UNIT
+		echo "Detecting find images modified last $PERIOD."
 	elif [ $NEW_ONLY -eq 1 ]
 	then
 		echo
