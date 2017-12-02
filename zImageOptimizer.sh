@@ -501,9 +501,9 @@ getTimeMarkerPath()
 }
 checkTimeMarkerPermissions()
 {
-	TIME_MARKER_MODIFIED=$(date -r "$1" +%s)
+#	TIME_MARKER_MODIFIED=$(date -r "$1" +%s)
 	touch -m "$1" 2>/dev/null
-	TIME_MARKER_MODIFIED_NEW=$(date -r "$1" +%s)
+#	TIME_MARKER_MODIFIED_NEW=$(date -r "$1" +%s)
 	if [ $TIME_MARKER_MODIFIED -eq $TIME_MARKER_MODIFIED_NEW ]
 	then
 		echo "Current user have no permissions to modify time marker. Exiting..." 1>&2
@@ -701,7 +701,7 @@ then
 		checkDirPermissions "$TIME_MARKER_FULL_PATH_DIR" "Current user have no permissions to directory for marker. Exiting..."
 		if [ -f "$TIME_MARKER_FULL_PATH" ]
 		then
-#			checkTimeMarkerPermissions "$TIME_MARKER_FULL_PATH"
+			checkTimeMarkerPermissions "$TIME_MARKER_FULL_PATH"
 			$SETCOLOR_SUCCESS
 			echo -n "[FOUND]"
 			$SETCOLOR_NORMAL
