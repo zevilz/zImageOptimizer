@@ -672,19 +672,22 @@ then
 		if [ $(echo "$PERIOD" | sed 's/[^mhd]*//') == "m" ]
 		then
 			PERIOD_UNIT="m"
+			PERIOD_UNIT_NAME="minute(s)"
 			FIND_INCLUDE="-mmin -$PERIOD_VAL"
 		elif [ $(echo "$PERIOD" | sed 's/[^mhd]*//') == "h" ]
 		then
 			PERIOD_UNIT="h"
+			PERIOD_UNIT_NAME="hour(s)"
 			let PERIOD_VAL_H=$PERIOD_VAL*60
 			FIND_INCLUDE="-mmin -$PERIOD_VAL_H"
 		elif [ $(echo "$PERIOD" | sed 's/[^mhd]*//') == "d" ]
 		then
 			PERIOD_UNIT="d"
+			PERIOD_UNIT_NAME="day(s)"
 			FIND_INCLUDE="-mtime -$PERIOD_VAL"
 		fi
-		echo $PERIOD_UNIT
-		echo "Detecting find images modified last $PERIOD."
+		echo
+		echo "Detecting find images modified last $PERIOD_VAL $PERIOD_UNIT_NAME."
 	elif [ $NEW_ONLY -eq 1 ]
 	then
 		echo
