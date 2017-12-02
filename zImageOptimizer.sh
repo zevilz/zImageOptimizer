@@ -659,14 +659,14 @@ then
 		exit 1
 	fi
 
-	if ! [[ $PERIOD =~ ^-?[0-9]+(m|h|d)$ ]]
-	then
-		echo "Wrong format of period. Exiting..."
-		exit 1
-	fi
-
 	if [ $PERIOD != 0 ]
 	then
+		if ! [[ $PERIOD =~ ^-?[0-9]+(m|h|d)$ ]]
+		then
+			echo "Wrong format of period. Exiting..."
+			exit 1
+		fi
+
 		PERIOD_VAL=$(echo "$PERIOD" | sed 's/.$//')
 		if [ $(echo "$PERIOD" | sed 's/[^mhd]*//') == "m" ]
 		then
