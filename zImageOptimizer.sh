@@ -701,7 +701,7 @@ then
 		checkDirPermissions "$TIME_MARKER_FULL_PATH_DIR" "Current user have no permissions to directory for marker. Exiting..."
 		if [ -f "$TIME_MARKER_FULL_PATH" ]
 		then
-			checkTimeMarkerPermissions "$TIME_MARKER_FULL_PATH"
+#			checkTimeMarkerPermissions "$TIME_MARKER_FULL_PATH"
 			$SETCOLOR_SUCCESS
 			echo -n "[FOUND]"
 			$SETCOLOR_NORMAL
