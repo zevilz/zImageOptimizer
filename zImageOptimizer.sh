@@ -548,7 +548,8 @@ optimConvert()
 optimPngcrush()
 {
 	IMAGE="$1"
-	cd $(dirname "$IMAGE")
+	IMAGE_DIR=$(dirname "$IMAGE")
+	cd "$IMAGE_DIR"
 	pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -reduce -q -s -ow "$IMAGE" > /dev/null
 }
 optimOptipng()
