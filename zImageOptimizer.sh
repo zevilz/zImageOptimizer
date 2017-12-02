@@ -438,30 +438,40 @@ usage()
 	echo
 	echo "Options:"
 	echo
-	echo "	-h, --help           Shows this help."
+	echo "	-h, --help         Shows this help."
 	echo
-	echo "	-p, --path [dir]     Specify input directory with or without slash "
-	echo "	                     in the end of path."
+	echo "	-p, --path [dir]   Specify input directory with or without slash "
+	echo "	                   in the end of path."
 	echo
-	echo "	-q, --quiet          Execute script without any questions and users "
-	echo "	                     actions."
+	echo "	-q, --quiet        Execute script without any questions and users "
+	echo "	                   actions."
 	echo
-	echo "	-c, --check-only     Only check tools with an opportunity to install "
-	echo "	                     dependences. All parameters will be ignored with this."
+	echo "	-c, --check-only   Only check tools with an opportunity to install "
+	echo "	                   dependences. All parameters will be ignored "
+	echo "	                   with this parameter."
 	echo
-	echo "	-t, --time           Period for which to look for files by last modified "
-	echo "	                     time. Must be set in minutes (10m, 30m etc.) or "
-	echo "	                     hours (1h, 10h etc.) or days (1d, 30d etc.). (testing)"
+	echo "	-t, --time         Period for which to look for files by last "
+	echo "	                   modified time. Must be set in minutes (10m, 30m "
+	echo "	                   etc.) or hours (1h, 10h etc.) or days (1d, 30d "
+	echo "	                   etc.). It is impossible to use with "
+	echo "	                   -n|--new-only option. (test)"
 	echo
-	echo "	-n, --new-only       Find only new images basis on special time marker file which "
-	echo "	                     created/modified in the end of last optimizing. Recommended "
-	echo "	                     for cron usage to avoid repeated optimization already "
-	echo "	                     optimized files. Time marker automatically creates "
-	echo "	                     with first script running with this option. By default "
-	echo "	                     time marker creates in working directory "
-	echo "	                     which set as inpit path. (testing)"
+	echo "	-n, --new-only     Find only new images basis on special time "
+	echo "	                   marker file which created/modified in the end "
+	echo "	                   of last optimizing. Recommended for cron usage "
+	echo "	                   to avoid repeated optimization already "
+	echo "	                   optimized files. Time marker automatically "
+	echo "	                   creates with first script running with this "
+	echo "	                   option. By default time marker creates in "
+	echo "	                   working directory which set as inpit path. "
+	echo "	                   It is impossible to use with -t|--time option. "
+	echo "	                   (test)"
 	echo
-	echo "	-m, --time-marker    Custom path/name of time marker file. work only with -n|--new-only (testing)"
+	echo "	-m, --time-marker  Custom path/name of time marker file. Must be "
+	echo "	                   name of file (only for change time marker name) "
+	echo "	                   or full path for custom marker in custom "
+	echo "	                   directory. Working only with -n|--new-only "
+	echo "	                   option. (test)"
 	echo
 }
 getTimeMarkerPath()
