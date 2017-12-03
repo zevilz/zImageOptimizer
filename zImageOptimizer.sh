@@ -697,7 +697,7 @@ then
 	then
 		echo
 		echo "Detecting using time marker. Will be find images newer than time marker."
-		echo -n "Checking marker..."
+		echo -n "Time marker "
 		TIME_MARKER_FULL_PATH=$(getTimeMarkerPath)
 		TIME_MARKER_FULL_PATH_DIR=$(dirname "$TIME_MARKER_FULL_PATH")
 		TIME_MARKER_FULL_PATH_NAME=$(basename "$TIME_MARKER_FULL_PATH")
@@ -708,15 +708,15 @@ then
 		then
 			checkTimeMarkerPermissions "$TIME_MARKER_FULL_PATH"
 			$SETCOLOR_SUCCESS
-			echo -n "[FOUND]"
+			echo -n "found."
 			$SETCOLOR_NORMAL
 			FIND_INCLUDE="-newer $TIME_MARKER_FULL_PATH"
 			TIME_MARKER_ISSET=1
 		else
 			$SETCOLOR_FAILURE
-			echo "[NOT FOUND]"
+			echo -n "not_found. "
 			$SETCOLOR_NORMAL
-			echo -n "Time marker will be created after optimizing."
+			echo -n "It will be created after optimizing."
 			FIND_INCLUDE=""
 			TIME_MARKER_ISSET=0
 		fi
