@@ -725,6 +725,7 @@ then
 		then
 			echo "($TIME_MARKER_FULL_PATH)"
 		fi
+		echo
 	else
 		FIND_INCLUDE=""
 	fi
