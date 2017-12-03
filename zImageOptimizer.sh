@@ -560,9 +560,14 @@ optimPngcrush()
 optimOptipng()
 {
 	OPTIPNG_V=$(optipng -v | head -n1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | cut -d '.' -f2)
-	if [ $OPTIPNG_V -ge 7 ]
+	if ! [ -z $OPTIPNG_V ]
 	then
-		optipng -strip all -o7 -q "$1" > /dev/null
+		if [ $OPTIPNG_V -ge 7 ]
+		then
+			optipng -strip all -o7 -q "$1" > /dev/null
+		else
+			optipng -o7 -q "$1" > /dev/null
+		fi
 	else
 		optipng -o7 -q "$1" > /dev/null
 	fi
