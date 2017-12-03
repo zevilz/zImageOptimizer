@@ -724,7 +724,7 @@ then
 		if [ $DEBUG -eq 1 ]
 		then
 			echo
-			echo "($TIME_MARKER_FULL_PATH)"
+			echo -n "($TIME_MARKER_FULL_PATH)"
 		fi
 		echo
 	else
