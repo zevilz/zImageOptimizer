@@ -715,7 +715,7 @@ then
 			TIME_MARKER_ISSET=1
 		else
 			$SETCOLOR_FAILURE
-			echo -n "not_found"
+			echo -n "not found"
 			$SETCOLOR_NORMAL
 			echo -n ". It will be created after optimizing."
 			FIND_INCLUDE=""
