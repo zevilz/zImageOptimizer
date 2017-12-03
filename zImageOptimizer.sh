@@ -509,7 +509,7 @@ checkTimeMarkerPermissions()
 		echo "Current user have no permissions to modify time marker. Exiting..." 1>&2
 		exit 1
 	else
-		if [[ "$OSTYPE" == "linux-gnu" ]]
+		if date --version >/dev/null 2>/dev/null
 		then
 			touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED) "$1" 2>/dev/null # illegal time format on freebsd
 		else
