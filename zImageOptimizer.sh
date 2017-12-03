@@ -513,7 +513,7 @@ checkTimeMarkerPermissions()
 		then
 			touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED) "$1" 2>/dev/null # illegal time format on freebsd
 		else
-			touch -t $(date -r $TIME_MARKER_MODIFIED +%Y%m%d%H%M.%S) 2>/dev/null
+			touch -t $(date -r $TIME_MARKER_MODIFIED +%Y%m%d%H%M.%S) "$1" 2>/dev/null
 		fi
 	fi
 }
