@@ -710,20 +710,20 @@ then
 			$SETCOLOR_SUCCESS
 			echo -n "found"
 			$SETCOLOR_NORMAL
-			echo "."
+			echo -n "."
 			FIND_INCLUDE="-newer $TIME_MARKER_FULL_PATH"
 			TIME_MARKER_ISSET=1
 		else
 			$SETCOLOR_FAILURE
 			echo -n "not_found"
 			$SETCOLOR_NORMAL
-			echo ". It will be created after optimizing."
+			echo -n ". It will be created after optimizing."
 			FIND_INCLUDE=""
 			TIME_MARKER_ISSET=0
 		fi
 		if [ $DEBUG -eq 1 ]
 		then
-			echo -n "($TIME_MARKER_FULL_PATH)"
+			echo "($TIME_MARKER_FULL_PATH)"
 		fi
 		echo
 	else
