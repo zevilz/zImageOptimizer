@@ -708,7 +708,7 @@ then
 		then
 			checkTimeMarkerPermissions "$TIME_MARKER_FULL_PATH"
 			$SETCOLOR_SUCCESS
-			echo -n "found."
+			echo "found."
 			$SETCOLOR_NORMAL
 			FIND_INCLUDE="-newer $TIME_MARKER_FULL_PATH"
 			TIME_MARKER_ISSET=1
@@ -716,13 +716,13 @@ then
 			$SETCOLOR_FAILURE
 			echo -n "not_found. "
 			$SETCOLOR_NORMAL
-			echo -n "It will be created after optimizing."
+			echo "It will be created after optimizing."
 			FIND_INCLUDE=""
 			TIME_MARKER_ISSET=0
 		fi
 		if [ $DEBUG -eq 1 ]
 		then
-			echo -n " ($TIME_MARKER_FULL_PATH)"
+			echo "($TIME_MARKER_FULL_PATH)"
 		fi
 		echo
 	else
