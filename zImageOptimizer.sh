@@ -3,11 +3,11 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.7.0
+# Version: 0.8.0
 
 # Define default vars
 BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
-TMP_PATH="/tmp/"
+TMP_PATH="/tmp"
 TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng gifsicle"
 DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc"
 DEPS_REDHAT="jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc"
@@ -255,7 +255,7 @@ installDeps()
 				if [[ $PLATFORM_DISTRIBUTION == "CentOS" && $PLATFORM_VERSION -eq 6 || $PLATFORM_DISTRIBUTION == "RHEL" && $PLATFORM_VERSION -eq 6 ]]
 				then
 					for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-						if [ -f "${BINARY_PATHS_ARRAY[$p]}pngcrush" ]
+						if [ -f "${BINARY_PATHS_ARRAY[$p]}/pngcrush" ]
 						then
 							ISSET_pngcrush=1
 						fi
@@ -273,7 +273,7 @@ installDeps()
 					fi
 
 					for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-						if [ -f "${BINARY_PATHS_ARRAY[$p]}advpng" ]
+						if [ -f "${BINARY_PATHS_ARRAY[$p]}/advpng" ]
 						then
 							ISSET_advpng=1
 						fi
@@ -295,13 +295,13 @@ installDeps()
 			fi
 
 	#		for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-	#			if [ -f "${BINARY_PATHS_ARRAY[$p]}djpeg" ]
+	#			if [ -f "${BINARY_PATHS_ARRAY[$p]}/djpeg" ]
 	#			then
 	#				ISSET_djpeg=1
 	#			fi
 	#		done
 	#		for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-	#			if [ -f "${BINARY_PATHS_ARRAY[$p]}cjpeg" ]
+	#			if [ -f "${BINARY_PATHS_ARRAY[$p]}/cjpeg" ]
 	#			then
 	#				ISSET_cjpeg=1
 	#			fi
@@ -343,7 +343,7 @@ installDeps()
 		then
 
 #			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-#				if [ -f "${BINARY_PATHS_ARRAY[$p]}git" ]
+#				if [ -f "${BINARY_PATHS_ARRAY[$p]}/git" ]
 #				then
 #					ISSET_git=1
 #				else
@@ -357,7 +357,7 @@ installDeps()
 #			fi
 
 			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-				if [ -f "${BINARY_PATHS_ARRAY[$p]}wget" ]
+				if [ -f "${BINARY_PATHS_ARRAY[$p]}/wget" ]
 				then
 					ISSET_wget=1
 				else
@@ -429,51 +429,6 @@ installDeps()
 		echo
 	fi
 }
-usage()
-{
-	echo
-	echo "Usage: bash $0 [options]"
-	echo
-	echo "Simple image optimizer for JPEG, PNG and GIF images."
-	echo
-	echo "Options:"
-	echo
-	echo "	-h, --help         Shows this help."
-	echo
-	echo "	-p, --path [dir]   Specify input directory with or without slash "
-	echo "	                   in the end of path."
-	echo
-	echo "	-q, --quiet        Execute script without any questions and users "
-	echo "	                   actions."
-	echo
-	echo "	-c, --check-only   Only check tools with an opportunity to install "
-	echo "	                   dependences. All parameters will be ignored "
-	echo "	                   with this parameter."
-	echo
-	echo "	-t, --time         Period for which to look for files by last "
-	echo "	                   modified time. Must be set in minutes (10m, 30m "
-	echo "	                   etc.) or hours (1h, 10h etc.) or days (1d, 30d "
-	echo "	                   etc.). It is impossible to use with "
-	echo "	                   -n|--new-only option. (test)"
-	echo
-	echo "	-n, --new-only     Find only new images basis on special time "
-	echo "	                   marker file which created/modified in the end "
-	echo "	                   of last optimizing. Recommended for cron usage "
-	echo "	                   to avoid repeated optimization already "
-	echo "	                   optimized files. Time marker automatically "
-	echo "	                   creates with first script running with this "
-	echo "	                   option. By default time marker creates in "
-	echo "	                   working directory which set as inpit path. "
-	echo "	                   It is impossible to use with -t|--time option. "
-	echo "	                   (test)"
-	echo
-	echo "	-m, --time-marker  Custom path/name of time marker file. Must be "
-	echo "	                   name of file (only for change time marker name) "
-	echo "	                   or full path for custom marker in custom "
-	echo "	                   directory. Working only with -n|--new-only "
-	echo "	                   option. (test)"
-	echo
-}
 getTimeMarkerPath()
 {
 	TIME_MARKER_PATH=$(echo "$TIME_MARKER_PATH" | sed 's/\/$//')
@@ -497,6 +452,14 @@ getTimeMarkerPath()
 				echo "$TIME_MARKER_PATH/$TIME_MARKER"
 			fi
 		fi
+	fi
+}
+checkUserTimeMarker()
+{
+	if [[ $TIME_MARKER =~ ^-?.*\/$ ]]
+	then
+		echo "Time marker filename not set in custom time marker path. Exiting..." 1>&2
+		exit 1
 	fi
 }
 checkTimeMarkerPermissions()
@@ -542,9 +505,9 @@ optimJpegtran()
 }
 optimMozjpeg()
 {
-	djpeg -outfile $TMP_PATH"$(basename "$1")" "$1" > /dev/null
-	cjpeg -optimize -progressive -outfile "$1" $TMP_PATH"$(basename "$1")" > /dev/null
-	rm $TMP_PATH"$(basename "$1")"
+	djpeg -outfile "$TMP_PATH/$(basename "$1")" "$1" > /dev/null
+	cjpeg -optimize -progressive -outfile "$1" "$TMP_PATH/$(basename "$1")" > /dev/null
+	rm "$TMP_PATH/$(basename "$1")"
 }
 optimConvert()
 {
@@ -597,10 +560,63 @@ readableSize()
 		echo -n $(echo "scale=1; $1/1024" | bc | sed 's/^\./0./')"Kb"
 	fi
 }
+usage()
+{
+	echo
+	echo "Usage: bash $0 [options]"
+	echo
+	echo "Simple image optimizer for JPEG, PNG and GIF images."
+	echo
+	echo "Options:"
+	echo
+	echo "	-h, --help         Shows this help."
+	echo
+	echo "	-v, --version      Shows script version."
+	echo
+	echo "	-p, --path [dir]   Specify input directory with or without slash "
+	echo "	                   in the end of path."
+	echo
+	echo "	-q, --quiet        Execute script without any questions and users "
+	echo "	                   actions."
+	echo
+	echo "	-c, --check-only   Only check tools with an opportunity to install "
+	echo "	                   dependences. All parameters will be ignored "
+	echo "	                   with this parameter (except for -h|--help and "
+	echo "	                   -v|--version)."
+	echo
+	echo "	-t, --time         Period for which to look for files by last "
+	echo "	                   modified time. Must be set in minutes (10m, 30m "
+	echo "	                   etc.) or hours (1h, 10h etc.) or days (1d, 30d "
+	echo "	                   etc.). It is impossible to use with "
+	echo "	                   -n|--new-only option. (test)"
+	echo
+	echo "	-n, --new-only     Find only new images basis on special time "
+	echo "	                   marker file which created/modified in the end "
+	echo "	                   of last optimizing. Recommended for cron usage "
+	echo "	                   to avoid repeated optimization already "
+	echo "	                   optimized files. Time marker automatically "
+	echo "	                   creates with first script running with this "
+	echo "	                   option. By default time marker creates in "
+	echo "	                   working directory which set as inpit path. "
+	echo "	                   It is impossible to use with -t|--time option. "
+	echo "	                   (test)"
+	echo
+	echo "	-m, --time-marker  Custom path/name of time marker file. Must be "
+	echo "	                   name of file (only for change time marker name) "
+	echo "	                   or full path for custom marker in custom "
+	echo "	                   directory. Working only with -n|--new-only "
+	echo "	                   option. (test)"
+	echo
+	echo "	-tmp, --tmp-path   Custom directory path for temporary files. "
+	echo "	                   Default value located in TMP_PATH variable "
+	echo "	                   (/tmp by default)"
+	echo
+}
 
 # Define inner default vars. Don't change them!
 DEBUG=0
 HELP=0
+SHOW_VERSION=0
 NO_ASK=0
 CHECK_ONLY=0
 PERIOD=0
@@ -624,8 +640,16 @@ while [ 1 ] ; do
 	elif [ "$1" = "-m" ] ; then
 		shift ; TIME_MARKER="$1"
 
+	elif [ "${1#--tmp-path=}" != "$1" ] ; then
+		TMP_PATH="${1#--tmp-path=}"
+	elif [ "$1" = "-tmp" ] ; then
+		shift ; TMP_PATH="$1"
+
 	elif [[ "$1" = "--help" || "$1" = "-h" ]] ; then
 		HELP=1
+
+	elif [[ "$1" = "--version" || "$1" = "-v" ]] ; then
+		SHOW_VERSION=1
 
 	elif [[ "$1" = "--quiet" || "$1" = "-q" ]] ; then
 		NO_ASK=1
@@ -653,7 +677,14 @@ done
 if [[ $HELP == 1 || $PARAMS_NUM == 0 ]]
 then
 	usage
-	exit 1
+	exit 0
+fi
+
+if [ $SHOW_VERSION -eq 1 ]
+then
+	CUR_VERSION=$(grep 'Version:\ ' $0 | cut -d ' ' -f3)
+	echo $CUR_VERSION
+	exit 0
 fi
 
 if [ $CHECK_ONLY -eq 0 ]
@@ -664,10 +695,24 @@ then
 	cdAndCheck "$DIR_PATH"
 	checkDirPermissions "$DIR_PATH"
 
+	TMP_PATH=$(echo "$TMP_PATH" | sed 's/\/$//')
+	checkDir "$TMP_PATH" "Directory for temporary files not found. Exiting..."
+	cdAndCheck "$TMP_PATH" "Can't get up in a directory for temporary files. Exiting..."
+	checkDirPermissions "$TMP_PATH" "Current user have no permissions to directory for temporary files. Exiting..."
+
 	if [[ $PERIOD != 0 && $NEW_ONLY -gt 0 ]]
 	then
 		echo "It is impossible to use parameters -t(--time) and -n(--new-only) together. Set only one of it. Exiting..."
 		exit 1
+	fi
+
+	if ! [ -z "$TIME_MARKER" ]
+	then
+		if [ $NEW_ONLY -eq 0 ]
+		then
+			echo "You can't use option -m(--time-marker) without -n(--new-only) option. Exiting..."
+			exit 1
+		fi
 	fi
 
 	if [ $PERIOD != 0 ]
@@ -702,13 +747,14 @@ then
 	then
 		echo
 		echo "Detecting using time marker. Will be find images newer than time marker."
-		echo -n "Time marker "
 		TIME_MARKER_FULL_PATH=$(getTimeMarkerPath)
 		TIME_MARKER_FULL_PATH_DIR=$(dirname "$TIME_MARKER_FULL_PATH")
 		TIME_MARKER_FULL_PATH_NAME=$(basename "$TIME_MARKER_FULL_PATH")
 		checkDir "$TIME_MARKER_FULL_PATH_DIR" "Directory for marker not found. Exiting..."
 		cdAndCheck "$TIME_MARKER_FULL_PATH_DIR" "Can't get up in a directory for marker. Exiting..."
+		checkUserTimeMarker
 		checkDirPermissions "$TIME_MARKER_FULL_PATH_DIR" "Current user have no permissions to directory for marker. Exiting..."
+		echo -n "Time marker "
 		if [ -f "$TIME_MARKER_FULL_PATH" ]
 		then
 			checkTimeMarkerPermissions "$TIME_MARKER_FULL_PATH"
@@ -737,6 +783,7 @@ then
 	fi
 fi
 
+BINARY_PATHS=$(echo $BINARY_PATHS | sed 's/\/\ /\ /g' | sed 's/\/$/\ /')
 BINARY_PATHS_ARRAY=($BINARY_PATHS)
 TOOLS_ARRAY=($TOOLS)
 ALL_FOUND=1
@@ -753,10 +800,10 @@ for t in "${!TOOLS_ARRAY[@]}" ; do
 	FOUND=0
 	echo -n ${TOOLS_ARRAY[$t]}"..."
 	for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-		if [ -f "${BINARY_PATHS_ARRAY[$p]}${TOOLS_ARRAY[$t]}" ]
+		if [ -f "${BINARY_PATHS_ARRAY[$p]}/${TOOLS_ARRAY[$t]}" ]
 		then
 			FOUND=1
-			TOOL_PATH="${BINARY_PATHS_ARRAY[$p]}${TOOLS_ARRAY[$t]}"
+			TOOL_PATH="${BINARY_PATHS_ARRAY[$p]}/${TOOLS_ARRAY[$t]}"
 		fi
 	done
 	if [ $FOUND == 1 ]
