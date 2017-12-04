@@ -45,7 +45,7 @@ bash zImageOptimizer.sh --path=/path/to/files
 Supported options:
 - -h (--help) - shows help,
 - -v (--version) - shows script version,
-- -p (--path) - specify input directory (usage: -p <dir> | --path=<dir>),
+- -p (--path) - specify input directory (usage: -p \<dir\> | --path=\<dir\>),
 - -q (--quiet) - execute script without any questions and users actions,
 - -c (--check-only) - check tools with an opportunity to install dependences,
 - -t (--time) - set period for which to look for files by last modified time (usage: -t <period> | --time=<period>),
