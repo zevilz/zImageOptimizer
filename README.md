@@ -84,12 +84,14 @@ bash zImageOptimizer.sh -p /path/to/files -n
 
 Notice: by default time marker file creates in working directory which set in -p(--path) option with filename **.timeMarker**.
 
+#### Custom time marker name
 Use option -m(--time-marker) and set new filename if you want to change time marker filename:
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -n -m myCustomMarkerName
 ```
 Path to time marker will be `/path/to/files/myCustomMarkerName`
 
+#### Custom time marker path and name
 Use option -m(--time-marker) and set new path and filename if you want to change time marker path:
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -n -m /path/to/marker/directory/markerName
