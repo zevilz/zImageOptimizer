@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.8.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.8.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories on Linux and FreeBSD.
 
@@ -299,7 +299,7 @@ You have not write access to directory /tmp. Tools djpeg and cjpeg use this dire
 ## Donations
 Do you like script? Would you like to support its development? Feel free to donate
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
 - 04.12.2017 - 0.8.0 - [new features, bugfixes and code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0)
