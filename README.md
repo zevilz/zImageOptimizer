@@ -48,10 +48,10 @@ Supported options:
 - -p (--path) - specify input directory (usage: -p \<dir\> | --path=\<dir\>),
 - -q (--quiet) - execute script without any questions and users actions,
 - -c (--check-only) - check tools with an opportunity to install dependences,
-- -t (--time) - set period for which to look for files by last modified time (usage: -t <period> | --time=<period>),
+- -t (--time) - set period for which to look for files by last modified time (usage: -t \<period\> | --time=\<period\>),
 - -n (--new-only) - use time marker file for looking new images only,
-- -m (--time-marker) - set custom path or custom filename of time marker file (usage: -m <name|path> | --time-marker=<name|path>),
-- -tmp (--tmp-path) - set custom directory path for temporary files (usage: -tmp <dir> | --tmp-path=<dir>).
+- -m (--time-marker) - set custom path or custom filename of time marker file (usage: -m \<name|path\> | --time-marker=\<name|path\>),
+- -tmp (--tmp-path) - set custom directory path for temporary files (usage: -tmp \<dir\> | --tmp-path=\<dir\>).
 
 Notices:
 - you may combine options;
