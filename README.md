@@ -98,6 +98,25 @@ bash zImageOptimizer.sh -p /path/to/files -n -m /path/to/marker/directory/marker
 ```
 Path to time marker will be `/path/to/marker/directory/markerName`
 
+#### Cron usage
+Using default time marker:
+```bash
+0 0 * * * bash zImageOptimizer.sh -p /first/directory -n
+0 1 * * * bash zImageOptimizer.sh -p /second/directory -n
+```
+
+Using custom time marker path and filename:
+```bash
+0 0 * * * bash zImageOptimizer.sh -p /first/directory -n -m /path/to/first/directory/marker/firstMarkerName
+0 1 * * * bash zImageOptimizer.sh -p /second/directory -n -m /path/to/second/directory/marker/secondMarkerName
+```
+
+Also you may collect all markers in own directory:
+```bash
+0 0 * * * bash zImageOptimizer.sh -p /first/directory -n -m /path/to/markers/directory/firstMarkerName
+0 1 * * * bash zImageOptimizer.sh -p /second/directory -n -m /path/to/markers/directory/secondMarkerName
+```
+
 ### Usage with custom path to temporary files directory
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -tmp /custom/path/to/temporary/directory
