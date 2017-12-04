@@ -117,7 +117,7 @@ Also you may collect all markers in own directory:
 0 1 * * * bash zImageOptimizer.sh -p /second/directory -q -n -m /path/to/markers/directory/secondMarkerName
 ```
 
-#### Manually create time marker file
+#### Manually create/modify time marker file
 You may manually create time marker file or change it last modified time:
 ```bash
 touch -m /path/to/marker/markerName
