@@ -6,7 +6,7 @@
 # Version: 0.8.0
 
 # Define default vars
-BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/"
+BINARY_PATHS="/bin /usr/bin /usr/local/bin"
 TMP_PATH="/tmp"
 TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng gifsicle"
 DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc"
@@ -458,7 +458,7 @@ checkUserTimeMarker()
 {
 	if [[ $TIME_MARKER =~ ^-?.*\/$ ]]
 	then
-		echo "Time marker filename not set in custom time marker path. Exiting..." 1>&2
+		echo "Time marker filename not set in given path. Exiting..." 1>&2
 		exit 1
 	fi
 }
@@ -579,7 +579,7 @@ usage()
 	echo "	-q, --quiet        Execute script without any questions and users "
 	echo "	                   actions."
 	echo
-	echo "	-c, --check-only   Only check tools with an opportunity to install "
+	echo "	-c, --check-only   Check tools with an opportunity to install "
 	echo "	                   dependences. All parameters will be ignored "
 	echo "	                   with this parameter (except for -h|--help and "
 	echo "	                   -v|--version)."
@@ -587,25 +587,24 @@ usage()
 	echo "	-t, --time         Period for which to look for files by last "
 	echo "	                   modified time. Must be set in minutes (10m, 30m "
 	echo "	                   etc.) or hours (1h, 10h etc.) or days (1d, 30d "
-	echo "	                   etc.). It is impossible to use with "
+	echo "	                   etc.). It is impossible to use this option with "
 	echo "	                   -n|--new-only option. (test)"
 	echo
-	echo "	-n, --new-only     Find only new images basis on special time "
-	echo "	                   marker file which created/modified in the end "
-	echo "	                   of last optimizing. Recommended for cron usage "
-	echo "	                   to avoid repeated optimization already "
-	echo "	                   optimized files. Time marker automatically "
-	echo "	                   creates with first script running with this "
-	echo "	                   option. By default time marker creates in "
-	echo "	                   working directory which set as inpit path. "
-	echo "	                   It is impossible to use with -t|--time option. "
-	echo "	                   (test)"
-	echo
-	echo "	-m, --time-marker  Custom path/name of time marker file. Must be "
-	echo "	                   name of file (only for change time marker name) "
-	echo "	                   or full path for custom marker in custom "
-	echo "	                   directory. Working only with -n|--new-only "
+	echo "	-n, --new-only     Looking for images newer than special time "
+	echo "	                   marker file. It is automatically created or "
+	echo "	                   modified in the end of optimizing using this "
+	echo "	                   option. Recommended for cron usage to avoid "
+	echo "	                   repeated optimization already optimized files. "
+	echo "	                   By default time marker creates in working "
+	echo "	                   directory which set in -p|--path option. It is "
+	echo "	                   impossible to use this option with -t|--time "
 	echo "	                   option. (test)"
+	echo
+	echo "	-m, --time-marker  Custom path or name of time marker file. Must "
+	echo "	                   be name of file (for changes time marker name) "
+	echo "	                   or full path for custom time marker file in "
+	echo "	                   custom directory. Working only with "
+	echo "	                   -n|--new-only option. (test)"
 	echo
 	echo "	-tmp, --tmp-path   Custom directory path for temporary files. "
 	echo "	                   Default value located in TMP_PATH variable "
@@ -742,18 +741,18 @@ then
 			FIND_INCLUDE="-mtime -$PERIOD_VAL"
 		fi
 		echo
-		echo "Detecting find images modified last $PERIOD_VAL $PERIOD_UNIT_NAME."
+		echo "Script will be searching images changed for the last $PERIOD_VAL $PERIOD_UNIT_NAME."
 	elif [ $NEW_ONLY -eq 1 ]
 	then
 		echo
-		echo "Detecting using time marker. Will be find images newer than time marker."
+		echo "Script will be searching images newer than time marker."
 		TIME_MARKER_FULL_PATH=$(getTimeMarkerPath)
 		TIME_MARKER_FULL_PATH_DIR=$(dirname "$TIME_MARKER_FULL_PATH")
 		TIME_MARKER_FULL_PATH_NAME=$(basename "$TIME_MARKER_FULL_PATH")
-		checkDir "$TIME_MARKER_FULL_PATH_DIR" "Directory for marker not found. Exiting..."
-		cdAndCheck "$TIME_MARKER_FULL_PATH_DIR" "Can't get up in a directory for marker. Exiting..."
+		checkDir "$TIME_MARKER_FULL_PATH_DIR" "Directory for time marker not found. Exiting..."
+		cdAndCheck "$TIME_MARKER_FULL_PATH_DIR" "Can't get up in a directory for time marker. Exiting..."
 		checkUserTimeMarker
-		checkDirPermissions "$TIME_MARKER_FULL_PATH_DIR" "Current user have no permissions to directory for marker. Exiting..."
+		checkDirPermissions "$TIME_MARKER_FULL_PATH_DIR" "Current user have no permissions to directory for time marker. Exiting..."
 		echo -n "Time marker "
 		if [ -f "$TIME_MARKER_FULL_PATH" ]
 		then
