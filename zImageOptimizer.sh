@@ -474,9 +474,9 @@ checkTimeMarkerPermissions()
 	else
 		if date --version >/dev/null 2>/dev/null
 		then
-			touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED) "$1" 2>/dev/null # GNU version of date
+			touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED) "$1" > /dev/null # GNU version of date
 		else
-			touch -t $(date -r $TIME_MARKER_MODIFIED +%Y%m%d%H%M.%S) "$1" 2>/dev/null # Non GNU version of date
+			touch -t $(date -r $TIME_MARKER_MODIFIED +%Y%m%d%H%M.%S) "$1" > /dev/null # Non GNU version of date
 		fi
 	fi
 }
@@ -485,7 +485,7 @@ updateTimeMarker()
 	if [ $NEW_ONLY -eq 1 ]
 	then
 		sleep 1
-		touch -m "$TIME_MARKER_FULL_PATH" >/dev/null
+		touch -m "$TIME_MARKER_FULL_PATH" > /dev/null
 		echo
 		if [ $TIME_MARKER_ISSET -eq 1 ]
 		then
