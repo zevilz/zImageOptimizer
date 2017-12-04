@@ -1,17 +1,19 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.7.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.8.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories on Linux and FreeBSD.
 
 ## Features
 - lossless image optimization with small image size in output;
 - script work recursively;
-- checks optimization tools on start;
+- checks optimization tools after start;
 - option for automatic install dependences and optimization tools if one or more of it not found (see supported distributions [here](https://github.com/zevilz/zImageOptimizer#automatical-installing-dependences));
 - readable information in output and total info after optimization;
 - no limit for file size (limit only by hardware);
 - no limit for number of files;
 - no limit for length of file name (limit on by file system);
-- supported special characters (except slashes and back slashes), spaces and not latin characters in file name.
+- support for special characters (except slashes and back slashes), spaces, not latin characters in file name;
+- support of search of the images changed in a certain period of time;
+- support of use of a special time marker for search only new files (based on last modify time).
 
 ## Tools
 JPEG:
@@ -30,6 +32,8 @@ GIF:
 One or more tools required for optimization.
 
 ## Usage
+
+### Usual usage
 ```bash
 bash zImageOptimizer.sh -p /path/to/files
 ```
@@ -38,11 +42,70 @@ or
 bash zImageOptimizer.sh --path=/path/to/files
 ```
 
-Supported parameters:
-- -h, --help        - shows help
-- -p, --path        - specify input directory with or without slash in the end of path
-- -n, --no-ask      - execute script without any questions and users actions
-- -c, --check-only  - only check tools with an opportunity to install dependences (all parameters will be ignored with this)
+Supported options:
+- -h (--help) - shows help,
+- -v (--version) - shows script version,
+- -p (--path) - specify input directory (usage: -p <dir> | --path=<dir>),
+- -q (--quiet) - execute script without any questions and users actions,
+- -c (--check-only) - check tools with an opportunity to install dependences,
+- -t (--time) - set period for which to look for files by last modified time (usage: -t <period> | --time=<period>),
+- -n (--new-only) - use time marker file for looking new images only,
+- -m (--time-marker) - set custom path or custom filename of time marker file (usage: -m <name|path> | --time-marker=<name|path>),
+- -tmp (--tmp-path) - set custom directory path for temporary files (usage: -tmp <dir> | --tmp-path=<dir>).
+
+Notices:
+- you may combine options;
+- -h(--help) option ignore all other options;
+- -v(--version) option ignore all other options (except for -h(--help));
+- -c(--check-only) option ignore all other options (except for -h(--help) and -v(--version));
+- path in options -p(--path) and -tmp(--tmp-path) may be with and without slash in the end of path;
+- it is impossible to use together options -t(--time) and -n(--new-only);
+- you must use option -m(--time-marker) with -n(--new-only) option.
+
+### Usage with set period
+```bash
+bash zImageOptimizer.sh -p /path/to/files -t <period>
+```
+
+Supported periods:
+- minutes (10m, 30m etc.),
+- hours (1h, 10h etc.),
+- days (1d, 30d  etc.).
+
+Example:
+```bash
+bash zImageOptimizer.sh -p /path/to/files -t 15d
+```
+
+### Usage with time marker (recommended for cron usage)
+```bash
+bash zImageOptimizer.sh -p /path/to/files -n
+```
+
+Notice: by default time marker file creates in working directory which set in -p(--path) option with filename **.timeMarker**.
+
+Use option -m(--time-marker) and set new filename if you want to change time marker filename 
+```bash
+bash zImageOptimizer.sh -p /path/to/files -n -m myCustomMarkerName
+```
+Path to time marker will be
+```bash
+/path/to/files/myCustomMarkerName
+```
+
+Use option -m(--time-marker) and set new path and filename if you want to change time marker path
+```bash
+bash zImageOptimizer.sh -p /path/to/files -n -m /path/to/marker/directory/markerName
+```
+Path to time marker will be
+```bash
+/path/to/marker/directory/markerName
+```
+
+### Using with custom path to temporary files directory
+```bash
+bash zImageOptimizer.sh -p /path/to/files -tmp /custom/path/to/temporary/directory
+```
 
 ## Automatical installing dependences
 Notice: curent user must be root or user with sudo access.
@@ -175,23 +238,20 @@ rm -rf advancecomp-2.0
 
 **I'm install dependences but one of tool is marked as NOT FOUND**
 
-By default script looks for binary files into folowing directories /bin/ /usr/bin/ /usr/local/bin/. If your binary file is not in these directories add your directory in variable BINARY_PATHS through a space like below and restart script
+By default script looks for binary files into folowing directories /bin /usr/bin /usr/local/bin. If your binary file is not in these directories add your directory in variable BINARY_PATHS through a space like below and restart script
 ```bash
-BINARY_PATHS="/bin/ /usr/bin/ /usr/local/bin/ /your/custom/path/"
+BINARY_PATHS="/bin /usr/bin /usr/local/bin /your/custom/path"
 ```
 
 **I have errors `djpeg: can't open /tmp/*` and `cjpeg: can't open /tmp/*` during optimization**
 
-You have not write access to directory /tmp. Tools djpeg and cjpeg use this directory for temporary files. Change path in variable TMP_PATH on full path to directory which you have write access like below (directory must be exist)
-```bash
-TMP_PATH="/custom/path/to/temp/files/"
-```
+You have not write access to directory /tmp. Tools djpeg and cjpeg use this directory for temporary files. Use option -tmp(--tmp-path) for set custom path.
 
 ## TODO
-- [x] ~~add parameter for execute script without any questions and users actions (for cron usage)~~
-- [ ] add parameter for set time of the last change files for optimize only new images (for cron usage)
-- [ ] add parameter for set quality for more small files in output
-- [x] ~~add parameter for check tools only~~
+- [x] ~~add option for execute script without any questions and users actions (for cron usage)~~
+- [x] ~~add option for set time of the last change files for optimize only new images (for cron usage)~~
+- [ ] add option for set quality for more small files in output
+- [x] ~~add option for check tools only~~
 - [x] ~~add support for optimize gif images~~
 - [ ] add support for automatic install dependences on other platforms and distributions with other package managers
 - [ ] add support for parallel optimization
@@ -203,6 +263,7 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 04.12.2017 - 0.8.0 - added [new features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0) and code refactoring
 - 30.11.2017 - 0.7.0 - added support for working script on FreeBSD, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
 - 28.11.2017 - 0.6.0 - added support for automatic install dependences on RHEL 6+ and Fedora 24+
 - 25.11.2017 - 0.5.0 - bug fixes and code refactoring

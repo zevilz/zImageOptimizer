@@ -569,46 +569,46 @@ usage()
 	echo
 	echo "Options:"
 	echo
-	echo "	-h, --help         Shows this help."
+	echo "    -h, --help              Shows this help."
 	echo
-	echo "	-v, --version      Shows script version."
+	echo "    -v, --version           Shows script version."
 	echo
-	echo "	-p, --path [dir]   Specify input directory with or without slash "
-	echo "	                   in the end of path."
+	echo "    -p <dir>,               Specify input directory with or without slash "
+	echo "    --path=<dir>            in the end of path."
 	echo
-	echo "	-q, --quiet        Execute script without any questions and users "
-	echo "	                   actions."
+	echo "    -q, --quiet             Execute script without any questions and users "
+	echo "                            actions."
 	echo
-	echo "	-c, --check-only   Check tools with an opportunity to install "
-	echo "	                   dependences. All parameters will be ignored "
-	echo "	                   with this parameter (except for -h|--help and "
-	echo "	                   -v|--version)."
+	echo "    -c, --check-only        Check tools with an opportunity to install "
+	echo "                            dependences. All options will be ignored "
+	echo "                            with this option (except for -h|--help and "
+	echo "                            -v|--version)."
 	echo
-	echo "	-t, --time         Period for which to look for files by last "
-	echo "	                   modified time. Must be set in minutes (10m, 30m "
-	echo "	                   etc.) or hours (1h, 10h etc.) or days (1d, 30d "
-	echo "	                   etc.). It is impossible to use this option with "
-	echo "	                   -n|--new-only option. (test)"
+	echo "    -t <period>,            Period for which to look for files by last "
+	echo "    --time=<period>         modified time. Must be set in minutes (10m, 30m "
+	echo "                            etc.) or hours (1h, 10h etc.) or days (1d, 30d "
+	echo "                            etc.). It is impossible to use this option with "
+	echo "                            -n|--new-only option. (test)"
 	echo
-	echo "	-n, --new-only     Looking for images newer than special time "
-	echo "	                   marker file. It is automatically created or "
-	echo "	                   modified in the end of optimizing using this "
-	echo "	                   option. Recommended for cron usage to avoid "
-	echo "	                   repeated optimization already optimized files. "
-	echo "	                   By default time marker creates in working "
-	echo "	                   directory which set in -p|--path option. It is "
-	echo "	                   impossible to use this option with -t|--time "
-	echo "	                   option. (test)"
+	echo "    -n, --new-only          Looking for images newer than special time "
+	echo "                            marker file. It is automatically created or "
+	echo "                            modified in the end of optimizing using this "
+	echo "                            option. Recommended for cron usage to avoid "
+	echo "                            repeated optimization already optimized files. "
+	echo "                            By default time marker creates in working "
+	echo "                            directory which set in -p|--path option. It is "
+	echo "                            impossible to use this option with -t|--time "
+	echo "                            option. (test)"
 	echo
-	echo "	-m, --time-marker  Custom path or name of time marker file. Must "
-	echo "	                   be name of file (for changes time marker name) "
-	echo "	                   or full path for custom time marker file in "
-	echo "	                   custom directory. Working only with "
-	echo "	                   -n|--new-only option. (test)"
+	echo "    -m <name>,              Custom path or name of time marker file. Must "
+	echo "    --time-marker=<name>,   be name of file (for changes time marker name) "
+	echo "    -m <path>,              or full path for custom time marker file in "
+	echo "    --time-marker=<path>    custom directory. Working only with "
+	echo "                            -n|--new-only option. (test)"
 	echo
-	echo "	-tmp, --tmp-path   Custom directory path for temporary files. "
-	echo "	                   Default value located in TMP_PATH variable "
-	echo "	                   (/tmp by default)"
+	echo "    -tmp <dir>,             Custom directory path for temporary files. "
+	echo "    --tmp-path=<dir>        Default value located in TMP_PATH variable "
+	echo "                            (/tmp by default)"
 	echo
 }
 
@@ -701,7 +701,7 @@ then
 
 	if [[ $PERIOD != 0 && $NEW_ONLY -gt 0 ]]
 	then
-		echo "It is impossible to use parameters -t(--time) and -n(--new-only) together. Set only one of it. Exiting..."
+		echo "It is impossible to use options -t(--time) and -n(--new-only) together. Set only one of it. Exiting..."
 		exit 1
 	fi
 
