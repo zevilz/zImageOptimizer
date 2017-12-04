@@ -102,7 +102,7 @@ Path to time marker will be
 /path/to/marker/directory/markerName
 ```
 
-### Using with custom path to temporary files directory
+### Usage with custom path to temporary files directory
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -tmp /custom/path/to/temporary/directory
 ```
