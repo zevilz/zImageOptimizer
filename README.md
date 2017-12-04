@@ -107,8 +107,8 @@ Using default time marker:
 
 Using custom time marker path and filename:
 ```bash
-0 0 * * * bash zImageOptimizer.sh -p /first/directory -n -m /path/to/first/directory/marker/firstMarkerName
-0 1 * * * bash zImageOptimizer.sh -p /second/directory -n -m /path/to/second/directory/marker/secondMarkerName
+0 0 * * * bash zImageOptimizer.sh -p /first/directory -n -m /path/to/first/marker/firstMarkerName
+0 1 * * * bash zImageOptimizer.sh -p /second/directory -n -m /path/to/second/marker/secondMarkerName
 ```
 
 Also you may collect all markers in own directory:
