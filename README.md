@@ -295,6 +295,8 @@ You have not write access to directory /tmp. Tools djpeg and cjpeg use this dire
 - [ ] add support for automatic install dependences on other platforms and distributions with other package managers
 - [ ] add support for parallel optimization
 - [ ] even more to improve results of compression
+- [ ] add SVG support
+- [ ] add logging
 
 ## Donations
 Do you like script? Would you like to support its development? Feel free to donate
