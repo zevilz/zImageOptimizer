@@ -297,6 +297,7 @@ You have not write access to directory /tmp. Tools djpeg and cjpeg use this dire
 - [ ] even more to improve results of compression
 - [ ] add SVG support
 - [ ] add logging
+- [ ] add Ansible playbook
 
 ## Donations
 Do you like script? Would you like to support its development? Feel free to donate
