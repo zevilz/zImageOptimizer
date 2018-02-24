@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.8.1
+# Version: 0.8.2
 
 # Define default vars
 BINARY_PATHS="/bin /usr/bin /usr/local/bin"
