@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.8.2
+# Version: 0.9.0
 
 # Define default vars
 BINARY_PATHS="/bin /usr/bin /usr/local/bin"
@@ -11,6 +11,7 @@ TMP_PATH="/tmp"
 TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng gifsicle"
 DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc"
 DEPS_REDHAT="jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc"
+DEPS_MACOS="jpegoptim libjpeg pngcrush optipng advancecomp gifsicle jonof/kenutils/pngout"
 GIT_URL="https://github.com/zevilz/zImageOptimizer"
 TIME_MARKER_PATH=""
 TIME_MARKER_NAME=".timeMarker"
@@ -179,8 +180,16 @@ installDeps()
 #			PLATFORM_PKG="slackware"
 		fi
 
-#	elif [[ "$OSTYPE" == "darwin"* ]]; then
-#		PLATFORM="macos"
+	elif [[ "$OSTYPE" == "darwin"* ]]; then
+
+		PLATFORM="macos"
+		PLATFORM_PKG="dmg"
+		PLATFORM_DISTRIBUTION="MacOS"
+
+		PLATFORM_ARCH=$(getconf LONG_BIT)
+
+		PLATFORM_VERSION=""
+		PLATFORM_SUPPORT=1
 
 	elif [[ "$OSTYPE" == "FreeBSD"* ]]; then
 
@@ -319,6 +328,10 @@ installDeps()
 				fi
 				rm -rf pngout-20150319-linux
 			fi
+
+		elif [ $PLATFORM == "macos" ]; then
+
+			brew install $DEPS_MACOS -y
 
 		elif [ $PLATFORM == "freebsd" ]; then
 
