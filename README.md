@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.8.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.8.1-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.1) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories on Linux and FreeBSD.
 
@@ -47,6 +47,7 @@ Supported options:
 - -v (--version) - shows script version,
 - -p (--path) - specify input directory (usage: `-p <dir> | --path=<dir>`),
 - -q (--quiet) - execute script without any questions and users actions,
+- -l (--less) - don't show optimizing process,
 - -c (--check-only) - check tools with an opportunity to install dependences,
 - -t (--time) - set period for which to look for files by last modified time (usage: `-t <period> | --time=<period>`),
 - -n (--new-only) - use time marker file for looking new images only,
@@ -116,6 +117,8 @@ Also you may collect all markers in own directory:
 0 0 * * * /bin/bash zImageOptimizer.sh -p /first/directory -q -n -m /path/to/markers/directory/firstMarkerName
 0 1 * * * /bin/bash zImageOptimizer.sh -p /second/directory -q -n -m /path/to/markers/directory/secondMarkerName
 ```
+
+Notice: use option -l(--less) if you want exclude optimizing process in cron email messages
 
 #### Manually create/modify time marker file
 You may manually create time marker file or change it last modified time:
@@ -305,6 +308,7 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 24.02.2018 - 0.8.1 - [added new parameter, updated info after optimizing, small fixes and small code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.1)
 - 04.12.2017 - 0.8.0 - [new features, bugfixes and code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0)
 - 30.11.2017 - 0.7.0 - added support for working script on FreeBSD, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
 - 28.11.2017 - 0.6.0 - added support for automatic install dependences on RHEL 6+ and Fedora 24+
