@@ -317,6 +317,7 @@ You have not write access to directory /tmp. Tools djpeg and cjpeg use this dire
 - [ ] add SVG support
 - [ ] add logging
 - [ ] add Ansible playbook
+- [ ] add progrees indicator
 
 ## Contacts
 - telegram [@zevilz](https://t.me/zevilz) (EN|RU)
