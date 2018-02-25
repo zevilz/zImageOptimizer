@@ -23,6 +23,9 @@ MIN_VERSION_FEDORA=24
 MIN_VERSION_RHEL=6
 MIN_VERSION_CENTOS=6
 
+# Min version MacOS (second digit; ex. 10.12.2 == 12).
+MIN_VERSION_MACOS=12
+
 # Spacese separated supported versions of distributions.
 SUPPORTED_VERSIONS_FREEBSD="10.3 10.4 11.1"
 
@@ -188,8 +191,10 @@ installDeps()
 
 		PLATFORM_ARCH=$(getconf LONG_BIT)
 
-		PLATFORM_VERSION=""
-		PLATFORM_SUPPORT=1
+		PLATFORM_VERSION="$(defaults read loginwindow SystemVersionStampAsString)"
+		if [[ $(echo $PLATFORM_VERSION | cut -d '.' -f2) -ge $MIN_VERSION_MACOS ]]; then
+			PLATFORM_SUPPORT=1
+		fi
 
 	elif [[ "$OSTYPE" == "FreeBSD"* ]]; then
 
