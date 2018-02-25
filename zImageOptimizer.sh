@@ -349,7 +349,7 @@ installDeps()
 				/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 			fi
 
-			brew install $DEPS_MACOS -y
+			brew install $DEPS_MACOS
 
 		elif [ $PLATFORM == "freebsd" ]; then
 

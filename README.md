@@ -184,6 +184,8 @@ Tested on:
 - FreeBSD
   - 10.3 i686
   - 11.1 amd64
+- MacOS
+  - 10.10
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
@@ -214,6 +216,18 @@ Fedora:
 ```bash
 dnf install epel-release -y
 dnf install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
+```
+
+MacOS:
+
+Install brew if not installed
+```bash
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
+
+Install packages via brew
+```bash
+brew install jpegoptim libjpeg pngcrush optipng advancecomp gifsicle jonof/kenutils/pngout
 ```
 
 FreeBSD:
@@ -296,12 +310,20 @@ You have not write access to directory /tmp. Tools djpeg and cjpeg use this dire
 - [ ] add option for set quality for more small files in output
 - [x] ~~add option for check tools only~~
 - [x] ~~add support for optimize gif images~~
-- [ ] add support for automatic install dependences on other platforms and distributions with other package managers
+- [x] ~~add support for automatic install dependences on other platforms and distributions with other package managers~~
+- [ ] add support for automatic install dependences on other linux distributions
 - [ ] add support for parallel optimization
 - [ ] even more to improve results of compression
 - [ ] add SVG support
 - [ ] add logging
 - [ ] add Ansible playbook
+
+## Contacts
+- telegram [@zevilz](https://t.me/zevilz) (EN|RU)
+- telegram chat [@zImageOptimizer](https://t.me/zImageOptimizer) (RU)
+
+## Reviews
+- [glashkoff.com](https://glashkoff.com/blog/manual/kak-optimizirovat-izobrazheniya-sayta/) (RU)
 
 ## Donations
 Do you like script? Would you like to support its development? Feel free to donate
@@ -309,9 +331,10 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 25.02.2018 - 0.9.0 - added support for working script on MacOS 10.10+ with automatic install dependences
 - 24.02.2018 - 0.8.1 - [added new parameter, updated info after optimizing, small fixes and small code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.1)
 - 04.12.2017 - 0.8.0 - [new features, bugfixes and code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0)
-- 30.11.2017 - 0.7.0 - added support for working script on FreeBSD, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
+- 30.11.2017 - 0.7.0 - added support for working script on FreeBSD with automatic install dependences, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
 - 28.11.2017 - 0.6.0 - added support for automatic install dependences on RHEL 6+ and Fedora 24+
 - 25.11.2017 - 0.5.0 - bug fixes and code refactoring
 - 25.11.2017 - 0.4.0 - added support for automatic install dependences on Debian 7.* and some bugfixes
