@@ -461,9 +461,20 @@ checkUserTimeMarker()
 
 checkTimeMarkerPermissions()
 {
-	TIME_MARKER_MODIFIED=$(date -r "$1" +%s)
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		TIME_MARKER_MODIFIED=$(stat -t %s -f %m -- "$1")
+	else
+		TIME_MARKER_MODIFIED=$(date -r "$1" +%s)
+	fi
+
 	touch -m "$1" 2>/dev/null
-	TIME_MARKER_MODIFIED_NEW=$(date -r "$1" +%s)
+
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		TIME_MARKER_MODIFIED_NEW=$(stat -t %s -f %m -- "$1")
+	else
+		TIME_MARKER_MODIFIED_NEW=$(date -r "$1" +%s)
+	fi
+
 	if [ $TIME_MARKER_MODIFIED -eq $TIME_MARKER_MODIFIED_NEW ]; then
 		echo "Current user have no permissions to modify time marker. Exiting..." 1>&2
 		exit 1
