@@ -24,7 +24,7 @@ MIN_VERSION_RHEL=6
 MIN_VERSION_CENTOS=6
 
 # Min version MacOS (second digit; ex. 10.12.2 == 12).
-MIN_VERSION_MACOS=12
+MIN_VERSION_MACOS=10
 
 # Spacese separated supported versions of distributions.
 SUPPORTED_VERSIONS_FREEBSD="10.3 10.4 11.1"
@@ -574,8 +574,8 @@ usage()
 	echo
 	echo "    -v, --version           Shows script version."
 	echo
-	echo "    -p <dir>,               Specify input directory with or without slash "
-	echo "    --path=<dir>            in the end of path."
+	echo "    -p <dir>,               Specify full path to input directory with "
+	echo "    --path=<dir>            or without slash in the end of path."
 	echo
 	echo "    -q, --quiet             Execute script without any questions and users "
 	echo "                            actions."
@@ -603,10 +603,10 @@ usage()
 	echo "                            impossible to use this option with -t|--time "
 	echo "                            option. (test)"
 	echo
-	echo "    -m <name>,              Custom path or name of time marker file. Must "
-	echo "    --time-marker=<name>,   be name of file (for changes time marker name) "
-	echo "    -m <path>,              or full path for custom time marker file in "
-	echo "    --time-marker=<path>    custom directory. Working only with "
+	echo "    -m <name>,              Custom full path or name of time marker file. "
+	echo "    --time-marker=<name>,   Must be name of file (for changes time marker "
+	echo "    -m <path>,              name) or full path for custom time marker file "
+	echo "    --time-marker=<path>    in custom directory. Working only with "
 	echo "                            -n|--new-only option. (test)"
 	echo
 	echo "    -tmp <dir>,             Custom directory path for temporary files. "
@@ -758,14 +758,14 @@ if [ $CHECK_ONLY -eq 0 ]; then
 			$SETCOLOR_SUCCESS
 			echo -n "found"
 			$SETCOLOR_NORMAL
-			echo -n "."
+			echo -n " ($TIME_MARKER_FULL_PATH)."
 			FIND_INCLUDE="-newer $TIME_MARKER_FULL_PATH"
 			TIME_MARKER_ISSET=1
 		else
 			$SETCOLOR_FAILURE
 			echo -n "not found"
 			$SETCOLOR_NORMAL
-			echo -n ". It will be created after optimizing."
+			echo -n ". It will be created after optimizing ($TIME_MARKER_FULL_PATH)."
 			FIND_INCLUDE=""
 			TIME_MARKER_ISSET=0
 		fi

@@ -1,6 +1,6 @@
 # zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.9.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.0) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
-Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories on Linux and FreeBSD.
+Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories on Linux, MacOS and FreeBSD.
 
 ## Features
 - lossless image optimization with small image size in output;
@@ -45,14 +45,14 @@ bash zImageOptimizer.sh --path=/path/to/files
 Supported options:
 - -h (--help) - shows help,
 - -v (--version) - shows script version,
-- -p (--path) - specify input directory (usage: `-p <dir> | --path=<dir>`),
+- -p (--path) - specify full path to input directory (usage: `-p <dir> | --path=<dir>`),
 - -q (--quiet) - execute script without any questions and users actions,
 - -l (--less) - don't show optimizing process,
 - -c (--check-only) - check tools with an opportunity to install dependences,
 - -t (--time) - set period for which to look for files by last modified time (usage: `-t <period> | --time=<period>`),
 - -n (--new-only) - use time marker file for looking new images only,
-- -m (--time-marker) - set custom path or custom filename of time marker file (usage: `-m <name|path> | --time-marker=<name|path>`),
-- -tmp (--tmp-path) - set custom directory path for temporary files (usage: `-tmp <dir> | --tmp-path=<dir>`).
+- -m (--time-marker) - set custom full path or custom filename of time marker file (usage: `-m <name|path> | --time-marker=<name|path>`),
+- -tmp (--tmp-path) - set custom directory full path for temporary files (usage: `-tmp <dir> | --tmp-path=<dir>`).
 
 Notices:
 - you may combine options;
@@ -152,7 +152,7 @@ bash zImageOptimizer.sh -p /path/to/files -tmp /custom/path/to/temporary/directo
 ## Automatical installing dependences
 Notice: curent user must be root or user with sudo access.
 
-Start script in the optimization mode (-p|--path) or checking tools mode (-c|--check-only, recommended) if you want to install dependences automatically. It check installed tools and printing choise option dialog if one or more tools not found. Select option **Install dependences and exit** by typing appropriate number and press enter. Script install dependences based on your platform, distribution and package manager. After that restart script to recheck installed tools.
+Start script in the optimization mode (-p|--path) or checking tools mode (-c|--check-only, recommended) if you want to install dependences automatically. It check installed tools and printing choise option dialog if one or more tools not found. Select option **Install dependences and exit** by typing appropriate number and press enter. Script install dependences based on your platform, distribution and package manager. You may need to enter password and confirm actions during installation dependences. After that restart script to recheck installed tools.
 
 Supported on:
 - DEB-based linux distributions (i686/amd64)
@@ -163,6 +163,7 @@ Supported on:
   - CentOS 6+
   - Fedora 24+
 - FreeBSD 10.3 / 10.4 / 11.1 (i686/amd64)
+- MacOS 10.10+
 
 Tested on:
 - DEB-based linux distributions
