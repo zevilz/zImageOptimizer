@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.8.1
+# Version: 0.9.0
 
 # Define default vars
 BINARY_PATHS="/bin /usr/bin /usr/local/bin"
@@ -11,6 +11,7 @@ TMP_PATH="/tmp"
 TOOLS="jpegoptim jpegtran djpeg cjpeg pngcrush optipng pngout advpng gifsicle"
 DEPS_DEBIAN="jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc"
 DEPS_REDHAT="jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc"
+DEPS_MACOS="jpegoptim libjpeg pngcrush optipng advancecomp gifsicle jonof/kenutils/pngout"
 GIT_URL="https://github.com/zevilz/zImageOptimizer"
 TIME_MARKER_PATH=""
 TIME_MARKER_NAME=".timeMarker"
@@ -21,6 +22,9 @@ MIN_VERSION_UBUNTU=14
 MIN_VERSION_FEDORA=24
 MIN_VERSION_RHEL=6
 MIN_VERSION_CENTOS=6
+
+# Min version MacOS (second digit; ex. 10.12.2 == 12).
+MIN_VERSION_MACOS=10
 
 # Spacese separated supported versions of distributions.
 SUPPORTED_VERSIONS_FREEBSD="10.3 10.4 11.1"
@@ -179,8 +183,18 @@ installDeps()
 #			PLATFORM_PKG="slackware"
 		fi
 
-#	elif [[ "$OSTYPE" == "darwin"* ]]; then
-#		PLATFORM="macos"
+	elif [[ "$OSTYPE" == "darwin"* ]]; then
+
+		PLATFORM="macos"
+		PLATFORM_PKG="dmg"
+		PLATFORM_DISTRIBUTION="MacOS"
+
+		PLATFORM_ARCH=$(getconf LONG_BIT)
+
+		PLATFORM_VERSION="$(defaults read loginwindow SystemVersionStampAsString)"
+		if [[ $(echo $PLATFORM_VERSION | cut -d '.' -f2) -ge $MIN_VERSION_MACOS ]]; then
+			PLATFORM_SUPPORT=1
+		fi
 
 	elif [[ "$OSTYPE" == "FreeBSD"* ]]; then
 
@@ -320,6 +334,23 @@ installDeps()
 				rm -rf pngout-20150319-linux
 			fi
 
+		elif [ $PLATFORM == "macos" ]; then
+
+			# check /usr/local/Homebrew
+
+			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+				if [ -f "${BINARY_PATHS_ARRAY[$p]}/brew" ]; then
+					ISSET_brew=1
+				else
+					ISSET_brew=0
+				fi
+			done
+			if [ $ISSET_brew -eq 0 ]; then
+				/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+			fi
+
+			brew install $DEPS_MACOS
+
 		elif [ $PLATFORM == "freebsd" ]; then
 
 #			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
@@ -430,9 +461,20 @@ checkUserTimeMarker()
 
 checkTimeMarkerPermissions()
 {
-	TIME_MARKER_MODIFIED=$(date -r "$1" +%s)
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		TIME_MARKER_MODIFIED=$(stat -t %s -f %m -- "$1")
+	else
+		TIME_MARKER_MODIFIED=$(date -r "$1" +%s)
+	fi
+
 	touch -m "$1" 2>/dev/null
-	TIME_MARKER_MODIFIED_NEW=$(date -r "$1" +%s)
+
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		TIME_MARKER_MODIFIED_NEW=$(stat -t %s -f %m -- "$1")
+	else
+		TIME_MARKER_MODIFIED_NEW=$(date -r "$1" +%s)
+	fi
+
 	if [ $TIME_MARKER_MODIFIED -eq $TIME_MARKER_MODIFIED_NEW ]; then
 		echo "Current user have no permissions to modify time marker. Exiting..." 1>&2
 		exit 1
@@ -543,8 +585,8 @@ usage()
 	echo
 	echo "    -v, --version           Shows script version."
 	echo
-	echo "    -p <dir>,               Specify input directory with or without slash "
-	echo "    --path=<dir>            in the end of path."
+	echo "    -p <dir>,               Specify full path to input directory with "
+	echo "    --path=<dir>            or without slash in the end of path."
 	echo
 	echo "    -q, --quiet             Execute script without any questions and users "
 	echo "                            actions."
@@ -572,10 +614,10 @@ usage()
 	echo "                            impossible to use this option with -t|--time "
 	echo "                            option. (test)"
 	echo
-	echo "    -m <name>,              Custom path or name of time marker file. Must "
-	echo "    --time-marker=<name>,   be name of file (for changes time marker name) "
-	echo "    -m <path>,              or full path for custom time marker file in "
-	echo "    --time-marker=<path>    custom directory. Working only with "
+	echo "    -m <name>,              Custom full path or name of time marker file. "
+	echo "    --time-marker=<name>,   Must be name of file (for changes time marker "
+	echo "    -m <path>,              name) or full path for custom time marker file "
+	echo "    --time-marker=<path>    in custom directory. Working only with "
 	echo "                            -n|--new-only option. (test)"
 	echo
 	echo "    -tmp <dir>,             Custom directory path for temporary files. "
@@ -993,7 +1035,7 @@ if ! [ -z "$IMAGES" ]; then
 	readableSize $SAVED_SIZE
 	echo " / $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
 	
-	echo "Optimized/Total: $IMAGES_OPTIMIZED/$IMAGES_TOTAL files"
+	echo "Optimized/Total: $IMAGES_OPTIMIZED / $IMAGES_TOTAL files"
 	)
 	updateTimeMarker
 

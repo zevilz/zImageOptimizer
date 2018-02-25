@@ -1,6 +1,6 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.8.1-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.1) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.9.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.0) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
-Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories on Linux and FreeBSD.
+Simple bash script for lossless image optimizing JPEG, PNG and GIF images in specified directory include subdirectories on Linux, MacOS and FreeBSD.
 
 ## Features
 - lossless image optimization with small image size in output;
@@ -45,14 +45,14 @@ bash zImageOptimizer.sh --path=/path/to/files
 Supported options:
 - -h (--help) - shows help,
 - -v (--version) - shows script version,
-- -p (--path) - specify input directory (usage: `-p <dir> | --path=<dir>`),
+- -p (--path) - specify full path to input directory (usage: `-p <dir> | --path=<dir>`),
 - -q (--quiet) - execute script without any questions and users actions,
 - -l (--less) - don't show optimizing process,
 - -c (--check-only) - check tools with an opportunity to install dependences,
 - -t (--time) - set period for which to look for files by last modified time (usage: `-t <period> | --time=<period>`),
 - -n (--new-only) - use time marker file for looking new images only,
-- -m (--time-marker) - set custom path or custom filename of time marker file (usage: `-m <name|path> | --time-marker=<name|path>`),
-- -tmp (--tmp-path) - set custom directory path for temporary files (usage: `-tmp <dir> | --tmp-path=<dir>`).
+- -m (--time-marker) - set custom full path or custom filename of time marker file (usage: `-m <name|path> | --time-marker=<name|path>`),
+- -tmp (--tmp-path) - set custom directory full path for temporary files (usage: `-tmp <dir> | --tmp-path=<dir>`).
 
 Notices:
 - you may combine options;
@@ -152,7 +152,7 @@ bash zImageOptimizer.sh -p /path/to/files -tmp /custom/path/to/temporary/directo
 ## Automatical installing dependences
 Notice: curent user must be root or user with sudo access.
 
-Start script in the optimization mode (-p|--path) or checking tools mode (-c|--check-only, recommended) if you want to install dependences automatically. It check installed tools and printing choise option dialog if one or more tools not found. Select option **Install dependences and exit** by typing appropriate number and press enter. Script install dependences based on your platform, distribution and package manager. After that restart script to recheck installed tools.
+Start script in the optimization mode (-p|--path) or checking tools mode (-c|--check-only, recommended) if you want to install dependences automatically. It check installed tools and printing choise option dialog if one or more tools not found. Select option **Install dependences and exit** by typing appropriate number and press enter. Script install dependences based on your platform, distribution and package manager. You may need to enter password and confirm actions during installation dependences. After that restart script to recheck installed tools.
 
 Supported on:
 - DEB-based linux distributions (i686/amd64)
@@ -163,6 +163,7 @@ Supported on:
   - CentOS 6+
   - Fedora 24+
 - FreeBSD 10.3 / 10.4 / 11.1 (i686/amd64)
+- MacOS 10.10+
 
 Tested on:
 - DEB-based linux distributions
@@ -183,6 +184,8 @@ Tested on:
 - FreeBSD
   - 10.3 i686
   - 11.1 amd64
+- MacOS
+  - 10.10
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
@@ -213,6 +216,18 @@ Fedora:
 ```bash
 dnf install epel-release -y
 dnf install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
+```
+
+MacOS:
+
+Install homebrew if not installed
+```bash
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
+
+Install packages via homebrew
+```bash
+brew install jpegoptim libjpeg pngcrush optipng advancecomp gifsicle jonof/kenutils/pngout
 ```
 
 FreeBSD:
@@ -295,12 +310,20 @@ You have not write access to directory /tmp. Tools djpeg and cjpeg use this dire
 - [ ] add option for set quality for more small files in output
 - [x] ~~add option for check tools only~~
 - [x] ~~add support for optimize gif images~~
-- [ ] add support for automatic install dependences on other platforms and distributions with other package managers
+- [x] ~~add support for automatic install dependences on other platforms and distributions with other package managers~~
+- [ ] add support for automatic install dependences on other linux distributions
 - [ ] add support for parallel optimization
 - [ ] even more to improve results of compression
 - [ ] add SVG support
 - [ ] add logging
 - [ ] add Ansible playbook
+
+## Contacts
+- telegram [@zevilz](https://t.me/zevilz) (EN|RU)
+- telegram chat [@zImageOptimizer](https://t.me/zImageOptimizer) (RU)
+
+## Reviews
+- [glashkoff.com](https://glashkoff.com/blog/manual/kak-optimizirovat-izobrazheniya-sayta/) (RU)
 
 ## Donations
 Do you like script? Would you like to support its development? Feel free to donate
@@ -308,9 +331,10 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 25.02.2018 - 0.9.0 - added support for working script on MacOS 10.10+ with automatic install dependences
 - 24.02.2018 - 0.8.1 - [added new parameter, updated info after optimizing, small fixes and small code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.1)
 - 04.12.2017 - 0.8.0 - [new features, bugfixes and code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0)
-- 30.11.2017 - 0.7.0 - added support for working script on FreeBSD, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
+- 30.11.2017 - 0.7.0 - added support for working script on FreeBSD with automatic install dependences, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
 - 28.11.2017 - 0.6.0 - added support for automatic install dependences on RHEL 6+ and Fedora 24+
 - 25.11.2017 - 0.5.0 - bug fixes and code refactoring
 - 25.11.2017 - 0.4.0 - added support for automatic install dependences on Debian 7.* and some bugfixes
