@@ -220,12 +220,12 @@ dnf install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoco
 
 MacOS:
 
-Install brew if not installed
+Install homebrew if not installed
 ```bash
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 ```
 
-Install packages via brew
+Install packages via homebrew
 ```bash
 brew install jpegoptim libjpeg pngcrush optipng advancecomp gifsicle jonof/kenutils/pngout
 ```
