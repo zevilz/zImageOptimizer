@@ -331,6 +331,19 @@ installDeps()
 
 		elif [ $PLATFORM == "macos" ]; then
 
+			# check /usr/local/Homebrew
+
+			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+				if [ -f "${BINARY_PATHS_ARRAY[$p]}/brew" ]; then
+					ISSET_brew=1
+				else
+					ISSET_brew=0
+				fi
+			done
+			if [ $ISSET_brew -eq 0 ]; then
+				/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+			fi
+
 			brew install $DEPS_MACOS -y
 
 		elif [ $PLATFORM == "freebsd" ]; then
