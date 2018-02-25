@@ -769,14 +769,14 @@ if [ $CHECK_ONLY -eq 0 ]; then
 			$SETCOLOR_SUCCESS
 			echo -n "found"
 			$SETCOLOR_NORMAL
-			echo -n " ($TIME_MARKER_FULL_PATH)."
+			echo -n "."
 			FIND_INCLUDE="-newer $TIME_MARKER_FULL_PATH"
 			TIME_MARKER_ISSET=1
 		else
 			$SETCOLOR_FAILURE
 			echo -n "not found"
 			$SETCOLOR_NORMAL
-			echo -n ". It will be created after optimizing ($TIME_MARKER_FULL_PATH)."
+			echo -n ". It will be created after optimizing."
 			FIND_INCLUDE=""
 			TIME_MARKER_ISSET=0
 		fi
