@@ -964,7 +964,11 @@ if ! [ -z "$IMAGES" ]; then
 #				fi
 #				if [ $PROGRESS_MEASURE == "num" ]; then
 					IMAGES_CURRENT=$(echo "$IMAGES_CURRENT+1" | bc)
-					echo -n "[$IMAGES_CURRENT/$IMAGES_TOTAL] "
+					echo -n "["
+					echo -n $IMAGES_CURRENT
+					echo -n "/"
+					echo -n $IMAGES_TOTAL
+					echo -n "] "
 #				fi
 #			fi
 			echo -n "$IMAGE"
@@ -1061,7 +1065,11 @@ if ! [ -z "$IMAGES" ]; then
 	readableSize $SAVED_SIZE
 	echo " / $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
 	
-	echo "Optimized/Total: $IMAGES_OPTIMIZED / $IMAGES_TOTAL files"
+	echo -n "Optimized/Total: "
+	echo -n $IMAGES_OPTIMIZED
+	echo -n " / "
+	echo -n $IMAGES_TOTAL
+	echo " files"
 	END_TIME=$(date +%s)
 	TOTAL_TIME=$(echo "$END_TIME-$START_TIME" | bc)
 	echo -n "Total optimizing time: "
