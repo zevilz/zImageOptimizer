@@ -571,6 +571,19 @@ readableSize()
 		echo -n $(echo "scale=1; $1/1024" | bc | sed 's/^\./0./')"Kb"
 	fi
 }
+readableTime()
+{
+	local T=$1
+	local D=$((T/60/60/24))
+	local H=$((T/60/60%24))
+	local M=$((T/60%60))
+	local S=$((T%60))
+	(( $D > 0 )) && printf '%d days ' $D
+	(( $H > 0 )) && printf '%d hours ' $H
+	(( $M > 0 )) && printf '%d minutes ' $M
+	(( $D > 0 || $H > 0 || $M > 0 )) && printf 'and '
+	printf '%d seconds\n' $S
+}
 
 usage()
 {
@@ -930,6 +943,7 @@ find "$DIR_PATH" $FIND_INCLUDE \( \
 
 IMAGES_OPTIMIZED=0
 IMAGES_CURRENT=0
+START_TIME=$(date +%s)
 
 if ! [ -z "$IMAGES" ]; then
 
@@ -1048,6 +1062,10 @@ if ! [ -z "$IMAGES" ]; then
 	echo " / $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
 	
 	echo "Optimized/Total: $IMAGES_OPTIMIZED / $IMAGES_TOTAL files"
+	END_TIME=$(date +%s)
+	TOTAL_TIME=$(echo "$END_TIME-$START_TIME" | bc)
+	echo -n "Total optimizing time: "
+	readableTime $TOTAL_TIME
 	)
 	updateTimeMarker
 
