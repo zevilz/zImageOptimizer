@@ -929,6 +929,7 @@ find "$DIR_PATH" $FIND_INCLUDE \( \
 \) | wc -l`
 
 IMAGES_OPTIMIZED=0
+IMAGES_CURRENT=0
 
 if ! [ -z "$IMAGES" ]; then
 
@@ -941,6 +942,17 @@ if ! [ -z "$IMAGES" ]; then
 	echo "$IMAGES" | ( while read IMAGE ; do
 
 		if [ $LESS -eq 0 ]; then
+#			if [ $SHOW_PROGRESS -eq 1 ]; then
+#				if [ $PROGRESS_MEASURE == "percent" ]; then
+#					IMAGES_CURRENT_PERCENT=$(echo "scale=2; $IMAGES_CURRENT*100/$IMAGES_TOTAL" | bc)
+#					IMAGES_CURRENT=$(echo "$IMAGES_CURRENT+1" | bc)
+#					echo -n "[$IMAGES_CURRENT_PERCENT%] "
+#				fi
+#				if [ $PROGRESS_MEASURE == "num" ]; then
+					IMAGES_CURRENT=$(echo "$IMAGES_CURRENT+1" | bc)
+					echo -n "[$IMAGES_CURRENT/$IMAGES_TOTAL] "
+#				fi
+#			fi
 			echo -n "$IMAGE"
 			echo -n '... '
 		fi
