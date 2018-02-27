@@ -1021,7 +1021,12 @@ if ! [ -z "$IMAGES" ]; then
 	#			optimConvert "$IMAGE"
 	#		fi
 
-			CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
+			if [[ "$OSTYPE" == "linux-gnu" ]]; then
+				CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
+			else
+				#CUR_OWNER=$(stat -f "%Su" "$IMAGE")
+				CUR_OWNER=$(ls -l "$IMAGE" | awk '{print $3":"$4}')
+			fi
 
 			if [ $ISSET_pngcrush -eq 1 ]; then
 				optimPngcrush "$IMAGE"
