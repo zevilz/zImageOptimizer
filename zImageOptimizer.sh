@@ -1023,9 +1023,11 @@ if ! [ -z "$IMAGES" ]; then
 
 			if [[ "$OSTYPE" == "linux-gnu" ]]; then
 				CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
+				CUR_PERMS=$(stat -c "%a" "$IMAGE")
 			else
 				#CUR_OWNER=$(stat -f "%Su" "$IMAGE")
 				CUR_OWNER=$(ls -l "$IMAGE" | awk '{print $3":"$4}')
+				CUR_PERMS=$(stat -f "%Lp" "$IMAGE")
 			fi
 
 			if [ $ISSET_pngcrush -eq 1 ]; then
@@ -1045,6 +1047,7 @@ if ! [ -z "$IMAGES" ]; then
 			fi
 
 			chown $CUR_OWNER "$IMAGE"
+			chmod $CUR_PERMS "$IMAGE"
 
 		elif [[ $EXT == "gif" || $EXT == "GIF" ]]; then
 
