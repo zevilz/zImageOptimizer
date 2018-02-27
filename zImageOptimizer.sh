@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.9.0
+# Version: 0.9.1
 
 # Define default vars
 BINARY_PATHS="/bin /usr/bin /usr/local/bin"
@@ -571,6 +571,29 @@ readableSize()
 		echo -n $(echo "scale=1; $1/1024" | bc | sed 's/^\./0./')"Kb"
 	fi
 }
+readableTime()
+{
+	local T=$1
+	local D=$((T/60/60/24))
+	local H=$((T/60/60%24))
+	local M=$((T/60%60))
+	local S=$((T%60))
+	(( $D > 0 )) && printf '%d days ' $D
+	(( $H > 0 )) && printf '%d hours ' $H
+	(( $M > 0 )) && printf '%d minutes ' $M
+	(( $D > 0 || $H > 0 || $M > 0 )) && printf 'and '
+	printf '%d seconds\n' $S
+}
+
+findExclude()
+{
+	if ! [ -z "$EXCLUDE_LIST" ]; then
+		EXCLUDE_LIST=$(echo $EXCLUDE_LIST | sed 's/,$//g' | sed 's/^,//g' | sed 's/,/\\|/g')
+		grep -v "$EXCLUDE_LIST"
+	else
+		grep -v ">>>>>>>>>>>>>"
+	fi
+}
 
 usage()
 {
@@ -624,6 +647,11 @@ usage()
 	echo "    --tmp-path=<dir>        Default value located in TMP_PATH variable "
 	echo "                            (/tmp by default)"
 	echo
+	echo "    -e <list>,              Comma separated parts list of paths to files "
+	echo "    --exclude=<list>        for exclusion from search. The script removes "
+	echo "                            from the search files in the full path of which "
+	echo "                            includes any value from the list."
+	echo
 }
 
 # Define inner default vars. Don't change them!
@@ -636,6 +664,7 @@ CHECK_ONLY=0
 PERIOD=0
 NEW_ONLY=0
 TIME_MARKER=""
+EXCLUDE_LIST=""
 PARAMS_NUM=$#
 
 while [ 1 ] ; do
@@ -658,6 +687,11 @@ while [ 1 ] ; do
 		TMP_PATH="${1#--tmp-path=}"
 	elif [ "$1" = "-tmp" ] ; then
 		shift ; TMP_PATH="$1"
+
+	elif [ "${1#--exclude=}" != "$1" ] ; then
+		EXCLUDE_LIST="${1#--exclude=}"
+	elif [ "$1" = "-e" ] ; then
+		shift ; EXCLUDE_LIST="$1"
 
 	elif [[ "$1" = "--help" || "$1" = "-h" ]] ; then
 		HELP=1
@@ -904,7 +938,7 @@ else
 	fi
 fi
 
-IMAGES=`\
+IMAGES=$(\
 find "$DIR_PATH" $FIND_INCLUDE \( \
 -name '*.jpg' -or \
 -name '*.jpeg' -or \
@@ -914,9 +948,9 @@ find "$DIR_PATH" $FIND_INCLUDE \( \
 -name '*.GIF' -or \
 -name '*.png' -or \
 -name '*.PNG' \
-\)`
+\) | findExclude)
 
-IMAGES_TOTAL=`\
+IMAGES_TOTAL=$(\
 find "$DIR_PATH" $FIND_INCLUDE \( \
 -name '*.jpg' -or \
 -name '*.jpeg' -or \
@@ -926,9 +960,11 @@ find "$DIR_PATH" $FIND_INCLUDE \( \
 -name '*.GIF' -or \
 -name '*.png' -or \
 -name '*.PNG' \
-\) | wc -l`
+\) | findExclude | wc -l)
 
 IMAGES_OPTIMIZED=0
+IMAGES_CURRENT=0
+START_TIME=$(date +%s)
 
 if ! [ -z "$IMAGES" ]; then
 
@@ -941,6 +977,21 @@ if ! [ -z "$IMAGES" ]; then
 	echo "$IMAGES" | ( while read IMAGE ; do
 
 		if [ $LESS -eq 0 ]; then
+#			if [ $SHOW_PROGRESS -eq 1 ]; then
+#				if [ $PROGRESS_MEASURE == "percent" ]; then
+#					IMAGES_CURRENT_PERCENT=$(echo "scale=2; $IMAGES_CURRENT*100/$IMAGES_TOTAL" | bc)
+#					IMAGES_CURRENT=$(echo "$IMAGES_CURRENT+1" | bc)
+#					echo -n "[$IMAGES_CURRENT_PERCENT%] "
+#				fi
+#				if [ $PROGRESS_MEASURE == "num" ]; then
+					IMAGES_CURRENT=$(echo "$IMAGES_CURRENT+1" | bc)
+					echo -n "["
+					echo -n $IMAGES_CURRENT
+					echo -n "/"
+					echo -n $IMAGES_TOTAL
+					echo -n "] "
+#				fi
+#			fi
 			echo -n "$IMAGE"
 			echo -n '... '
 		fi
@@ -1035,7 +1086,15 @@ if ! [ -z "$IMAGES" ]; then
 	readableSize $SAVED_SIZE
 	echo " / $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
 	
-	echo "Optimized/Total: $IMAGES_OPTIMIZED / $IMAGES_TOTAL files"
+	echo -n "Optimized/Total: "
+	echo -n $IMAGES_OPTIMIZED
+	echo -n " / "
+	echo -n $IMAGES_TOTAL
+	echo " files"
+	END_TIME=$(date +%s)
+	TOTAL_TIME=$(echo "$END_TIME-$START_TIME" | bc)
+	echo -n "Total optimizing time: "
+	readableTime $TOTAL_TIME
 	)
 	updateTimeMarker
 

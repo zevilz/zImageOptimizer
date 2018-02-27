@@ -43,16 +43,17 @@ bash zImageOptimizer.sh --path=/path/to/files
 ```
 
 Supported options:
-- -h (--help) - shows help,
-- -v (--version) - shows script version,
-- -p (--path) - specify full path to input directory (usage: `-p <dir> | --path=<dir>`),
-- -q (--quiet) - execute script without any questions and users actions,
-- -l (--less) - don't show optimizing process,
-- -c (--check-only) - check tools with an opportunity to install dependences,
-- -t (--time) - set period for which to look for files by last modified time (usage: `-t <period> | --time=<period>`),
-- -n (--new-only) - use time marker file for looking new images only,
-- -m (--time-marker) - set custom full path or custom filename of time marker file (usage: `-m <name|path> | --time-marker=<name|path>`),
-- -tmp (--tmp-path) - set custom directory full path for temporary files (usage: `-tmp <dir> | --tmp-path=<dir>`).
+- -h (--help) - shows help;
+- -v (--version) - shows script version;
+- -p (--path) - specify full path to input directory (usage: `-p <dir> | --path=<dir>`);
+- -q (--quiet) - execute script without any questions and users actions;
+- -l (--less) - don't show optimizing process;
+- -c (--check-only) - check tools with an opportunity to install dependences;
+- -t (--time) - set period for which to look for files by last modified time (usage: `-t <period> | --time=<period>`);
+- -n (--new-only) - use time marker file for looking new images only;
+- -m (--time-marker) - set custom full path or custom filename of time marker file (usage: `-m <name|path> | --time-marker=<name|path>`);
+- -tmp (--tmp-path) - set custom directory full path for temporary files (usage: `-tmp <dir> | --tmp-path=<dir>`);
+- -e (--exclude) - comma separated parts list of paths to files for exclusion from search (script removes from the search files in the full path of which includes any value from the list; usage: `-e <list> | --exclude=<list>`).
 
 Notices:
 - you may combine options;
@@ -62,6 +63,16 @@ Notices:
 - path in options -p(--path) and -tmp(--tmp-path) may be with and without slash in the end of path;
 - it is impossible to use together options -t(--time) and -n(--new-only);
 - you must use option -m(--time-marker) with -n(--new-only) option.
+
+### Excluding folders/files from search
+```bash
+bash zImageOptimizer.sh -p /path/to/files -e <list>
+```
+
+Example:
+```bash
+bash zImageOptimizer.sh -p /path/to/files -e /var/www/test.com,backup,uploads/orig.png
+```
 
 ### Usage with set period
 ```bash
@@ -317,7 +328,7 @@ You have not write access to directory /tmp. Tools djpeg and cjpeg use this dire
 - [ ] add SVG support
 - [ ] add logging
 - [ ] add Ansible playbook
-- [ ] add progrees indicator
+- [x] ~~add progrees indicator~~
 
 ## Contacts
 - telegram [@zevilz](https://t.me/zevilz) (EN|RU)
@@ -332,6 +343,7 @@ Do you like script? Would you like to support its development? Feel free to dona
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 27.02.2018 - 0.9.1 - [added new features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.1) and bugfixes
 - 25.02.2018 - 0.9.0 - added support for working script on MacOS 10.10+ with automatic install dependences
 - 24.02.2018 - 0.8.1 - [added new parameter, updated info after optimizing, small fixes and small code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.1)
 - 04.12.2017 - 0.8.0 - [new features, bugfixes and code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0)
