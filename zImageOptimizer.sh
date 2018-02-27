@@ -1021,6 +1021,8 @@ if ! [ -z "$IMAGES" ]; then
 	#			optimConvert "$IMAGE"
 	#		fi
 
+			CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
+
 			if [ $ISSET_pngcrush -eq 1 ]; then
 				optimPngcrush "$IMAGE"
 			fi
@@ -1036,6 +1038,8 @@ if ! [ -z "$IMAGES" ]; then
 			if [ $ISSET_advpng -eq 1 ]; then
 				optimAdvpng "$IMAGE"
 			fi
+
+			chown $CUR_OWNER "$IMAGE"
 
 		elif [[ $EXT == "gif" || $EXT == "GIF" ]]; then
 
