@@ -42,6 +42,8 @@ or
 bash zImageOptimizer.sh --path=/path/to/files
 ```
 
+Warning: if the owner of the files differs from the current user, png files will accept the rights of the current user.
+
 Supported options:
 - -h (--help) - shows help;
 - -v (--version) - shows script version;
