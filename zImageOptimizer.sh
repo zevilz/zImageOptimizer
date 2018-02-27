@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.9.0
+# Version: 0.9.1
 
 # Define default vars
 BINARY_PATHS="/bin /usr/bin /usr/local/bin"
@@ -585,6 +585,16 @@ readableTime()
 	printf '%d seconds\n' $S
 }
 
+findExclude()
+{
+	if ! [ -z "$EXCLUDE_LIST" ]; then
+		EXCLUDE_LIST=$(echo $EXCLUDE_LIST | sed 's/,$//g' | sed 's/^,//g' | sed 's/,/\\|/g')
+		grep -v "$EXCLUDE_LIST"
+	else
+		grep -v ">>>>>>>>>>>>>"
+	fi
+}
+
 usage()
 {
 	echo
@@ -637,6 +647,11 @@ usage()
 	echo "    --tmp-path=<dir>        Default value located in TMP_PATH variable "
 	echo "                            (/tmp by default)"
 	echo
+	echo "    -e <list>,              Comma separated parts list of paths to files "
+	echo "    --exclude=<list>        for exclusion from search. The script removes "
+	echo "                            from the search files in the full path of which "
+	echo "                            includes any value from the list."
+	echo
 }
 
 # Define inner default vars. Don't change them!
@@ -649,6 +664,7 @@ CHECK_ONLY=0
 PERIOD=0
 NEW_ONLY=0
 TIME_MARKER=""
+EXCLUDE_LIST=""
 PARAMS_NUM=$#
 
 while [ 1 ] ; do
@@ -671,6 +687,11 @@ while [ 1 ] ; do
 		TMP_PATH="${1#--tmp-path=}"
 	elif [ "$1" = "-tmp" ] ; then
 		shift ; TMP_PATH="$1"
+
+	elif [ "${1#--exclude=}" != "$1" ] ; then
+		EXCLUDE_LIST="${1#--exclude=}"
+	elif [ "$1" = "-e" ] ; then
+		shift ; EXCLUDE_LIST="$1"
 
 	elif [[ "$1" = "--help" || "$1" = "-h" ]] ; then
 		HELP=1
@@ -917,7 +938,7 @@ else
 	fi
 fi
 
-IMAGES=`\
+IMAGES=$(\
 find "$DIR_PATH" $FIND_INCLUDE \( \
 -name '*.jpg' -or \
 -name '*.jpeg' -or \
@@ -927,9 +948,9 @@ find "$DIR_PATH" $FIND_INCLUDE \( \
 -name '*.GIF' -or \
 -name '*.png' -or \
 -name '*.PNG' \
-\)`
+\) | findExclude)
 
-IMAGES_TOTAL=`\
+IMAGES_TOTAL=$(\
 find "$DIR_PATH" $FIND_INCLUDE \( \
 -name '*.jpg' -or \
 -name '*.jpeg' -or \
@@ -939,7 +960,7 @@ find "$DIR_PATH" $FIND_INCLUDE \( \
 -name '*.GIF' -or \
 -name '*.png' -or \
 -name '*.PNG' \
-\) | wc -l`
+\) | findExclude | wc -l)
 
 IMAGES_OPTIMIZED=0
 IMAGES_CURRENT=0
