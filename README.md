@@ -197,6 +197,7 @@ Tested on:
   - 11.1 amd64
 - MacOS
   - 10.10
+  - 10.11.6
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
