@@ -64,7 +64,7 @@ Notices:
 - it is impossible to use together options -t(--time) and -n(--new-only);
 - you must use option -m(--time-marker) with -n(--new-only) option.
 
-Recommendation: use [GNU Screen](https://en.wikipedia.org/wiki/GNU_Screen) or analogs if there are many images in input directory, because optimization can take a long time.
+Recommendation: use [GNU Screen](https://en.wikipedia.org/wiki/GNU_Screen) or analogs if there are many images in input directory, because optimization may can take a long time.
 
 ### Excluding folders/files from search
 ```bash
