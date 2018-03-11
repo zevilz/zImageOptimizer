@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.9.1
+# Version: 0.9.2
 
 # Define default vars
 BINARY_PATHS="/bin /usr/bin /usr/local/bin"
@@ -1021,6 +1021,15 @@ if ! [ -z "$IMAGES" ]; then
 	#			optimConvert "$IMAGE"
 	#		fi
 
+			if [[ "$OSTYPE" == "linux-gnu" ]]; then
+				CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
+				CUR_PERMS=$(stat -c "%a" "$IMAGE")
+			else
+				#CUR_OWNER=$(stat -f "%Su" "$IMAGE")
+				CUR_OWNER=$(ls -l "$IMAGE" | awk '{print $3":"$4}')
+				CUR_PERMS=$(stat -f "%Lp" "$IMAGE")
+			fi
+
 			if [ $ISSET_pngcrush -eq 1 ]; then
 				optimPngcrush "$IMAGE"
 			fi
@@ -1036,6 +1045,9 @@ if ! [ -z "$IMAGES" ]; then
 			if [ $ISSET_advpng -eq 1 ]; then
 				optimAdvpng "$IMAGE"
 			fi
+
+			chown $CUR_OWNER "$IMAGE"
+			chmod $CUR_PERMS "$IMAGE"
 
 		elif [[ $EXT == "gif" || $EXT == "GIF" ]]; then
 
