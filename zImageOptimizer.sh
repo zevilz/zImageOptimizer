@@ -515,7 +515,9 @@ optimMozjpeg()
 {
 	djpeg -outfile "$TMP_PATH/$(basename "$1")" "$1" > /dev/null
 	cjpeg -optimize -progressive -outfile "$1" "$TMP_PATH/$(basename "$1")" > /dev/null
-	rm "$TMP_PATH/$(basename "$1")"
+	if [ -f "$TMP_PATH/$(basename "$1")" ]; then
+		rm "$TMP_PATH/$(basename "$1")"
+	fi
 }
 
 optimConvert()
