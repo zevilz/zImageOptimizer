@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.9.2
+# Version: 0.9.3
 
 # Define default vars
 BINARY_PATHS="/bin /usr/bin /usr/local/bin"
@@ -1001,6 +1001,19 @@ if ! [ -z "$IMAGES" ]; then
 
 		EXT=${IMAGE##*.}
 
+		# save permissions
+		if [[ "$OSTYPE" == "linux-gnu" ]]; then
+			CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
+			CUR_PERMS=$(stat -c "%a" "$IMAGE")
+		else
+			#CUR_OWNER=$(stat -f "%Su" "$IMAGE")
+			CUR_OWNER=$(ls -l "$IMAGE" | awk '{print $3":"$4}')
+			CUR_PERMS=$(stat -f "%Lp" "$IMAGE")
+		fi
+
+		# save original file
+		cp -f "$IMAGE" "$TMP_PATH/$(basename "$IMAGE").bkp"
+
 		if [[ $EXT == "jpg" || $EXT == "jpeg" || $EXT == "JPG" || $EXT == "JPEG" ]]; then
 
 			if [ $ISSET_jpegoptim -eq 1 ]; then
@@ -1021,15 +1034,6 @@ if ! [ -z "$IMAGES" ]; then
 	#			optimConvert "$IMAGE"
 	#		fi
 
-			if [[ "$OSTYPE" == "linux-gnu" ]]; then
-				CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
-				CUR_PERMS=$(stat -c "%a" "$IMAGE")
-			else
-				#CUR_OWNER=$(stat -f "%Su" "$IMAGE")
-				CUR_OWNER=$(ls -l "$IMAGE" | awk '{print $3":"$4}')
-				CUR_PERMS=$(stat -f "%Lp" "$IMAGE")
-			fi
-
 			if [ $ISSET_pngcrush -eq 1 ]; then
 				optimPngcrush "$IMAGE"
 			fi
@@ -1046,9 +1050,6 @@ if ! [ -z "$IMAGES" ]; then
 				optimAdvpng "$IMAGE"
 			fi
 
-			chown $CUR_OWNER "$IMAGE"
-			chmod $CUR_PERMS "$IMAGE"
-
 		elif [[ $EXT == "gif" || $EXT == "GIF" ]]; then
 
 			if [ $ISSET_gifsicle -eq 1 ]; then
@@ -1059,13 +1060,28 @@ if ! [ -z "$IMAGES" ]; then
 
 		SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
 		SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
-		OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
-		if [ $(echo "scale=0; $SIZE_BEFORE/100" | bc) -le $(echo "scale=0; $SIZE_AFTER/100" | bc) ]; then
+
+		# compare original and optimized filesize
+		if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
+			OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
+			cp -f "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
+		else
+			OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
+		fi
+
+		# restore permissions
+		chown $CUR_OWNER "$IMAGE"
+		chmod $CUR_PERMS "$IMAGE"
+
+		# remove original file
+		rm "$TMP_PATH/$(basename "$IMAGE").bkp"
+
+		if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
 			if [ $LESS -eq 0 ]; then
 				$SETCOLOR_FAILURE
 				echo -n "[NOT OPTIMIZED]"
 				$SETCOLOR_NORMAL
-				echo -n " ${SIZE_AFTER_SCALED}Kb"
+				echo -n " ${SIZE_BEFORE_SCALED}Kb"
 			fi
 		else
 			if [ $LESS -eq 0 ]; then
