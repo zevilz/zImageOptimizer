@@ -347,7 +347,7 @@ Do you like the script? Would you like to support its development? Feel free to 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
-- 28.10.2018 - 0.9.4 - [added check for empty temporary file after decompress image with djpeg](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.4)
+- 28.10.2018 - 0.9.4 - [added check for empty temporary file after decompress images with djpeg](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.4)
 - 11.03.2018 - 0.9.3 - added a restoration of original files if their size is less or equal than optimized files size
 - 27.02.2018 - 0.9.2 - fixed PNG file permissions if the script does not work from files owner
 - 27.02.2018 - 0.9.1 - [added new features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.1) and bugfixes
