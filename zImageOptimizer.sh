@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.9.3
+# Version: 0.9.4
 
 # Define default vars
 BINARY_PATHS="/bin /usr/bin /usr/local/bin"
@@ -511,10 +511,25 @@ optimJpegtran()
 	jpegtran -progressive -copy none -optimize "$1" > /dev/null
 }
 
-optimMozjpeg()
+optimXjpeg()
 {
-	djpeg -outfile "$TMP_PATH/$(basename "$1")" "$1" > /dev/null
-	cjpeg -optimize -progressive -outfile "$1" "$TMP_PATH/$(basename "$1")" > /dev/null
+	# decompress in temp file
+	djpeg -outfile "$TMP_PATH/$(basename "$1")" "$1" > /dev/null 2>/dev/null
+
+	if [ -f "$TMP_PATH/$(basename "$1")" ]; then
+
+		SIZE_CHECK=$(wc -c "$TMP_PATH/$(basename "$1")" | awk '{print $1}')
+
+		if [[ SIZE_CHECK -gt 0 ]]; then
+
+			# compress and replace original file if temp file exists and not empty
+			cjpeg -optimize -progressive -outfile "$1" "$TMP_PATH/$(basename "$1")" > /dev/null
+
+		fi
+
+	fi
+
+	# cleanup
 	if [ -f "$TMP_PATH/$(basename "$1")" ]; then
 		rm "$TMP_PATH/$(basename "$1")"
 	fi
@@ -1027,7 +1042,7 @@ if ! [ -z "$IMAGES" ]; then
 			fi
 
 			if [[ $ISSET_djpeg -eq 1 && $ISSET_cjpeg -eq 1 ]]; then
-				optimMozjpeg "$IMAGE"
+				optimXjpeg "$IMAGE"
 			fi
 
 		elif [[ $EXT == "png" || $EXT == "PNG" ]]; then
