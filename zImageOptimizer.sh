@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.9.4
+# Version: 0.9.5
 
 # Define default vars
 BINARY_PATHS="/bin /usr/bin /usr/local/bin"
@@ -523,7 +523,7 @@ optimXjpeg()
 		if [[ SIZE_CHECK -gt 0 ]]; then
 
 			# compress and replace original file if temp file exists and not empty
-			cjpeg -optimize -progressive -outfile "$1" "$TMP_PATH/$(basename "$1")" > /dev/null
+			cjpeg -quality 100 -optimize -progressive -outfile "$1" "$TMP_PATH/$(basename "$1")" > /dev/null
 
 		fi
 
