@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.9.4-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.4) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.9.5-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.5) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a specified directory include subdirectories on Linux, MacOS and FreeBSD.
 
@@ -347,6 +347,7 @@ Do you like the script? Would you like to support its development? Feel free to 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 06.02.2018 - 0.9.5 - fixed quality in cjpeg/djpeg compression
 - 28.10.2018 - 0.9.4 - [added check for empty temporary file after decompress images with djpeg](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.4)
 - 11.03.2018 - 0.9.3 - added a restoration of original files if their size is less or equal than optimized files size
 - 27.02.2018 - 0.9.2 - fixed PNG file permissions if the script does not work from files owner
