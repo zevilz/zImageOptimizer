@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.9.5
+# Version: 0.9.6-dev
 
 # Define default vars
 BINARY_PATHS="/bin /usr/bin /usr/local/bin"
@@ -612,6 +612,22 @@ findExclude()
 	fi
 }
 
+includeExtensions()
+{
+	cd "$SCRIPT_PATH"
+	if ! [ -z "$1" ]; then
+		EXTF_LIST=$(grep -lr "^#\ Hook:\ $1$" extensions)
+		if ! [ -z "$EXTF_LIST" ]; then
+			echo "$EXTF_LIST" | while read EXTF; do
+				if [ $DEBUG -eq 1 ]; then
+					echo -n "including $(basename $EXTF)"
+				fi
+				. "$EXTF"
+			done
+		fi
+	fi
+}
+
 usage()
 {
 	echo
@@ -683,6 +699,7 @@ NEW_ONLY=0
 TIME_MARKER=""
 EXCLUDE_LIST=""
 PARAMS_NUM=$#
+SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 while [ 1 ] ; do
 	if [ "${1#--path=}" != "$1" ] ; then
@@ -993,6 +1010,9 @@ if ! [ -z "$IMAGES" ]; then
 
 	echo "$IMAGES" | ( while read IMAGE ; do
 
+		OPTIMIZE=1
+		COMPARE_SIZE_AFTER=1
+
 		if [ $LESS -eq 0 ]; then
 #			if [ $SHOW_PROGRESS -eq 1 ]; then
 #				if [ $PROGRESS_MEASURE == "percent" ]; then
@@ -1033,57 +1053,85 @@ if ! [ -z "$IMAGES" ]; then
 
 		if [[ $EXT == "jpg" || $EXT == "jpeg" || $EXT == "JPG" || $EXT == "JPEG" ]]; then
 
-			if [ $ISSET_jpegoptim -eq 1 ]; then
-				optimJpegoptim "$IMAGE"
+			includeExtensions optim-jpg-before
+
+			if [ $OPTIMIZE -eq 1 ]; then
+
+				if [ $ISSET_jpegoptim -eq 1 ]; then
+					optimJpegoptim "$IMAGE"
+				fi
+
+				if [ $ISSET_jpegtran -eq 1 ]; then
+					optimJpegtran "$IMAGE"
+				fi
+
+				if [[ $ISSET_djpeg -eq 1 && $ISSET_cjpeg -eq 1 ]]; then
+					optimXjpeg "$IMAGE"
+				fi
+
 			fi
 
-			if [ $ISSET_jpegtran -eq 1 ]; then
-				optimJpegtran "$IMAGE"
-			fi
-
-			if [[ $ISSET_djpeg -eq 1 && $ISSET_cjpeg -eq 1 ]]; then
-				optimXjpeg "$IMAGE"
-			fi
+			includeExtensions optim-jpg-after
 
 		elif [[ $EXT == "png" || $EXT == "PNG" ]]; then
 
-	#		if [ $ISSET_convert -eq 1 ]; then
-	#			optimConvert "$IMAGE"
-	#		fi
+			includeExtensions optim-png-before
 
-			if [ $ISSET_pngcrush -eq 1 ]; then
-				optimPngcrush "$IMAGE"
+			if [ $OPTIMIZE -eq 1 ]; then
+
+		#		if [ $ISSET_convert -eq 1 ]; then
+		#			optimConvert "$IMAGE"
+		#		fi
+
+				if [ $ISSET_pngcrush -eq 1 ]; then
+					optimPngcrush "$IMAGE"
+				fi
+
+				if [ $ISSET_optipng -eq 1 ]; then
+					optimOptipng "$IMAGE"
+				fi
+
+				if [ $ISSET_pngout -eq 1 ]; then
+					optimPngout "$IMAGE"
+				fi
+
+				if [ $ISSET_advpng -eq 1 ]; then
+					optimAdvpng "$IMAGE"
+				fi
+
 			fi
 
-			if [ $ISSET_optipng -eq 1 ]; then
-				optimOptipng "$IMAGE"
-			fi
-
-			if [ $ISSET_pngout -eq 1 ]; then
-				optimPngout "$IMAGE"
-			fi
-
-			if [ $ISSET_advpng -eq 1 ]; then
-				optimAdvpng "$IMAGE"
-			fi
+			includeExtensions optim-png-after
 
 		elif [[ $EXT == "gif" || $EXT == "GIF" ]]; then
 
-			if [ $ISSET_gifsicle -eq 1 ]; then
-				optimGifsicle "$IMAGE"
+			includeExtensions optim-gif-before
+
+			if [ $OPTIMIZE -eq 1 ]; then
+
+				if [ $ISSET_gifsicle -eq 1 ]; then
+					optimGifsicle "$IMAGE"
+				fi
+
 			fi
+
+			includeExtensions optim-gif-after
 
 		fi
 
 		SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
 		SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
 
-		# compare original and optimized filesize
-		if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-			OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
-			cp -f "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
-		else
-			OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
+		if [ $COMPARE_SIZE_AFTER -eq 1 ]; then
+
+			# compare original and optimized filesize
+			if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
+				OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
+				cp -f "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
+			else
+				OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
+			fi
+
 		fi
 
 		# restore permissions
