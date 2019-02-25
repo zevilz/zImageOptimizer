@@ -616,9 +616,10 @@ includeExtensions()
 {
 	cd "$SCRIPT_PATH"
 	if ! [ -z "$1" ]; then
-		EXTF_LIST=$(grep -lr "^#\ Hook:\ $1$" extensions)
+		local EXTF_LIST=$(grep -lr "^#\ Hook:\ $1$" extensions | tr '\n' ' ' | sed 's/\ $//')
 		if ! [ -z "$EXTF_LIST" ]; then
-			echo "$EXTF_LIST" | while read EXTF; do
+			local EXTF_ARR=($EXTF_LIST)
+			for EXTF in $EXTF_ARR; do
 				if [ $DEBUG -eq 1 ]; then
 					echo -n "including $(basename $EXTF)"
 				fi
