@@ -332,6 +332,10 @@ You have not write access to the directory /tmp. Tools djpeg and cjpeg use this 
 - [ ] add logging
 - [ ] add Ansible playbook
 - [x] ~~add progrees indicator~~
+- [ ] add extensions support
+- [ ] add a lock file to prevent cyclical optimization with long image optimization
+- [ ] add repository for debian/ubuntu
+- [ ] add repository for rhel/centos/fedora
 
 ## Contacts
 - telegram [@zevilz](https://t.me/zevilz) (EN|RU)
