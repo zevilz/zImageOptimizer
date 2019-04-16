@@ -170,12 +170,15 @@ installDeps()
 		PLATFORM_ARCH=$(getconf LONG_BIT)
 
 		PLATFORM_VERSION=$(freebsd-version | cut -d '-' -f1)
-		SUPPORTED_VERSIONS_FREEBSD_ARRAY=($SUPPORTED_VERSIONS_FREEBSD)
-		for v in "${!SUPPORTED_VERSIONS_FREEBSD_ARRAY[@]}" ; do
-			if [ $PLATFORM_VERSION == "${SUPPORTED_VERSIONS_FREEBSD_ARRAY[$v]}" ]; then
-				PLATFORM_SUPPORT=1
-			fi
-		done
+		if [[ $(echo $PLATFORM_VERSION | cut -d '.' -f1) -ge $MIN_VERSION_FREEBSD ]]; then
+			PLATFORM_SUPPORT=1
+		fi
+		#SUPPORTED_VERSIONS_FREEBSD_ARRAY=($SUPPORTED_VERSIONS_FREEBSD)
+		#for v in "${!SUPPORTED_VERSIONS_FREEBSD_ARRAY[@]}" ; do
+		#	if [ $PLATFORM_VERSION == "${SUPPORTED_VERSIONS_FREEBSD_ARRAY[$v]}" ]; then
+		#		PLATFORM_SUPPORT=1
+		#	fi
+		#done
 
 	fi
 
@@ -911,7 +914,8 @@ MIN_VERSION_CENTOS=6
 MIN_VERSION_MACOS=10
 
 # Register spacese separated supported versions of FreeBSD.
-SUPPORTED_VERSIONS_FREEBSD="10.3 10.4 11.1"
+#SUPPORTED_VERSIONS_FREEBSD="10.3 10.4 11.1"
+MIN_VERSION_FREEBSD=10
 
 # Hook: after-init-vars
 includeExtensions after-init-vars
