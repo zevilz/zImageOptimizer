@@ -1192,34 +1192,9 @@ fi
 
 # Find images
 IMAGES=$(find "$DIR_PATH" $FIND_INCLUDE \( $FIND_NAMES \) | findExclude)
-#IMAGES=$(\
-#find "$DIR_PATH" $FIND_INCLUDE \( \
-#-name '*.jpg' -or \
-#-name '*.jpeg' -or \
-#-name '*.gif' -or \
-#-name '*.JPG' -or \
-#-name '*.JPEG' -or \
-#-name '*.GIF' -or \
-#-name '*.png' -or \
-#-name '*.PNG' \
-#\) | findExclude)
 
 # Num of images
-IMAGES_TOTAL=$(find "$DIR_PATH" $FIND_INCLUDE \( $FIND_NAMES \) | findExclude | wc -l)
-#IMAGES_TOTAL=$(\
-#find "$DIR_PATH" $FIND_INCLUDE \( \
-#-name '*.jpg' -or \
-#-name '*.jpeg' -or \
-#-name '*.gif' -or \
-#-name '*.JPG' -or \
-#-name '*.JPEG' -or \
-#-name '*.GIF' -or \
-#-name '*.png' -or \
-#-name '*.PNG' \
-#\) | findExclude | wc -l)
-
-#echo $IMAGES_TOTAL
-#exit
+IMAGES_TOTAL=$(echo "$IMAGES" | wc -l)
 
 # Preoptimize vars
 IMAGES_OPTIMIZED=0
