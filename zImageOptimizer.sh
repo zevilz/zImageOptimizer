@@ -559,11 +559,6 @@ optimXjpeg()
 	fi
 }
 
-optimConvert()
-{
-	convert $1 -background Black -alpha Background $1 > /dev/null
-}
-
 optimPngcrush()
 {
 	IMAGE="$1"
@@ -653,6 +648,15 @@ includeExtensions()
 	fi
 }
 
+joinBy()
+{
+	local d=$1
+	shift
+	echo -n "$1"
+	shift
+	printf "%s" "${@/#/$d}"
+}
+
 createLockFile()
 {
 	echo
@@ -662,17 +666,6 @@ removeLockFile()
 {
 	echo
 }
-
-#arrayContains () { 
-#	local list=$1[@]
-#	local elem=$2
-#	for i in "${!list}"; do
-#		if [ "$i" == "${elem}" ] ; then
-#			return 0
-#		fi
-#	done
-#	return 1
-#}
 
 usage()
 {
@@ -750,6 +743,22 @@ ALL_FOUND=1
 PARAMS_NUM=$#
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
+# Define CRON and direct using styling
+if [ "Z$(ps o comm="" -p $(ps o ppid="" -p $$))" == "Zcron" -o \
+     "Z$(ps o comm="" -p $(ps o ppid="" -p $(ps o ppid="" -p $$)))" == "Zcron" ]; then
+	SETCOLOR_SUCCESS=
+	SETCOLOR_FAILURE=
+	SETCOLOR_NORMAL=
+	BOLD_TEXT=
+	NORMAL_TEXT=
+else
+	SETCOLOR_SUCCESS="echo -en \\033[1;32m"
+	SETCOLOR_FAILURE="echo -en \\033[1;31m"
+	SETCOLOR_NORMAL="echo -en \\033[0;39m"
+	BOLD_TEXT=$(tput bold)
+	NORMAL_TEXT=$(tput sgr0)
+fi
+
 # Register image types
 declare -A IMG_TYPES_ARR
 IMG_TYPES_ARR[JPG]="JPG"
@@ -758,6 +767,17 @@ IMG_TYPES_ARR[GIF]="GIF"
 
 # Hook: after-init-image-types
 includeExtensions after-init-image-types
+
+# Check images types array
+if [ ${#IMG_TYPES_ARR[@]} -eq 0 ]; then
+	echo
+	$SETCOLOR_FAILURE
+	echo "Not found any registered images types!"
+	echo "Please check your extensions!"
+	$SETCOLOR_NORMAL
+	echo
+	exit 1
+fi
 
 # Register tools
 declare -A TOOLS
@@ -774,11 +794,56 @@ fi
 # Hook: after-init-tools
 includeExtensions after-init-tools
 
+# Check tools array
+if [ ${#TOOLS[@]} -eq 0 ]; then
+	echo
+	$SETCOLOR_FAILURE
+	echo "Not found any registered optimizing tools!"
+	echo "Please check your extensions!"
+	$SETCOLOR_NORMAL
+	echo
+	exit 1
+fi
+
 # Generate tools array
 TOOLS_ARRAY=($(echo ${TOOLS[@]}))
 
-# Hook: after-init-tools-array
-includeExtensions after-init-tools-array
+# Register images extensions
+declare -A FIND_EXT_ARR
+FIND_EXT=
+if ! [ -z "${IMG_TYPES_ARR[JPG]}" ]; then
+	#FIND_EXT_ARR[JPG]='*.JPG *.JPEG *.jpg *.jpeg'
+	FIND_EXT_ARR[JPG]='JPG JPEG jpg jpeg'
+fi
+if ! [ -z "${IMG_TYPES_ARR[PNG]}" ]; then
+	#FIND_EXT_ARR[PNG]='*.PNG *.png'
+	FIND_EXT_ARR[PNG]='PNG png'
+fi
+if ! [ -z "${IMG_TYPES_ARR[GIF]}" ]; then
+	#FIND_EXT_ARR[GIF]='*.GIF *.gif'
+	FIND_EXT_ARR[GIF]='GIF gif'
+fi
+
+# Hook: after-init-img-ext
+includeExtensions after-init-img-ext
+
+# Check images extensions array
+if [ ${#FIND_EXT_ARR[@]} -eq 0 ]; then
+	echo
+	$SETCOLOR_FAILURE
+	echo "Not found any registered images extensions!"
+	echo "Please check your extensions!"
+	$SETCOLOR_NORMAL
+	echo
+	exit 1
+fi
+
+# Generate names for find command
+for FIND_EXT_ITEM in "${FIND_EXT_ARR[@]}"; do
+	FIND_EXT="${FIND_EXT} ${FIND_EXT_ITEM}"
+done
+#FIND_NAMES=$(echo -n '-name '; joinBy ' -or -name ' $FIND_EXT)
+FIND_NAMES=$(echo -n '-name *.'; joinBy ' -or -name *.' $FIND_EXT)
 
 # Register OS-based dependencies
 declare -A DEPS_DEBIAN_ARR
@@ -846,18 +911,6 @@ MIN_VERSION_MACOS=10
 
 # Register spacese separated supported versions of FreeBSD.
 SUPPORTED_VERSIONS_FREEBSD="10.3 10.4 11.1"
-
-# Define CRON and direct using styling
-if [ "Z$(ps o comm="" -p $(ps o ppid="" -p $$))" == "Zcron" -o \
-     "Z$(ps o comm="" -p $(ps o ppid="" -p $(ps o ppid="" -p $$)))" == "Zcron" ]; then
-	SETCOLOR_SUCCESS=
-	SETCOLOR_FAILURE=
-	SETCOLOR_NORMAL=
-else
-	SETCOLOR_SUCCESS="echo -en \\033[1;32m"
-	SETCOLOR_FAILURE="echo -en \\033[1;31m"
-	SETCOLOR_NORMAL="echo -en \\033[0;39m"
-fi
 
 # Hook: after-init-vars
 includeExtensions after-init-vars
@@ -1138,30 +1191,35 @@ else
 fi
 
 # Find images
-IMAGES=$(\
-find "$DIR_PATH" $FIND_INCLUDE \( \
--name '*.jpg' -or \
--name '*.jpeg' -or \
--name '*.gif' -or \
--name '*.JPG' -or \
--name '*.JPEG' -or \
--name '*.GIF' -or \
--name '*.png' -or \
--name '*.PNG' \
-\) | findExclude)
+IMAGES=$(find "$DIR_PATH" $FIND_INCLUDE \( $FIND_NAMES \) | findExclude)
+#IMAGES=$(\
+#find "$DIR_PATH" $FIND_INCLUDE \( \
+#-name '*.jpg' -or \
+#-name '*.jpeg' -or \
+#-name '*.gif' -or \
+#-name '*.JPG' -or \
+#-name '*.JPEG' -or \
+#-name '*.GIF' -or \
+#-name '*.png' -or \
+#-name '*.PNG' \
+#\) | findExclude)
 
 # Num of images
-IMAGES_TOTAL=$(\
-find "$DIR_PATH" $FIND_INCLUDE \( \
--name '*.jpg' -or \
--name '*.jpeg' -or \
--name '*.gif' -or \
--name '*.JPG' -or \
--name '*.JPEG' -or \
--name '*.GIF' -or \
--name '*.png' -or \
--name '*.PNG' \
-\) | findExclude | wc -l)
+IMAGES_TOTAL=$(find "$DIR_PATH" $FIND_INCLUDE \( $FIND_NAMES \) | findExclude | wc -l)
+#IMAGES_TOTAL=$(\
+#find "$DIR_PATH" $FIND_INCLUDE \( \
+#-name '*.jpg' -or \
+#-name '*.jpeg' -or \
+#-name '*.gif' -or \
+#-name '*.JPG' -or \
+#-name '*.JPEG' -or \
+#-name '*.GIF' -or \
+#-name '*.png' -or \
+#-name '*.PNG' \
+#\) | findExclude | wc -l)
+
+#echo $IMAGES_TOTAL
+#exit
 
 # Preoptimize vars
 IMAGES_OPTIMIZED=0
@@ -1230,6 +1288,7 @@ if ! [ -z "$IMAGES" ]; then
 		# JPEG
 		if [[ $EXT == "jpg" || $EXT == "jpeg" || $EXT == "JPG" || $EXT == "JPEG" ]]; then
 
+			# Hook: optim-jpg-before
 			includeExtensions optim-jpg-before
 
 			if [ $OPTIMIZE -eq 1 ]; then
@@ -1248,18 +1307,16 @@ if ! [ -z "$IMAGES" ]; then
 
 			fi
 
+			# Hook: optim-jpg-after
 			includeExtensions optim-jpg-after
 
 		# PNG
 		elif [[ $EXT == "png" || $EXT == "PNG" ]]; then
 
+			# Hook: optim-png-before
 			includeExtensions optim-png-before
 
 			if [ $OPTIMIZE -eq 1 ]; then
-
-		#		if [[ $ISSET_convert -eq 1 ]]; then
-		#			optimConvert "$IMAGE"
-		#		fi
 
 				if [[ $ISSET_pngcrush -eq 1 ]]; then
 					optimPngcrush "$IMAGE"
@@ -1279,11 +1336,13 @@ if ! [ -z "$IMAGES" ]; then
 
 			fi
 
+			# Hook: optim-png-after
 			includeExtensions optim-png-after
 
 		# GIF
 		elif [[ $EXT == "gif" || $EXT == "GIF" ]]; then
 
+			# Hook: optim-gif-before
 			includeExtensions optim-gif-before
 
 			if [ $OPTIMIZE -eq 1 ]; then
@@ -1294,6 +1353,7 @@ if ! [ -z "$IMAGES" ]; then
 
 			fi
 
+			# Hook: optim-gif-after
 			includeExtensions optim-gif-after
 
 		fi
