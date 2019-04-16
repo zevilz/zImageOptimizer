@@ -173,7 +173,6 @@ installDeps()
 		if [[ $(echo $PLATFORM_VERSION | cut -d '.' -f1) -ge $MIN_VERSION_FREEBSD ]]; then
 			PLATFORM_SUPPORT=1
 		fi
-		echo $(echo $PLATFORM_VERSION | cut -d '.' -f1)
 		#SUPPORTED_VERSIONS_FREEBSD_ARRAY=($SUPPORTED_VERSIONS_FREEBSD)
 		#for v in "${!SUPPORTED_VERSIONS_FREEBSD_ARRAY[@]}" ; do
 		#	if [ $PLATFORM_VERSION == "${SUPPORTED_VERSIONS_FREEBSD_ARRAY[$v]}" ]; then
