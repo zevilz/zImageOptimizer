@@ -741,6 +741,7 @@ TIME_MARKER=""
 EXCLUDE_LIST=""
 ALL_FOUND=1
 PARAMS_NUM=$#
+CUR_DIR=$(pwd)
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 # Define CRON and direct using styling
@@ -1417,4 +1418,7 @@ else
 fi
 
 echo
+
+cd "$CUR_DIR"
+
 exit 0
