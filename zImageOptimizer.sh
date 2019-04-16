@@ -634,7 +634,7 @@ findExclude()
 includeExtensions()
 {
 	cd "$SCRIPT_PATH"
-	if ! [ -z "$1" ]; then
+	if ! [ -z "$1" ] && [ -d extensions ]; then
 		local EXTF_LIST=$(grep -lr "^#\ Hook:\ $1$" extensions | tr '\n' ' ' | sed 's/\ $//')
 		if ! [ -z "$EXTF_LIST" ]; then
 			local EXTF_ARR=("$EXTF_LIST")
