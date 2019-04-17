@@ -175,7 +175,7 @@ Supported on:
   - RHEL 6+
   - CentOS 6+
   - Fedora 24+
-- FreeBSD 10.3 / 10.4 / 11.1 (i686/amd64)
+- FreeBSD 10+ (i686/amd64)
 - MacOS 10.10+
 
 Tested on:
@@ -185,6 +185,7 @@ Tested on:
   - Debian 9.2 amd64
   - Ubuntu 14.04.5 amd64
   - Ubuntu 16.04.3 amd64
+  - Ubuntu 18.04.2 amd64
 - RPM-based linux distributions
   - RHEL 6.9 i686 minimal
   - RHEL 7.4 x86_64 server
@@ -197,6 +198,8 @@ Tested on:
 - FreeBSD
   - 10.3 i686
   - 11.1 amd64
+  - 11.2 amd64
+  - 12.0 amd64
 - MacOS
   - 10.10
   - 10.11.6
@@ -332,6 +335,10 @@ You have not write access to the directory /tmp. Tools djpeg and cjpeg use this 
 - [ ] add logging
 - [ ] add Ansible playbook
 - [x] ~~add progrees indicator~~
+- [x] ~~add extensions support~~
+- [ ] add a lock file to prevent cyclical optimization with long image optimization
+- [ ] add repository for debian/ubuntu
+- [ ] add repository for rhel/centos/fedora
 
 ## Contacts
 - telegram [@zevilz](https://t.me/zevilz) (EN|RU)
