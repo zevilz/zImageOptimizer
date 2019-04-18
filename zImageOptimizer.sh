@@ -746,6 +746,8 @@ ALL_FOUND=1
 PARAMS_NUM=$#
 CUR_DIR=$(pwd)
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
+TIME_MARKER_PATH=""
+TIME_MARKER_NAME=".timeMarker"
 
 # Define CRON and direct using styling
 if [ "Z$(ps o comm="" -p $(ps o ppid="" -p $$))" == "Zcron" -o \
@@ -762,6 +764,71 @@ else
 	BOLD_TEXT=$(tput bold)
 	NORMAL_TEXT=$(tput sgr0)
 fi
+
+# Hook: after-init-default-vars
+includeExtensions after-init-default-vars
+
+# Parse options
+while [ 1 ] ; do
+	if [ "${1#--path=}" != "$1" ] ; then
+		DIR_PATH="${1#--path=}"
+	elif [ "$1" = "-p" ] ; then
+		shift ; DIR_PATH="$1"
+
+	elif [ "${1#--time=}" != "$1" ] ; then
+		PERIOD="${1#--time=}"
+	elif [ "$1" = "-t" ] ; then
+		shift ; PERIOD="$1"
+
+	elif [ "${1#--time-marker=}" != "$1" ] ; then
+		TIME_MARKER="${1#--time-marker=}"
+	elif [ "$1" = "-m" ] ; then
+		shift ; TIME_MARKER="$1"
+
+	elif [ "${1#--tmp-path=}" != "$1" ] ; then
+		TMP_PATH="${1#--tmp-path=}"
+	elif [ "$1" = "-tmp" ] ; then
+		shift ; TMP_PATH="$1"
+
+	elif [ "${1#--exclude=}" != "$1" ] ; then
+		EXCLUDE_LIST="${1#--exclude=}"
+	elif [ "$1" = "-e" ] ; then
+		shift ; EXCLUDE_LIST="$1"
+
+	elif [[ "$1" = "--help" || "$1" = "-h" ]] ; then
+		HELP=1
+
+	elif [[ "$1" = "--version" || "$1" = "-v" ]] ; then
+		SHOW_VERSION=1
+
+	elif [[ "$1" = "--quiet" || "$1" = "-q" ]] ; then
+		NO_ASK=1
+
+	elif [[ "$1" = "--less" || "$1" = "-l" ]] ; then
+		LESS=1
+
+	elif [[ "$1" = "--check-only" || "$1" = "-c" ]] ; then
+		CHECK_ONLY=1
+
+	elif [[ "$1" = "--new-only" || "$1" = "-n" ]] ; then
+		NEW_ONLY=1
+
+	elif [[ "$1" = "--debug" || "$1" = "-d" ]] ; then
+		DEBUG=1
+
+	elif [ -z "$1" ] ; then
+		break
+	else
+		echo
+		echo "Unknown key detected!" 1>&2
+		usage
+		exit 1
+	fi
+	shift
+done
+
+# Hook: after-parse-options
+includeExtensions after-parse-options
 
 # Register image types
 declare -A IMG_TYPES_ARR
@@ -899,10 +966,6 @@ BINARY_PATHS_ARRAY=($BINARY_PATHS)
 # Hook: after-init-binary-paths-array
 includeExtensions after-init-binary-paths-array
 
-# Register time marker vars
-TIME_MARKER_PATH=""
-TIME_MARKER_NAME=".timeMarker"
-
 # Register min versions of Linux distros. Must be integer.
 MIN_VERSION_DEBIAN=7
 MIN_VERSION_UBUNTU=14
@@ -919,67 +982,6 @@ MIN_VERSION_FREEBSD=10
 
 # Hook: after-init-vars
 includeExtensions after-init-vars
-
-# Parse options
-while [ 1 ] ; do
-	if [ "${1#--path=}" != "$1" ] ; then
-		DIR_PATH="${1#--path=}"
-	elif [ "$1" = "-p" ] ; then
-		shift ; DIR_PATH="$1"
-
-	elif [ "${1#--time=}" != "$1" ] ; then
-		PERIOD="${1#--time=}"
-	elif [ "$1" = "-t" ] ; then
-		shift ; PERIOD="$1"
-
-	elif [ "${1#--time-marker=}" != "$1" ] ; then
-		TIME_MARKER="${1#--time-marker=}"
-	elif [ "$1" = "-m" ] ; then
-		shift ; TIME_MARKER="$1"
-
-	elif [ "${1#--tmp-path=}" != "$1" ] ; then
-		TMP_PATH="${1#--tmp-path=}"
-	elif [ "$1" = "-tmp" ] ; then
-		shift ; TMP_PATH="$1"
-
-	elif [ "${1#--exclude=}" != "$1" ] ; then
-		EXCLUDE_LIST="${1#--exclude=}"
-	elif [ "$1" = "-e" ] ; then
-		shift ; EXCLUDE_LIST="$1"
-
-	elif [[ "$1" = "--help" || "$1" = "-h" ]] ; then
-		HELP=1
-
-	elif [[ "$1" = "--version" || "$1" = "-v" ]] ; then
-		SHOW_VERSION=1
-
-	elif [[ "$1" = "--quiet" || "$1" = "-q" ]] ; then
-		NO_ASK=1
-
-	elif [[ "$1" = "--less" || "$1" = "-l" ]] ; then
-		LESS=1
-
-	elif [[ "$1" = "--check-only" || "$1" = "-c" ]] ; then
-		CHECK_ONLY=1
-
-	elif [[ "$1" = "--new-only" || "$1" = "-n" ]] ; then
-		NEW_ONLY=1
-
-	elif [[ "$1" = "--debug" || "$1" = "-d" ]] ; then
-		DEBUG=1
-
-	elif [ -z "$1" ] ; then
-		break
-	else
-		echo
-		echo "Unknown key detected!" 1>&2
-		usage
-		exit 1
-	fi
-	shift
-done
-
-includeExtensions after-parse-params
 
 # Show help
 if [[ $HELP -eq 1 || $PARAMS_NUM -eq 0 ]]; then
