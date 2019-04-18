@@ -15,6 +15,9 @@ Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a s
 - supports for search of images changed in a certain period of time;
 - supports for use of the special time marker for search only new files (based on last modify time).
 
+## Requirements
+- bash 4+
+
 ## Tools
 JPEG:
 - [jpegoptim](http://www.kokkonen.net/tjko/projects.html)
@@ -204,6 +207,7 @@ Tested on:
 - MacOS
   - 10.10
   - 10.11.6
+  - 10.13.6
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
@@ -246,6 +250,26 @@ Install homebrew if not installed
 Install packages via homebrew
 ```bash
 brew install jpegoptim libjpeg pngcrush optipng advancecomp gifsicle jonof/kenutils/pngout
+```
+
+Install new bash version (default 3.* version not supported) via homebrew
+```bash
+brew install bash
+```
+
+Add path to new bash version in `/private/etc/shells`
+```bash
+/usr/local/bin/bash
+```
+
+Add alias to new bash version in `~/.bash_profile`
+```bash
+alias bash="/usr/local/bin/bash"
+```
+
+Logout and login again for enable new alias or add permanent alias for curent session
+```bash
+alias bash="/usr/local/bin/bash"
 ```
 
 FreeBSD:
