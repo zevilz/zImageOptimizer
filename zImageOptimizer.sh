@@ -495,8 +495,12 @@ installBashMacOS()
 	if [ -z $(grep '/usr/local/bin/bash' /private/etc/shells) ]; then
 		$SUDO bash -c "echo '/usr/local/bin/bash' >> /private/etc/shells"
 	fi
-	if [ -z $(grep 'alias bash="/usr/local/bin/bash"' ~/.bash_profile) ]; then
-		bash -c "echo 'alias bash=\"/usr/local/bin/bash\"' >> ~/.bash_profile"
+	if [ -f '~/.bash_profile' ]; then
+		if [ -z $(grep 'alias bash="/usr/local/bin/bash"' ~/.bash_profile) ]; then
+			bash -c "echo 'alias bash=\"/usr/local/bin/bash\"' >> ~/.bash_profile"
+		fi
+	else
+		bash -c "echo 'alias bash=\"/usr/local/bin/bash\"' > ~/.bash_profile"
 	fi
 }
 
