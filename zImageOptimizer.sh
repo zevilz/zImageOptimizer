@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.9.6-dev
+# Version: 0.9.6
 
 sayWait()
 {
@@ -173,12 +173,6 @@ installDeps()
 		if [[ $(echo $PLATFORM_VERSION | cut -d '.' -f1) -ge $MIN_VERSION_FREEBSD ]]; then
 			PLATFORM_SUPPORT=1
 		fi
-		#SUPPORTED_VERSIONS_FREEBSD_ARRAY=($SUPPORTED_VERSIONS_FREEBSD)
-		#for v in "${!SUPPORTED_VERSIONS_FREEBSD_ARRAY[@]}" ; do
-		#	if [ $PLATFORM_VERSION == "${SUPPORTED_VERSIONS_FREEBSD_ARRAY[$v]}" ]; then
-		#		PLATFORM_SUPPORT=1
-		#	fi
-		#done
 
 	fi
 
@@ -956,15 +950,12 @@ TOOLS_ARRAY=($(echo ${TOOLS[@]}))
 declare -A FIND_EXT_ARR
 FIND_EXT=
 if ! [ -z "${IMG_TYPES_ARR[JPG]}" ]; then
-	#FIND_EXT_ARR[JPG]='*.JPG *.JPEG *.jpg *.jpeg'
 	FIND_EXT_ARR[JPG]='JPG JPEG jpg jpeg'
 fi
 if ! [ -z "${IMG_TYPES_ARR[PNG]}" ]; then
-	#FIND_EXT_ARR[PNG]='*.PNG *.png'
 	FIND_EXT_ARR[PNG]='PNG png'
 fi
 if ! [ -z "${IMG_TYPES_ARR[GIF]}" ]; then
-	#FIND_EXT_ARR[GIF]='*.GIF *.gif'
 	FIND_EXT_ARR[GIF]='GIF gif'
 fi
 
@@ -986,7 +977,6 @@ fi
 for FIND_EXT_ITEM in "${FIND_EXT_ARR[@]}"; do
 	FIND_EXT="${FIND_EXT} ${FIND_EXT_ITEM}"
 done
-#FIND_NAMES=$(echo -n '-name '; joinBy ' -or -name ' $FIND_EXT)
 FIND_NAMES=$(echo -n '-name *.'; joinBy ' -or -name *.' $FIND_EXT)
 
 # Register OS-based dependencies
@@ -1036,8 +1026,7 @@ MIN_VERSION_CENTOS=6
 # Register min version MacOS (second digit; ex. 10.12.2 == 12).
 MIN_VERSION_MACOS=10
 
-# Register spacese separated supported versions of FreeBSD.
-#SUPPORTED_VERSIONS_FREEBSD="10.3 10.4 11.1"
+# Register min version of FreeBSD.
 MIN_VERSION_FREEBSD=10
 
 # Hook: after-init-vars
