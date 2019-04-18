@@ -199,7 +199,7 @@ installDeps()
 	fi
 
 	if [ $PLATFORM_SUPPORT -eq 1 ]; then
-		echo "Installing dependences..."
+		echo "Installing dependencies..."
 
 		CUR_USER=$(whoami)
 		if [ $CUR_USER == "root" ]; then
@@ -354,19 +354,7 @@ installDeps()
 			# Hook: before-install-deps-macos
 			includeExtensions before-install-deps-macos
 
-			# check /usr/local/Homebrew
-
-			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-				if [ -f "${BINARY_PATHS_ARRAY[$p]}/brew" ]; then
-					ISSET_brew=1
-				else
-					ISSET_brew=0
-				fi
-			done
-			if [ $ISSET_brew -eq 0 ]; then
-				/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-			fi
-
+			checkHomebrew
 			brew install $DEPS_MACOS
 
 			# Hook: after-install-deps-macos
@@ -453,6 +441,62 @@ installDeps()
 		echo "Your platform not supported! Please install dependaces manually."
 		echo "Info: $GIT_URL"
 		echo
+	fi
+}
+
+checkBashVersion()
+{
+	if [[ $(echo $BASH_VERSION | cut -d '.' -f1) -lt $BASH_MIN_VERSION ]]; then
+		echo
+		$SETCOLOR_FAILURE
+		echo "Detected unsupported version of bash - ${BASH_VERSION}!"
+		echo "${BASH_MIN_VERSION}.* required."
+		$SETCOLOR_NORMAL
+		echo
+		if [[ "$OSTYPE" == "darwin"* ]]; then
+			echo "1. Install required version and exit"
+			echo "0. Exit (default)"
+			echo
+			echo -n "Enter selection [0] > "
+			read item
+			case "$item" in
+				0) echo
+					echo "Exiting..."
+					exit 0
+					;;
+				1) echo
+					installBashMacOS
+					echo "Exiting..."
+					exit 0
+					;;
+				*) echo
+					echo "Exiting..."
+					exit 0
+					;;
+			esac
+		else
+			exit 0
+		fi
+	fi
+}
+
+installBashMacOS()
+{
+	checkHomebrew
+	brew install bash
+}
+
+checkHomebrew()
+{
+	for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+		if [ -f "${BINARY_PATHS_ARRAY[$p]}/brew" ]; then
+			ISSET_brew=1
+		else
+			ISSET_brew=0
+		fi
+	done
+	if [ $ISSET_brew -eq 0 ]; then
+		/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 	fi
 }
 
@@ -748,6 +792,7 @@ CUR_DIR=$(pwd)
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 TIME_MARKER_PATH=""
 TIME_MARKER_NAME=".timeMarker"
+BASH_MIN_VERSION=4
 
 # Define CRON and direct using styling
 if [ "Z$(ps o comm="" -p $(ps o ppid="" -p $$))" == "Zcron" -o \
@@ -765,8 +810,20 @@ else
 	NORMAL_TEXT=$(tput sgr0)
 fi
 
+# Register binary paths
+BINARY_PATHS="/bin /usr/bin /usr/local/bin"
+
+# Hook: after-init-binary-paths
+includeExtensions after-init-binary-paths
+
+# Generate binary paths array
+BINARY_PATHS=$(echo $BINARY_PATHS | sed 's/\/\ /\ /g' | sed 's/\/$/\ /')
+BINARY_PATHS_ARRAY=($BINARY_PATHS)
+
 # Hook: after-init-default-vars
 includeExtensions after-init-default-vars
+
+checkBashVersion
 
 # Parse options
 while [ 1 ] ; do
@@ -952,19 +1009,6 @@ done
 for DEPS_MACOS_ITEM in "${DEPS_MACOS_ARR[@]}"; do
 	DEPS_MACOS="${DEPS_MACOS} ${DEPS_MACOS_ITEM}"
 done
-
-# Register binary paths
-BINARY_PATHS="/bin /usr/bin /usr/local/bin"
-
-# Hook: after-init-binary-paths
-includeExtensions after-init-binary-paths
-
-# Generate binary paths array
-BINARY_PATHS=$(echo $BINARY_PATHS | sed 's/\/\ /\ /g' | sed 's/\/$/\ /')
-BINARY_PATHS_ARRAY=($BINARY_PATHS)
-
-# Hook: after-init-binary-paths-array
-includeExtensions after-init-binary-paths-array
 
 # Register min versions of Linux distros. Must be integer.
 MIN_VERSION_DEBIAN=7
