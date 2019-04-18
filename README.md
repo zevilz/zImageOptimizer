@@ -195,7 +195,8 @@ Tested on:
   - Fedora 25 x86_64 minimal
   - Fedora 26 x86_64 minimal
   - Fedora 27 x86_64 workstation
-- FreeBSD
+  - Fedora 30 beta x86_64 server (required `initscripts` package)
+- FreeBSD (in some cases it may be necessary to run auto-install twice)
   - 10.3 i686
   - 11.1 amd64
   - 11.2 amd64
