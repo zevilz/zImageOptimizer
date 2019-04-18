@@ -454,7 +454,7 @@ checkBashVersion()
 		$SETCOLOR_NORMAL
 		echo
 		if [[ "$OSTYPE" == "darwin"* ]]; then
-			echo "1. Install required version and exit"
+			echo "1. Install new version and exit"
 			echo "0. Exit (default)"
 			echo
 			echo -n "Enter selection [0] > "
@@ -502,6 +502,7 @@ installBashMacOS()
 	else
 		bash -c "echo 'alias bash=\"/usr/local/bin/bash\"' > ~/.bash_profile"
 	fi
+	bash -c 'alias bash="/usr/local/bin/bash"'
 }
 
 checkHomebrew()
@@ -704,9 +705,6 @@ includeExtensions()
 		if ! [ -z "$EXTF_LIST" ]; then
 			local EXTF_ARR=("$EXTF_LIST")
 			for EXTF in $EXTF_ARR; do
-#				if [ $DEBUG -eq 1 ]; then
-#					echo -n "including $(basename $EXTF)"
-#				fi
 				. "$EXTF"
 			done
 		fi
