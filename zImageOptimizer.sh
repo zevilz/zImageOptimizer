@@ -730,7 +730,7 @@ unlockDir()
 	if [ -f "${TMP_PATH}/${LOCK_FILE_NAME}" ]; then
 		sed "/^$/d" "${TMP_PATH}/${LOCK_FILE_NAME}" > "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" && \
 		mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
-		if [[ $(wc -l "${TMP_PATH}/${LOCK_FILE_NAME}" | cut -d ' ' -f1) -gt 1 ]]; then
+		if [[ $(wc -l "${TMP_PATH}/${LOCK_FILE_NAME}" | sed 's/^[\ ]*//' | cut -d ' ' -f1) -gt 1 ]]; then
 			grep -v "^${DIR_PATH}$" "${TMP_PATH}/${LOCK_FILE_NAME}" > "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" && \
 			mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
 		else
