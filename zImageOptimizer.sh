@@ -714,14 +714,42 @@ joinBy()
 	printf "%s" "${@/#/$d}"
 }
 
-createLockFile()
+lockDir()
 {
-	echo
+	if [ -f "${TMP_PATH}/${LOCK_FILE_NAME}" ]; then
+		sed "/^$/d" "${TMP_PATH}/${LOCK_FILE_NAME}" > "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" && \
+		mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
+		echo "$DIR_PATH" >> "${TMP_PATH}/${LOCK_FILE_NAME}"
+	else
+		echo "$DIR_PATH" > "${TMP_PATH}/${LOCK_FILE_NAME}"
+	fi
 }
 
-removeLockFile()
+unlockDir()
 {
-	echo
+	if [ -f "${TMP_PATH}/${LOCK_FILE_NAME}" ]; then
+		sed "/^$/d" "${TMP_PATH}/${LOCK_FILE_NAME}" > "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" && \
+		mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
+		if [[ $(wc -l "${TMP_PATH}/${LOCK_FILE_NAME}" | cut -d ' ' -f1) -gt 1 ]]; then
+			grep -v "^${DIR_PATH}$" "${TMP_PATH}/${LOCK_FILE_NAME}" > "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" && \
+			mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
+		else
+			rm "${TMP_PATH}/${LOCK_FILE_NAME}"
+		fi
+	fi
+}
+
+checkDirLock()
+{
+	if [ -f "${TMP_PATH}/${LOCK_FILE_NAME}" ]; then
+		sed "/^$/d" "${TMP_PATH}/${LOCK_FILE_NAME}" > "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" && \
+		mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
+		if [[ $(grep "^${DIR_PATH}$" "${TMP_PATH}/${LOCK_FILE_NAME}") == "$DIR_PATH" ]]; then
+			echo "The directory is already locked by another script run! Exiting..."
+			echo
+			exit 0
+		fi
+	fi
 }
 
 usage()
@@ -784,6 +812,7 @@ usage()
 }
 
 # Define default script vars
+BASH_MIN_VERSION=4
 TMP_PATH="/tmp"
 GIT_URL="https://github.com/zevilz/zImageOptimizer"
 DEBUG=0
@@ -802,7 +831,7 @@ CUR_DIR=$(pwd)
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 TIME_MARKER_PATH=""
 TIME_MARKER_NAME=".timeMarker"
-BASH_MIN_VERSION=4
+LOCK_FILE_NAME="zio.lock"
 
 # Define CRON and direct using styling
 if [ "Z$(ps o comm="" -p $(ps o ppid="" -p $$))" == "Zcron" -o \
@@ -1260,7 +1289,13 @@ START_TIME=$(date +%s)
 # If images found
 if ! [ -z "$IMAGES" ]; then
 
+	# Check isset working dir in lock file
+	checkDirLock
+
 	echo "Optimizing..."
+
+	# Lock working dir in lock file
+	lockDir
 
 	# Init stat vars
 	INPUT=0
@@ -1465,6 +1500,9 @@ if ! [ -z "$IMAGES" ]; then
 
 	# Update time marker
 	updateTimeMarker
+
+	# Unlock working dir in lock file
+	unlockDir
 
 else
 
