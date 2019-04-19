@@ -14,6 +14,7 @@ Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a s
 - supports for special characters (except slashes and back slashes), spaces, not latin characters in a filename;
 - supports for search of images changed in a certain period of time;
 - supports for use of the special time marker for search only new files (based on last modify time).
+- supports extensions via special hooks
 
 ## Requirements
 - bash 4+
@@ -68,6 +69,8 @@ Notices:
 - you must use -m(--time-marker) option with -n(--new-only) option.
 
 Recommendation: use [GNU Screen](https://en.wikipedia.org/wiki/GNU_Screen) or analogs if there are many images in an input directory, because the optimization may can take long time.
+
+After starting optimization, the script creates special temporary lock file (`/tmp/zio.lock` by default), where path to working directory is added. After optimization is finished, the script deletes this file (or deletes current path to working directory from the file with several parallel optimizations). This is done to prevent cycling optimization and avoid conflicts during optimization for longer than period between optimizations. Notice: if the script is terminated abnormally, you should delete lock file manually.
 
 ### Excluding folders/files from search
 ```bash
@@ -345,6 +348,10 @@ BINARY_PATHS="/bin /usr/bin /usr/local/bin /your/custom/path"
 **I have errors `djpeg: can't open /tmp/*` and `cjpeg: can't open /tmp/*` during optimization**
 
 You have not write access to the directory /tmp. Tools djpeg and cjpeg use this directory for temporary files. Use -tmp(--tmp-path) option for set custom path.
+
+**I run the script but have error `The directory is already locked by another script run! Exiting...`**
+
+The script is already running in specified directory. If not, previous run of the script was not completed correctly. Delete lock file (`/tmp/zio.lock` by default) manually and repeat.
 
 ## TODO
 - [x] ~~add option for execute the script without any questions and users actions (for cron usage)~~
