@@ -17,11 +17,15 @@ cdAndCheck()
 {
 	cd "$1" 2>/dev/null
 	if ! [ "$(pwd)" = "$1" ]; then
+		echo
+		$SETCOLOR_FAILURE
 		if [ -z "$2" ]; then
-			echo "Can't get up in a directory $1. Exiting..." 1>&2
+			echo "Can't get up in a directory $1!" 1>&2
 		else
 			echo "$2" 1>&2
 		fi
+		$SETCOLOR_NORMAL
+		echo
 		exit 1
 	fi
 }
@@ -29,11 +33,15 @@ cdAndCheck()
 checkDir()
 {
 	if ! [ -d "$1" ]; then
+		echo
+		$SETCOLOR_FAILURE
 		if [ -z "$2" ]; then
-			echo "Directory $1 not found. Exiting..." 1>&2
+			echo "Directory $1 not found!" 1>&2
 		else
 			echo "$2" 1>&2
 		fi
+		$SETCOLOR_NORMAL
+		echo
 		exit 1
 	fi
 }
@@ -43,11 +51,15 @@ checkDirPermissions()
 	cd "$1" 2>/dev/null
 	touch checkDirPermissions 2>/dev/null
 	if ! [ -f "$1/checkDirPermissions" ]; then
+		echo
+		$SETCOLOR_FAILURE
 		if [ -z "$2" ]; then
-			echo "Current user have no permissions to directory $1. Exiting..." 1>&2
+			echo "Current user have no permissions to directory $1!" 1>&2
 		else
 			echo "$2" 1>&2
 		fi
+		$SETCOLOR_NORMAL
+		echo
 		exit 1
 	else
 		rm "$1/checkDirPermissions"
@@ -57,7 +69,11 @@ checkDirPermissions()
 checkParm()
 {
 	if [ -z "$1" ]; then
+		echo
+		$SETCOLOR_FAILURE
 		echo "$2" 1>&2
+		$SETCOLOR_NORMAL
+		echo
 		exit 1
 	fi
 }
@@ -446,7 +462,6 @@ checkBashVersion()
 		echo "Detected unsupported version of bash - ${BASH_VERSION}!"
 		echo "${BASH_MIN_VERSION}.* required."
 		$SETCOLOR_NORMAL
-		echo
 		if [[ "$OSTYPE" == "darwin"* ]]; then
 			echo "1. Install new version and exit"
 			echo "0. Exit (default)"
@@ -456,19 +471,23 @@ checkBashVersion()
 			case "$item" in
 				0) echo
 					echo "Exiting..."
+					echo
 					exit 0
 					;;
 				1) echo
 					installBashMacOS
 					echo "Exiting..."
+					echo
 					exit 0
 					;;
 				*) echo
 					echo "Exiting..."
+					echo
 					exit 0
 					;;
 			esac
 		else
+			echo
 			exit 0
 		fi
 	fi
@@ -538,7 +557,11 @@ getTimeMarkerPath()
 checkUserTimeMarker()
 {
 	if [[ $TIME_MARKER =~ ^-?.*\/$ ]]; then
-		echo "Time marker filename not set in given path. Exiting..." 1>&2
+		echo
+		$SETCOLOR_FAILURE
+		echo "Time marker filename not set in given path!" 1>&2
+		$SETCOLOR_NORMAL
+		echo
 		exit 1
 	fi
 }
@@ -560,7 +583,11 @@ checkTimeMarkerPermissions()
 	fi
 
 	if [ $TIME_MARKER_MODIFIED -eq $TIME_MARKER_MODIFIED_NEW ]; then
-		echo "Current user have no permissions to modify time marker. Exiting..." 1>&2
+		echo
+		$SETCOLOR_FAILURE
+		echo "Current user have no permissions to modify time marker!" 1>&2
+		$SETCOLOR_NORMAL
+		echo
 		exit 1
 	else
 		if date --version >/dev/null 2>/dev/null ; then
@@ -916,7 +943,9 @@ while [ 1 ] ; do
 		break
 	else
 		echo
+		$SETCOLOR_FAILURE
 		echo "Unknown key detected!" 1>&2
+		$SETCOLOR_NORMAL
 		usage
 		exit 1
 	fi
@@ -1078,24 +1107,32 @@ fi
 if [ $CHECK_ONLY -eq 0 ]; then
 
 	DIR_PATH=$(echo "$DIR_PATH" | sed 's/\/$//')
-	checkParm "$DIR_PATH" "Path to files not set. Exiting..."
+	checkParm "$DIR_PATH" "Path to files not set in -p(--path) option!"
 	checkDir "$DIR_PATH"
 	cdAndCheck "$DIR_PATH"
 	checkDirPermissions "$DIR_PATH"
 
 	TMP_PATH=$(echo "$TMP_PATH" | sed 's/\/$//')
-	checkDir "$TMP_PATH" "Directory for temporary files not found. Exiting..."
-	cdAndCheck "$TMP_PATH" "Can't get up in a directory for temporary files. Exiting..."
-	checkDirPermissions "$TMP_PATH" "Current user have no permissions to directory for temporary files. Exiting..."
+	checkDir "$TMP_PATH" "Directory for temporary files not found!"
+	cdAndCheck "$TMP_PATH" "Can't get up in a directory for temporary files!"
+	checkDirPermissions "$TMP_PATH" "Current user have no permissions to directory for temporary files!"
 
 	if [[ $PERIOD != 0 && $NEW_ONLY -gt 0 ]]; then
-		echo "It is impossible to use options -t(--time) and -n(--new-only) together. Set only one of it. Exiting..."
+		echo
+		$SETCOLOR_FAILURE
+		echo "It is impossible to use options -t(--time) and -n(--new-only) together! Set only one of it."
+		$SETCOLOR_NORMAL
+		echo
 		exit 1
 	fi
 
 	if ! [ -z "$TIME_MARKER" ]; then
 		if [ $NEW_ONLY -eq 0 ]; then
-			echo "You can't use option -m(--time-marker) without -n(--new-only) option. Exiting..."
+			echo
+			$SETCOLOR_FAILURE
+			echo "You can't use option -m(--time-marker) without -n(--new-only) option!"
+			$SETCOLOR_NORMAL
+			echo
 			exit 1
 		fi
 	fi
@@ -1103,7 +1140,11 @@ if [ $CHECK_ONLY -eq 0 ]; then
 	if [ $PERIOD != 0 ]; then
 
 		if ! [[ $PERIOD =~ ^-?[0-9]+(m|h|d)$ ]]; then
-			echo "Wrong format of period. Exiting..."
+			echo
+			$SETCOLOR_FAILURE
+			echo "Wrong format of period!"
+			$SETCOLOR_NORMAL
+			echo
 			exit 1
 		fi
 
@@ -1132,10 +1173,10 @@ if [ $CHECK_ONLY -eq 0 ]; then
 		TIME_MARKER_FULL_PATH=$(getTimeMarkerPath)
 		TIME_MARKER_FULL_PATH_DIR=$(dirname "$TIME_MARKER_FULL_PATH")
 		TIME_MARKER_FULL_PATH_NAME=$(basename "$TIME_MARKER_FULL_PATH")
-		checkDir "$TIME_MARKER_FULL_PATH_DIR" "Directory for time marker not found. Exiting..."
-		cdAndCheck "$TIME_MARKER_FULL_PATH_DIR" "Can't get up in a directory for time marker. Exiting..."
+		checkDir "$TIME_MARKER_FULL_PATH_DIR" "Directory for time marker not found!"
+		cdAndCheck "$TIME_MARKER_FULL_PATH_DIR" "Can't get up in a directory for time marker!"
 		checkUserTimeMarker
-		checkDirPermissions "$TIME_MARKER_FULL_PATH_DIR" "Current user have no permissions to directory for time marker. Exiting..."
+		checkDirPermissions "$TIME_MARKER_FULL_PATH_DIR" "Current user have no permissions to directory for time marker!"
 		echo -n "Time marker "
 		if [ -f "$TIME_MARKER_FULL_PATH" ]; then
 			checkTimeMarkerPermissions "$TIME_MARKER_FULL_PATH"
@@ -1244,11 +1285,13 @@ else
 					;;
 				0) echo
 					echo "Exiting..."
+					echo
 					exit 0
 					;;
 				2) echo
 					installDeps
 					echo "Exiting..."
+					echo
 					exit 0
 					;;
 				*) echo 
@@ -1259,15 +1302,18 @@ else
 			case "$item" in
 				0) echo
 					echo "Exiting..."
+					echo
 					exit 0
 					;;
 				1) echo
 					installDeps
 					echo "Exiting..."
+					echo
 					exit 0
 					;;
 				*) echo
 					echo "Exiting..."
+					echo
 					exit 0
 					;;
 			esac
