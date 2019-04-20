@@ -164,17 +164,19 @@ bash zImageOptimizer.sh -p /path/to/files -tmp /custom/path/to/temporary/directo
 
 ## Docker
 
+Docker image provided by [Varun Batra](https://github.com/VarunBatraIT).
+
 If you have built the docker container then dependencies are installed already. To use docker either start with mounting to /work/images folder which is compressed every 15 days for example:
 
 ```bash
-docker run -u "$UID:$GID" --volume /path/to/images:/work/images -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro  /path/to/script/directory
+docker run -u "$UID:$GID" --volume /path/to/images:/work/images -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro  varunbatrait/zimageoptimizer
 ```
 
 Or you can come up with your own CMD for example:
 
 ```bash
 # mkdir /mnt/ImagesHundred/marker
-docker run -it -u "$UID:$GID" -d --volume /mnt/ImagesHundred/marker:/work/marker --volume /mnt/ImagesHundred/images/:/work/images/ -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro /path/to/script/directory ./zImageOptimizer.sh -p /work/images/ -q -n -m /work/marker/marker
+docker run -it -u "$UID:$GID" -d --volume /mnt/ImagesHundred/marker:/work/marker --volume /mnt/ImagesHundred/images/:/work/images/ -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro varunbatrait/zimageoptimizer ./zImageOptimizer.sh -p /work/images/ -q -n -m /work/marker/marker
 ```
 
 ## Automatical installing dependences
