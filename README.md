@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.9.5-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.5) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.9.6-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.6) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a specified directory include subdirectories on Linux, MacOS and FreeBSD.
 
@@ -14,6 +14,10 @@ Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a s
 - supports for special characters (except slashes and back slashes), spaces, not latin characters in a filename;
 - supports for search of images changed in a certain period of time;
 - supports for use of the special time marker for search only new files (based on last modify time).
+- supports extensions via special hooks
+
+## Requirements
+- bash 4+
 
 ## Tools
 JPEG:
@@ -30,6 +34,8 @@ GIF:
 - [gifsicle](http://www.lcdf.org/gifsicle/)
 
 One or more tools required for optimization. djpeg/cjpeg does not support CMYK colorspace and does not participate in the optimization of such images.
+
+Notice: Optimization via djpeg/cjpeg is currently temporarily disabled to prevent an increase in size of output files in lossless mode. Later, djpeg/cjpeg options for lossless compression and small output file size will be selected.
 
 ## Usage
 
@@ -65,6 +71,8 @@ Notices:
 - you must use -m(--time-marker) option with -n(--new-only) option.
 
 Recommendation: use [GNU Screen](https://en.wikipedia.org/wiki/GNU_Screen) or analogs if there are many images in an input directory, because the optimization may can take long time.
+
+After starting optimization, the script creates special temporary lock file (`/tmp/zio.lock` by default), where path to working directory is added. After optimization is finished, the script deletes this file (or deletes current path to working directory from the file with several parallel optimizations). This is done to prevent cycling optimization and avoid conflicts during optimization for longer than period between optimizations. Notice: if the script is terminated abnormally, you should delete lock file manually.
 
 ### Excluding folders/files from search
 ```bash
@@ -175,7 +183,7 @@ Supported on:
   - RHEL 6+
   - CentOS 6+
   - Fedora 24+
-- FreeBSD 10.3 / 10.4 / 11.1 (i686/amd64)
+- FreeBSD 10+ (i686/amd64)
 - MacOS 10.10+
 
 Tested on:
@@ -185,6 +193,7 @@ Tested on:
   - Debian 9.2 amd64
   - Ubuntu 14.04.5 amd64
   - Ubuntu 16.04.3 amd64
+  - Ubuntu 18.04.2 amd64
 - RPM-based linux distributions
   - RHEL 6.9 i686 minimal
   - RHEL 7.4 x86_64 server
@@ -194,12 +203,16 @@ Tested on:
   - Fedora 25 x86_64 minimal
   - Fedora 26 x86_64 minimal
   - Fedora 27 x86_64 workstation
-- FreeBSD
+  - Fedora 30 beta x86_64 server (required `initscripts` package)
+- FreeBSD (in some cases it may be necessary to run auto-install twice)
   - 10.3 i686
   - 11.1 amd64
+  - 11.2 amd64
+  - 12.0 amd64
 - MacOS
   - 10.10
   - 10.11.6
+  - 10.13.6
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
@@ -242,6 +255,26 @@ Install homebrew if not installed
 Install packages via homebrew
 ```bash
 brew install jpegoptim libjpeg pngcrush optipng advancecomp gifsicle jonof/kenutils/pngout
+```
+
+Install new bash version (default 3.* version not supported) via homebrew
+```bash
+brew install bash
+```
+
+Add path to new bash version in `/private/etc/shells`
+```bash
+/usr/local/bin/bash
+```
+
+Add alias to new bash version in `~/.bash_profile`
+```bash
+alias bash="/usr/local/bin/bash"
+```
+
+Logout and login again for enable new alias or add permanent alias for curent session
+```bash
+alias bash="/usr/local/bin/bash"
 ```
 
 FreeBSD:
@@ -305,6 +338,9 @@ cd ../
 rm -rf advancecomp-2.0
 ```
 
+## Extensions
+Guide for extensions comming soon...
+
 ## Troubleshooting
 
 **I'm install dependences but one of tool is marked as NOT FOUND**
@@ -318,6 +354,10 @@ BINARY_PATHS="/bin /usr/bin /usr/local/bin /your/custom/path"
 
 You have not write access to the directory /tmp. Tools djpeg and cjpeg use this directory for temporary files. Use -tmp(--tmp-path) option for set custom path.
 
+**I run the script but have error `The directory is already locked by another script run! Exiting...`**
+
+The script is already running in specified directory. If not, previous run of the script was not completed correctly. Delete lock file (`/tmp/zio.lock` by default) manually and repeat.
+
 ## TODO
 - [x] ~~add option for execute the script without any questions and users actions (for cron usage)~~
 - [x] ~~add option for set time of the last change files for optimize only new images (for cron usage)~~
@@ -329,11 +369,12 @@ You have not write access to the directory /tmp. Tools djpeg and cjpeg use this 
 - [ ] add support for parallel optimization
 - [ ] even more to improve results of compression
 - [ ] add SVG support
+- [ ] add WebP support
 - [ ] add logging
 - [ ] add Ansible playbook
 - [x] ~~add progrees indicator~~
-- [ ] add extensions support
-- [ ] add a lock file to prevent cyclical optimization with long image optimization
+- [x] ~~add extensions support~~
+- [x] ~~add lock file to prevent cyclical optimization with long image optimization~~
 - [ ] add repository for debian/ubuntu
 - [ ] add repository for rhel/centos/fedora
 
@@ -351,7 +392,8 @@ Do you like the script? Would you like to support its development? Feel free to 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
-- 06.02.2018 - 0.9.5 - fixed quality in cjpeg/djpeg compression
+- 20.04.2019 - 0.9.6 - added support for extensions, added lock file and [more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.6)
+- 06.02.2019 - 0.9.5 - fixed quality in cjpeg/djpeg compression
 - 28.10.2018 - 0.9.4 - [added check for empty temporary file after decompress images with djpeg](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.4)
 - 11.03.2018 - 0.9.3 - added a restoration of original files if their size is less or equal than optimized files size
 - 27.02.2018 - 0.9.2 - fixed PNG file permissions if the script does not work from files owner
