@@ -607,7 +607,7 @@ optimXjpeg()
 		if [[ SIZE_CHECK -gt 0 ]]; then
 
 			# compress and replace original file if temp file exists and not empty
-			cjpeg -quality 100 -optimize -progressive -outfile "$1" "$TMP_PATH/$(basename "$1")" > /dev/null
+			cjpeg -quality 95 -optimize -progressive -outfile "$1" "$TMP_PATH/$(basename "$1")" > /dev/null
 
 		fi
 
@@ -1359,16 +1359,16 @@ if ! [ -z "$IMAGES" ]; then
 
 			if [ $OPTIMIZE -eq 1 ]; then
 
+				#if [[ $ISSET_djpeg -eq 1 && $ISSET_cjpeg -eq 1 ]]; then
+				#	optimXjpeg "$IMAGE"
+				#fi
+
 				if [[ $ISSET_jpegoptim -eq 1 ]]; then
 					optimJpegoptim "$IMAGE"
 				fi
 
 				if [[ $ISSET_jpegtran -eq 1 ]]; then
 					optimJpegtran "$IMAGE"
-				fi
-
-				if [[ $ISSET_djpeg -eq 1 && $ISSET_cjpeg -eq 1 ]]; then
-					optimXjpeg "$IMAGE"
 				fi
 
 			fi
