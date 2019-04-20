@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.9.5-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.5) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.9.6-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.6) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a specified directory include subdirectories on Linux, MacOS and FreeBSD.
 
@@ -34,6 +34,8 @@ GIF:
 - [gifsicle](http://www.lcdf.org/gifsicle/)
 
 One or more tools required for optimization. djpeg/cjpeg does not support CMYK colorspace and does not participate in the optimization of such images.
+
+Notice: Optimization via djpeg/cjpeg is currently temporarily disabled to prevent an increase in size of output files in lossless mode. Later, djpeg/cjpeg options for lossless compression and small output file size will be selected.
 
 ## Usage
 
@@ -336,6 +338,9 @@ cd ../
 rm -rf advancecomp-2.0
 ```
 
+## Extensions
+Guide for extensions comming soon...
+
 ## Troubleshooting
 
 **I'm install dependences but one of tool is marked as NOT FOUND**
@@ -386,7 +391,8 @@ Do you like the script? Would you like to support its development? Feel free to 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
-- 06.02.2018 - 0.9.5 - fixed quality in cjpeg/djpeg compression
+- 20.04.2019 - 0.9.6 - added support for extensions, added lock file and [more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.6)
+- 06.02.2019 - 0.9.5 - fixed quality in cjpeg/djpeg compression
 - 28.10.2018 - 0.9.4 - [added check for empty temporary file after decompress images with djpeg](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.4)
 - 11.03.2018 - 0.9.3 - added a restoration of original files if their size is less or equal than optimized files size
 - 27.02.2018 - 0.9.2 - fixed PNG file permissions if the script does not work from files owner
