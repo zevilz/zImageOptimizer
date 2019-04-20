@@ -369,6 +369,7 @@ The script is already running in specified directory. If not, previous run of th
 - [ ] add support for parallel optimization
 - [ ] even more to improve results of compression
 - [ ] add SVG support
+- [ ] add WebP support
 - [ ] add logging
 - [ ] add Ansible playbook
 - [x] ~~add progrees indicator~~
