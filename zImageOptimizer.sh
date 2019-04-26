@@ -684,6 +684,47 @@ optimGifsicle()
 	#gifsicle --optimize=3 --lossy=30 -b "$IMAGE" # for lossy optimize
 }
 
+optimJPG()
+{
+	#if [[ $ISSET_djpeg -eq 1 && $ISSET_cjpeg -eq 1 ]]; then
+	#	optimXjpeg "$1"
+	#fi
+
+	if [[ $ISSET_jpegoptim -eq 1 ]]; then
+		optimJpegoptim "$1"
+	fi
+
+	if [[ $ISSET_jpegtran -eq 1 ]]; then
+		optimJpegtran "$1"
+	fi
+}
+
+optimPNG()
+{
+	if [[ $ISSET_pngcrush -eq 1 ]]; then
+		optimPngcrush "$1"
+	fi
+
+	if [[ $ISSET_optipng -eq 1 ]]; then
+		optimOptipng "$1"
+	fi
+
+	if [[ $ISSET_pngout -eq 1 ]]; then
+		optimPngout "$1"
+	fi
+
+	if [[ $ISSET_advpng -eq 1 ]]; then
+		optimAdvpng "$1"
+	fi
+}
+
+optimGIF()
+{
+	if [[ $ISSET_gifsicle -eq 1 ]]; then
+		optimGifsicle "$1"
+	fi
+}
+
 readableSize()
 {
 	if [ $1 -ge 1000000000 ]; then
@@ -777,6 +818,23 @@ checkDirLock()
 			exit 0
 		fi
 	fi
+}
+
+savePerms()
+{
+	if [[ "$OSTYPE" == "linux-gnu" ]]; then
+		CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
+		CUR_PERMS=$(stat -c "%a" "$IMAGE")
+	else
+		CUR_OWNER=$(ls -l "$IMAGE" | awk '{print $3":"$4}')
+		CUR_PERMS=$(stat -f "%Lp" "$IMAGE")
+	fi
+}
+
+restorePerms()
+{
+	chown $CUR_OWNER "$IMAGE"
+	chmod $CUR_PERMS "$IMAGE"
 }
 
 usage()
@@ -1332,6 +1390,9 @@ IMAGES_OPTIMIZED=0
 IMAGES_CURRENT=0
 START_TIME=$(date +%s)
 
+# Hook: init-loop-vars-after
+includeExtensions init-loop-vars-after
+
 # If images found
 if ! [ -z "$IMAGES" ]; then
 
@@ -1349,200 +1410,188 @@ if ! [ -z "$IMAGES" ]; then
 	SAVED_SIZE=0
 
 	# Main optimize loop
-	echo "$IMAGES" | ( while read IMAGE ; do
+	echo "$IMAGES" | ( \
+		while read IMAGE ; do
 
-		# Define additional vars for using hooks
-		OPTIMIZE=1
-		COMPARE_SIZE_AFTER=1
+			# Define additional vars for using hooks
+			OPTIMIZE=1
+			RESTORE_IMAGE_CHECK=1
 
-		# Process counter
-		if [ $LESS -eq 0 ]; then
-#			if [ $SHOW_PROGRESS -eq 1 ]; then
-#				if [ $PROGRESS_MEASURE == "percent" ]; then
-#					IMAGES_CURRENT_PERCENT=$(echo "scale=2; $IMAGES_CURRENT*100/$IMAGES_TOTAL" | bc)
-#					IMAGES_CURRENT=$(echo "$IMAGES_CURRENT+1" | bc)
-#					echo -n "[$IMAGES_CURRENT_PERCENT%] "
-#				fi
-#				if [ $PROGRESS_MEASURE == "num" ]; then
-					IMAGES_CURRENT=$(echo "$IMAGES_CURRENT+1" | bc)
-					echo -n "["
-					echo -n $IMAGES_CURRENT
-					echo -n "/"
-					echo -n $IMAGES_TOTAL
-					echo -n "] "
-#				fi
-#			fi
-			echo -n "$IMAGE"
-			echo -n '... '
-		fi
+			# Process counter
+			if [ $LESS -eq 0 ]; then
+	#			if [ $SHOW_PROGRESS -eq 1 ]; then
+	#				if [ $PROGRESS_MEASURE == "percent" ]; then
+	#					IMAGES_CURRENT_PERCENT=$(echo "scale=2; $IMAGES_CURRENT*100/$IMAGES_TOTAL" | bc)
+	#					IMAGES_CURRENT=$(echo "$IMAGES_CURRENT+1" | bc)
+	#					echo -n "[$IMAGES_CURRENT_PERCENT%] "
+	#				fi
+	#				if [ $PROGRESS_MEASURE == "num" ]; then
+						IMAGES_CURRENT=$(echo "$IMAGES_CURRENT+1" | bc)
+						echo -n "["
+						echo -n $IMAGES_CURRENT
+						echo -n "/"
+						echo -n $IMAGES_TOTAL
+						echo -n "] "
+	#				fi
+	#			fi
+				echo -n "$IMAGE"
+				echo -n '... '
+			fi
 
-		# Sizes before optimizing
-		SIZE_BEFORE=$(wc -c "$IMAGE" | awk '{print $1}')
-		SIZE_BEFORE_SCALED=$(echo "scale=1; $SIZE_BEFORE/1024" | bc | sed 's/^\./0./')
-		INPUT=$(echo "$INPUT+$SIZE_BEFORE" | bc)
+			# Sizes before optimizing
+			SIZE_BEFORE=$(wc -c "$IMAGE" | awk '{print $1}')
+			SIZE_BEFORE_SCALED=$(echo "scale=1; $SIZE_BEFORE/1024" | bc | sed 's/^\./0./')
+			INPUT=$(echo "$INPUT+$SIZE_BEFORE" | bc)
 
-		# Get image extension
-		EXT=${IMAGE##*.}
+			# Get image extension
+			EXT=${IMAGE##*.}
 
-		# Save permissions
-		if [[ "$OSTYPE" == "linux-gnu" ]]; then
-			CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
-			CUR_PERMS=$(stat -c "%a" "$IMAGE")
-		else
-			#CUR_OWNER=$(stat -f "%Su" "$IMAGE")
-			CUR_OWNER=$(ls -l "$IMAGE" | awk '{print $3":"$4}')
-			CUR_PERMS=$(stat -f "%Lp" "$IMAGE")
-		fi
+			# Save permissions
+			savePerms
 
-		# Save original file
-		cp -f "$IMAGE" "$TMP_PATH/$(basename "$IMAGE").bkp"
+			# Save original file
+			cp -f "$IMAGE" "$TMP_PATH/$(basename "$IMAGE").bkp"
 
-		# JPEG
-		if [[ $EXT == "jpg" || $EXT == "jpeg" || $EXT == "JPG" || $EXT == "JPEG" ]]; then
+			# Hook: optim-before
+			includeExtensions optim-before
 
-			# Hook: optim-jpg-before
-			includeExtensions optim-jpg-before
+			# JPEG
+			if [[ $EXT == "jpg" || $EXT == "jpeg" || $EXT == "JPG" || $EXT == "JPEG" ]]; then
 
-			if [ $OPTIMIZE -eq 1 ]; then
+				# Hook: optim-jpg-before
+				includeExtensions optim-jpg-before
 
-				#if [[ $ISSET_djpeg -eq 1 && $ISSET_cjpeg -eq 1 ]]; then
-				#	optimXjpeg "$IMAGE"
-				#fi
+				if [ $OPTIMIZE -eq 1 ]; then
 
-				if [[ $ISSET_jpegoptim -eq 1 ]]; then
-					optimJpegoptim "$IMAGE"
+					optimJPG "$IMAGE"
+
 				fi
 
-				if [[ $ISSET_jpegtran -eq 1 ]]; then
-					optimJpegtran "$IMAGE"
+				# Hook: optim-jpg-after
+				includeExtensions optim-jpg-after
+
+			# PNG
+			elif [[ $EXT == "png" || $EXT == "PNG" ]]; then
+
+				# Hook: optim-png-before
+				includeExtensions optim-png-before
+
+				if [ $OPTIMIZE -eq 1 ]; then
+
+					optimPNG "$IMAGE"
+
+				fi
+
+				# Hook: optim-png-after
+				includeExtensions optim-png-after
+
+			# GIF
+			elif [[ $EXT == "gif" || $EXT == "GIF" ]]; then
+
+				# Hook: optim-gif-before
+				includeExtensions optim-gif-before
+
+				if [ $OPTIMIZE -eq 1 ]; then
+
+					optimGIF "$IMAGE"
+
+				fi
+
+				# Hook: optim-gif-after
+				includeExtensions optim-gif-after
+
+			fi
+
+			# Hook: optim-after
+			includeExtensions optim-after
+
+			# Sizes after
+			SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
+			SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
+
+			# Restore original if it smaller as optimized
+			if [ $RESTORE_IMAGE_CHECK -eq 1 ]; then
+
+				if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
+					cp -f "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
 				fi
 
 			fi
 
-			# Hook: optim-jpg-after
-			includeExtensions optim-jpg-after
-
-		# PNG
-		elif [[ $EXT == "png" || $EXT == "PNG" ]]; then
-
-			# Hook: optim-png-before
-			includeExtensions optim-png-before
-
-			if [ $OPTIMIZE -eq 1 ]; then
-
-				if [[ $ISSET_pngcrush -eq 1 ]]; then
-					optimPngcrush "$IMAGE"
-				fi
-
-				if [[ $ISSET_optipng -eq 1 ]]; then
-					optimOptipng "$IMAGE"
-				fi
-
-				if [[ $ISSET_pngout -eq 1 ]]; then
-					optimPngout "$IMAGE"
-				fi
-
-				if [[ $ISSET_advpng -eq 1 ]]; then
-					optimAdvpng "$IMAGE"
-				fi
-
-			fi
-
-			# Hook: optim-png-after
-			includeExtensions optim-png-after
-
-		# GIF
-		elif [[ $EXT == "gif" || $EXT == "GIF" ]]; then
-
-			# Hook: optim-gif-before
-			includeExtensions optim-gif-before
-
-			if [ $OPTIMIZE -eq 1 ]; then
-
-				if [[ $ISSET_gifsicle -eq 1 ]]; then
-					optimGifsicle "$IMAGE"
-				fi
-
-			fi
-
-			# Hook: optim-gif-after
-			includeExtensions optim-gif-after
-
-		fi
-
-		# Sizes after
-		SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
-		SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
-
-		# Compare original and optimized filesize
-		if [ $COMPARE_SIZE_AFTER -eq 1 ]; then
-
+			# Calculate output
 			if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
 				OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
-				cp -f "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
 			else
 				OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
 			fi
 
-		fi
+			# Restore permissions
+			restorePerms
 
-		# Restore permissions
-		chown $CUR_OWNER "$IMAGE"
-		chmod $CUR_PERMS "$IMAGE"
+			# Remove original file
+			rm "$TMP_PATH/$(basename "$IMAGE").bkp"
 
-		# Remove original file
-		rm "$TMP_PATH/$(basename "$IMAGE").bkp"
-
-		# Optimize results and sizes
-		if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-			if [ $LESS -eq 0 ]; then
-				$SETCOLOR_FAILURE
-				echo -n "[NOT OPTIMIZED]"
-				$SETCOLOR_NORMAL
-				echo -n " ${SIZE_BEFORE_SCALED}Kb"
+			# Optimize results and sizes
+			if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
+				if [ $LESS -eq 0 ]; then
+					$SETCOLOR_FAILURE
+					echo -n "[NOT OPTIMIZED]"
+					$SETCOLOR_NORMAL
+					echo -n " ${SIZE_BEFORE_SCALED}Kb"
+				fi
+			else
+				if [ $LESS -eq 0 ]; then
+					$SETCOLOR_SUCCESS
+					echo -n "[OPTIMIZED]"
+					$SETCOLOR_NORMAL
+					echo -n " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
+				fi
+				SIZE_DIFF=$(echo "$SIZE_BEFORE-$SIZE_AFTER" | bc)
+				SAVED_SIZE=$(echo "$SAVED_SIZE+$SIZE_DIFF" | bc)
+				IMAGES_OPTIMIZED=$(echo "$IMAGES_OPTIMIZED+1" | bc)
 			fi
-		else
+
 			if [ $LESS -eq 0 ]; then
-				$SETCOLOR_SUCCESS
-				echo -n "[OPTIMIZED]"
-				$SETCOLOR_NORMAL
-				echo -n " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
+				echo
 			fi
-			SIZE_DIFF=$(echo "$SIZE_BEFORE-$SIZE_AFTER" | bc)
-			SAVED_SIZE=$(echo "$SAVED_SIZE+$SIZE_DIFF" | bc)
-			IMAGES_OPTIMIZED=$(echo "$IMAGES_OPTIMIZED+1" | bc)
-		fi
 
-		if [ $LESS -eq 0 ]; then
-			echo
-		fi
+		done
 
-	done
+		# Hook: total-info-before
+		includeExtensions total-info-before
 
-	# Total info
-	echo
-	echo -n "Input: "
-	readableSize $INPUT
-	echo
+		# Total info
+		echo
+		echo -n "Input: "
+		readableSize $INPUT
+		echo
 
-	echo -n "Output: "
-	readableSize $OUTPUT
-	echo
+		echo -n "Output: "
+		readableSize $OUTPUT
+		echo
 
-	echo -n "You save: "
-	readableSize $SAVED_SIZE
-	echo " / $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
-	
-	echo -n "Optimized/Total: "
-	echo -n $IMAGES_OPTIMIZED
-	echo -n " / "
-	echo -n $IMAGES_TOTAL
-	echo " files"
-	END_TIME=$(date +%s)
-	TOTAL_TIME=$(echo "$END_TIME-$START_TIME" | bc)
-	echo -n "Total optimizing time: "
-	readableTime $TOTAL_TIME
-	)
+		echo -n "You save: "
+		readableSize $SAVED_SIZE
+		echo " / $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
+		
+		echo -n "Optimized/Total: "
+		echo -n $IMAGES_OPTIMIZED
+		echo -n " / "
+		echo -n $IMAGES_TOTAL
+		echo " files"
+
+		# Hook: total-info-time-before
+		includeExtensions total-info-time-before
+
+		END_TIME=$(date +%s)
+		TOTAL_TIME=$(echo "$END_TIME-$START_TIME" | bc)
+		echo -n "Total optimizing time: "
+		readableTime $TOTAL_TIME
+
+		# Hook: total-info-after
+		includeExtensions total-info-after
+
+	) # End of loop process. Further variable variables inside loop will not be available
 
 	# Update time marker
 	updateTimeMarker
