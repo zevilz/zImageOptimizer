@@ -78,6 +78,13 @@ checkParm()
 	fi
 }
 
+inArray () {
+	local e match="$1"
+	shift
+	for e; do [[ "$e" == "$match" ]] && return 0; done
+	return 1
+}
+
 installDeps()
 {
 	PLATFORM="unknown"
@@ -759,16 +766,72 @@ findExclude()
 	fi
 }
 
+checkEnabledExtensions()
+{
+	if ! [ -z "$ENABLED_EXTENSIONS" ]; then
+		cd "$SCRIPT_PATH"
+		if [ -d extensions ]; then
+			if [[ "$ENABLED_EXTENSIONS" != "all" ]]; then
+				if ! [[ "$ENABLED_EXTENSIONS" =~ ^[[:alnum:]_-,]+$ ]]; then
+					echo
+					$SETCOLOR_FAILURE
+					echo "Wrong format of extensions list!"
+					$SETCOLOR_NORMAL
+					echo
+					exit 1
+				else
+					ENABLED_EXTENSIONS=$(echo $ENABLED_EXTENSIONS | sed 's/,$//g' | sed 's/^,//g' | sed 's/,/\ /g')
+					ENABLED_EXTENSIONS_ARR=($ENABLED_EXTENSIONS)
+					echo
+					echo "Checking selected extensions..."
+					for ENABLED_EXTENSION in ${ENABLED_EXTENSIONS_ARR[@]}; do
+						echo -n "${ENABLED_EXTENSION}..."
+						if ! [[ -z $(grep -lr "^#\ Extension:\ $ENABLED_EXTENSION$" extensions | tr '\n' ' ' | sed 's/\ $//') ]]; then
+							$SETCOLOR_SUCCESS
+							echo "[FOUND]"
+							$SETCOLOR_NORMAL
+						else
+							$SETCOLOR_FAILURE
+							echo "[NOT FOUND]"
+							$SETCOLOR_NORMAL
+						fi
+					done
+				fi
+			else
+				echo
+				echo "Enabled all extensions."
+			fi
+		else
+			echo
+			$SETCOLOR_FAILURE
+			echo "Extensions dir not found!"
+			$SETCOLOR_NORMAL
+			echo
+			exit 1
+		fi
+	fi
+}
+
 includeExtensions()
 {
-	cd "$SCRIPT_PATH"
-	if ! [ -z "$1" ] && [ -d extensions ]; then
-		local EXTF_LIST=$(grep -lr "^#\ Hook:\ $1$" extensions | tr '\n' ' ' | sed 's/\ $//')
-		if ! [ -z "$EXTF_LIST" ]; then
-			local EXTF_ARR=("$EXTF_LIST")
-			for EXTF in $EXTF_ARR; do
-				. "$EXTF"
-			done
+	if ! [ -z "$ENABLED_EXTENSIONS" ]; then
+		cd "$SCRIPT_PATH"
+		if ! [ -z "$1" ] && [ -d extensions ]; then
+			local EXTF_LIST=$(grep -lr "^#\ Hook:\ $1$" extensions | tr '\n' ' ' | sed 's/\ $//')
+			if ! [ -z "$EXTF_LIST" ]; then
+				local EXTF_ARR=("$EXTF_LIST")
+				for EXTF in $EXTF_ARR; do
+					if [[ "$ENABLED_EXTENSIONS" == "all" ]]; then
+						. "$EXTF"
+					else
+						for ENABLED_EXTENSION in ${ENABLED_EXTENSIONS_ARR[@]}; do
+							if ! [[ -z $(grep "^#\ Extension:\ $ENABLED_EXTENSION$" "$EXTF") ]]; then
+								. "$EXTF"
+							fi
+						done
+					fi
+				done
+			fi
 		fi
 	fi
 }
@@ -934,19 +997,6 @@ else
 	NORMAL_TEXT=$(tput sgr0)
 fi
 
-# Register binary paths
-BINARY_PATHS="/bin /usr/bin /usr/local/bin"
-
-# Hook: after-init-binary-paths
-includeExtensions after-init-binary-paths
-
-# Generate binary paths array
-BINARY_PATHS=$(echo $BINARY_PATHS | sed 's/\/\ /\ /g' | sed 's/\/$/\ /')
-BINARY_PATHS_ARRAY=($BINARY_PATHS)
-
-# Hook: after-init-default-vars
-includeExtensions after-init-default-vars
-
 checkBashVersion
 
 # Parse options
@@ -975,6 +1025,11 @@ while [ 1 ] ; do
 		EXCLUDE_LIST="${1#--exclude=}"
 	elif [ "$1" = "-e" ] ; then
 		shift ; EXCLUDE_LIST="$1"
+
+	elif [ "${1#--extensions=}" != "$1" ] ; then
+		ENABLED_EXTENSIONS="${1#--extensions=}"
+	elif [ "$1" = "-ext" ] ; then
+		shift ; ENABLED_EXTENSIONS="$1"
 
 	elif [[ "$1" = "--help" || "$1" = "-h" ]] ; then
 		HELP=1
@@ -1010,8 +1065,21 @@ while [ 1 ] ; do
 	shift
 done
 
+# Enabled extensions
+checkEnabledExtensions
+
 # Hook: after-parse-options
 includeExtensions after-parse-options
+
+# Register binary paths
+BINARY_PATHS="/bin /usr/bin /usr/local/bin"
+
+# Hook: after-init-binary-paths
+includeExtensions after-init-binary-paths
+
+# Generate binary paths array
+BINARY_PATHS=$(echo $BINARY_PATHS | sed 's/\/\ /\ /g' | sed 's/\/$/\ /')
+BINARY_PATHS_ARRAY=($BINARY_PATHS)
 
 # Register image types
 declare -A IMG_TYPES_ARR
