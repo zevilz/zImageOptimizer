@@ -956,6 +956,10 @@ usage()
 	echo "                            from the search files in the full path of which "
 	echo "                            includes any value from the list."
 	echo
+	echo "    -ext <list>,            Comma separated list of script's extensions to "
+	echo "    --extensions=<list>     enable. Script's extensions disabled by default. "
+	echo "                            Use \"all\" to enable all found extensions."
+	echo
 }
 
 # Define default script vars
