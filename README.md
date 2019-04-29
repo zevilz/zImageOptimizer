@@ -59,7 +59,8 @@ Supported options:
 - -n (--new-only) - use the time marker file for looking new images only;
 - -m (--time-marker) - sets the custom full path or the custom filename of a time marker file (usage: `-m <name|path> | --time-marker=<name|path>`);
 - -tmp (--tmp-path) - sets the custom directory full path for temporary files (usage: `-tmp <dir> | --tmp-path=<dir>`);
-- -e (--exclude) - a comma separated parts list of paths to files for an exclusion from search (the script removes from the search files in the full path of which includes any value from the list; usage: `-e <list> | --exclude=<list>`).
+- -e (--exclude) - a comma separated parts list of paths to files for an exclusion from search (the script removes from the search files in the full path of which includes any value from the list; usage: `-e <list> | --exclude=<list>`);
+- -ext (--extensions) - a comma separated list of script's extensions to enable. Script's extensions disabled by default. Use `all` to enable all found extensions (usage: `-ext <list> | --extensions=<list> | -ext all | --extensions=all`).
 
 Notices:
 - you may combine options;
