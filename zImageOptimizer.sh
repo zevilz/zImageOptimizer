@@ -824,11 +824,10 @@ includeExtensions()
 					if [[ "$ENABLED_EXTENSIONS" == "all" ]]; then
 						. "$EXTF"
 					else
-						for ENABLED_EXTENSION in ${ENABLED_EXTENSIONS_ARR[@]}; do
-							if ! [[ -z $(grep "^#\ Extension:\ $ENABLED_EXTENSION$" "$EXTF") ]]; then
-								. "$EXTF"
-							fi
-						done
+						local EXTF_EXTENSION=$(grep -Eo '^#\ Extension:\ [[:alnum:]_-]+$' "$EXTF" | cut -d ' ' -f3)
+						if inArray "$EXTF_EXTENSION" "${ENABLED_EXTENSIONS_ARR[@]}"; then
+							. "$EXTF"
+						fi
 					fi
 				done
 			fi
@@ -1331,6 +1330,9 @@ if [ $CHECK_ONLY -eq 0 ]; then
 		FIND_INCLUDE=""
 
 	fi
+
+	# Hook: after-check-input-data
+	includeExtensions after-check-input-data
 
 fi
 
