@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.9.7
+# Version: 0.9.8
 
 sayWait()
 {
@@ -608,14 +608,37 @@ checkTimeMarkerPermissions()
 updateTimeMarker()
 {
 	if [ $NEW_ONLY -eq 1 ]; then
-		sleep 1
 		touch -m "$TIME_MARKER_FULL_PATH" > /dev/null
-		echo
 		if [ $TIME_MARKER_ISSET -eq 1 ]; then
 			echo "Time marker updated."
 		else
 			echo "Time marker created."
 		fi
+		echo
+	fi
+}
+
+fixTimeMarker()
+{
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		TIME_MARKER_MODIFIED_TIME=$(stat -t %s -f %m -- "$TIME_MARKER_FULL_PATH")
+	else
+		TIME_MARKER_MODIFIED_TIME=$(date -r "$TIME_MARKER_FULL_PATH" +%s)
+	fi
+
+	TIME_MARKER_MODIFIED_TIME=$(echo "$TIME_MARKER_MODIFIED_TIME+1" | bc)
+
+	if date --version >/dev/null 2>/dev/null ; then
+		touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED_TIME) "$TIME_MARKER_FULL_PATH" > /dev/null # GNU version of date
+	else
+		touch -t $(date -r $TIME_MARKER_MODIFIED_TIME +%Y%m%d%H%M.%S) "$TIME_MARKER_FULL_PATH" > /dev/null # Non GNU version of date
+	fi
+}
+
+updateModifyTime()
+{
+	if [ $NEW_ONLY -eq 1 ]; then
+		touch "$IMAGE" -r "$TIME_MARKER_FULL_PATH" > /dev/null
 	fi
 }
 
@@ -1453,6 +1476,9 @@ else
 	fi
 fi
 
+# Return to script dir to prevent find errors
+cd "$SCRIPT_PATH"
+
 # Find images
 IMAGES=$(find "$DIR_PATH" $FIND_INCLUDE \( $FIND_NAMES \) | findExclude)
 
@@ -1473,10 +1499,13 @@ if ! [ -z "$IMAGES" ]; then
 	# Check isset working dir in lock file
 	checkDirLock
 
-	echo "Optimizing..."
-
 	# Lock working dir in lock file
 	lockDir
+
+	# Update time marker
+	updateTimeMarker
+
+	echo "Optimizing..."
 
 	# Init stat vars
 	INPUT=0
@@ -1602,6 +1631,9 @@ if ! [ -z "$IMAGES" ]; then
 			# Restore permissions
 			restorePerms
 
+			# Update modify time from time marker
+			updateModifyTime
+
 			# Remove original file
 			rm "$TMP_PATH/$(basename "$IMAGE").bkp"
 
@@ -1667,8 +1699,8 @@ if ! [ -z "$IMAGES" ]; then
 
 	) # End of loop process. Further variable variables inside loop will not be available
 
-	# Update time marker
-	updateTimeMarker
+	# Time marker fix
+	fixTimeMarker
 
 	# Unlock working dir in lock file
 	unlockDir
