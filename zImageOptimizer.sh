@@ -620,18 +620,20 @@ updateTimeMarker()
 
 fixTimeMarker()
 {
-	if [[ "$OSTYPE" == "darwin"* ]]; then
-		TIME_MARKER_MODIFIED_TIME=$(stat -t %s -f %m -- "$TIME_MARKER_FULL_PATH")
-	else
-		TIME_MARKER_MODIFIED_TIME=$(date -r "$TIME_MARKER_FULL_PATH" +%s)
-	fi
+	if [ $NEW_ONLY -eq 1 ]; then
+		if [[ "$OSTYPE" == "darwin"* ]]; then
+			TIME_MARKER_MODIFIED_TIME=$(stat -t %s -f %m -- "$TIME_MARKER_FULL_PATH")
+		else
+			TIME_MARKER_MODIFIED_TIME=$(date -r "$TIME_MARKER_FULL_PATH" +%s)
+		fi
 
-	TIME_MARKER_MODIFIED_TIME=$(echo "$TIME_MARKER_MODIFIED_TIME+1" | bc)
+		TIME_MARKER_MODIFIED_TIME=$(echo "$TIME_MARKER_MODIFIED_TIME+1" | bc)
 
-	if date --version >/dev/null 2>/dev/null ; then
-		touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED_TIME) "$TIME_MARKER_FULL_PATH" > /dev/null # GNU version of date
-	else
-		touch -t $(date -r $TIME_MARKER_MODIFIED_TIME +%Y%m%d%H%M.%S) "$TIME_MARKER_FULL_PATH" > /dev/null # Non GNU version of date
+		if date --version >/dev/null 2>/dev/null ; then
+			touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED_TIME) "$TIME_MARKER_FULL_PATH" > /dev/null # GNU version of date
+		else
+			touch -t $(date -r $TIME_MARKER_MODIFIED_TIME +%Y%m%d%H%M.%S) "$TIME_MARKER_FULL_PATH" > /dev/null # Non GNU version of date
+		fi
 	fi
 }
 
