@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.9.8-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.8) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.9.9-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.9) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a specified directory include subdirectories on Linux, MacOS and FreeBSD.
 
@@ -410,6 +410,8 @@ Do you like the script? Would you like to support its development? Feel free to 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 04.05.2019 - 0.9.9 - bugfix (added check for using time marker in function fixTimeMarker)
+- 02.05.2019 - 0.9.8 - [changed logic of time marker, bugfix](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.8)
 - 02.05.2019 - 0.9.8 - [changed logic of time marker, bugfix](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.8)
 - 29.04.2019 - 0.9.7 - improved support for extensions, added new hooks and [more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.7)
 - 20.04.2019 - 0.9.6 - added support for extensions, added lock file and [more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.6)
