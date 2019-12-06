@@ -1009,6 +1009,23 @@ TIME_MARKER_PATH=""
 TIME_MARKER_NAME=".timeMarker"
 LOCK_FILE_NAME="zio.lock"
 
+# System vars for reSmush.it
+API_URL="http://api.resmush.it"
+QUALITY=92
+OUTPUT_DIR="."
+PRESERVE_EXIF=false
+PRESERVE_FILENAME=false
+APP_DIR=$(dirname "$0")
+TIME_LOG=true
+QUIET_MODE=false
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+LBLUE="\033[0;36m"
+NC="\033[0m" # No Color
+POSITIONAL=()
+UPDATE_LOCKFILE="/tmp/.resmushit-cli.update"
+MAXFILESIZE=5242880 #5Mb
+
 # Define CRON and direct using styling
 if [ "Z$(ps o comm="" -p $(ps o ppid="" -p $$))" == "Zcron" -o \
      "Z$(ps o comm="" -p $(ps o ppid="" -p $(ps o ppid="" -p $$)))" == "Zcron" ]; then
@@ -1195,8 +1212,8 @@ FIND_NAMES=$(echo -n '-name *.'; joinBy ' -or -name *.' $FIND_EXT)
 declare -A DEPS_DEBIAN_ARR
 declare -A DEPS_REDHAT_ARR
 declare -A DEPS_MACOS_ARR
-DEPS_DEBIAN="wget autoconf automake libtool make bc"
-DEPS_REDHAT="wget autoconf automake libtool make bc"
+DEPS_DEBIAN="wget autoconf automake libtool make bc jq curl"
+DEPS_REDHAT="wget autoconf automake libtool make bc jq curl"
 DEPS_MACOS=""
 if ! [ -z "${TOOLS[JPG]}" ]; then
 	DEPS_DEBIAN_ARR[JPG]="jpegoptim libjpeg-progs"
@@ -1623,13 +1640,6 @@ if ! [ -z "$IMAGES" ]; then
 
 			fi
 
-			# Calculate output
-			if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-				OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
-			else
-				OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
-			fi
-
 			# Restore permissions
 			restorePerms
 
@@ -1663,6 +1673,53 @@ if ! [ -z "$IMAGES" ]; then
 				echo
 			fi
 
+			if [[ $SIZE_BEFORE -lt $MAXFILESIZE ]]; then
+				echo "Sending picture to api..."
+				api_output=$(curl -F "files=@$IMAGE" --silent ${API_URL}"/?qlty=${QUALITY}&exif=${PRESERVE_EXIF}")
+				api_error=$(echo ${api_output} | jq .error)
+
+				# Check if the API returned an error
+				if [[ "$api_error" != 'null' ]]; 
+				then
+					api_error_long=$(echo ${api_output} | jq -r .error_long)
+					echo "API responds Error #${api_error} : ${api_error_long}"
+					exit 0
+				else
+					# Display result and download optimized file
+					api_percent=$(echo ${api_output} | jq .percent)
+					if [[ $api_percent == 0 ]]; 
+					then
+						$SETCOLOR_FAILURE
+						echo "File already optimized. No downloading necessary"
+						$SETCOLOR_NORMAL
+					else
+						api_src_size=$(echo ${api_output} | jq .src_size | awk '{ split( "B KB MB GB" , v ); s=1; while( $1>1024 ){ $1/=1024; s++ } printf "%.2f%s", $1, v[s] }')
+						api_dest_size=$(echo ${api_output} | jq -r .dest_size | awk '{ split( "B KB MB GB" , v ); s=1; while( $1>1024 ){ $1/=1024; s++ } printf "%.2f%s", $1, v[s] }')
+						echo -n "File optimized by "
+						$SETCOLOR_SUCCESS
+						echo -n "${api_percent}%%"
+						$SETCOLOR_NORMAL
+						echo " (from ${api_src_size} to ${api_dest_size}). Retrieving..."
+						api_file_output=$(echo ${api_output} | jq -r .dest)
+						curl ${api_file_output} --output "$IMAGE" --silent
+						echo "File saved."
+						#echo "File saved as $IMAGE"
+					fi
+				fi
+			else
+				echo "File ${current_file} is beyond 5MB ($SIZE_BEFORE bytes), skipping"
+			fi
+
+			# Sizes after
+			SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
+			SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
+
+			# Calculate output
+			if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
+				OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
+			else
+				OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
+			fi
 		done
 
 		# Hook: total-info-before
