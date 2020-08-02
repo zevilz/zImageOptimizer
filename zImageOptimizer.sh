@@ -797,7 +797,7 @@ checkEnabledExtensions()
 		cd "$SCRIPT_PATH"
 		if [ -d extensions ]; then
 			if [[ "$ENABLED_EXTENSIONS" != "all" ]]; then
-				if ! [[ "$ENABLED_EXTENSIONS" =~ ^[[:alnum:]_-,]+$ ]]; then
+				if ! [[ "$ENABLED_EXTENSIONS" =~ ^[[:alnum:],_-]+$ ]]; then
 					echo
 					$SETCOLOR_FAILURE
 					echo "Wrong format of extensions list!"
@@ -1520,6 +1520,9 @@ if ! [ -z "$IMAGES" ]; then
 
 			# Define additional vars for using hooks
 			OPTIMIZE=1
+			OPTIMIZE_JPG=1
+			OPTIMIZE_PNG=1
+			OPTIMIZE_GIF=1
 			RESTORE_IMAGE_CHECK=1
 
 			# Process counter
@@ -1566,7 +1569,7 @@ if ! [ -z "$IMAGES" ]; then
 				# Hook: optim-jpg-before
 				includeExtensions optim-jpg-before
 
-				if [ $OPTIMIZE -eq 1 ]; then
+				if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_JPG -eq 1 ]]; then
 
 					optimJPG "$IMAGE"
 
@@ -1581,7 +1584,7 @@ if ! [ -z "$IMAGES" ]; then
 				# Hook: optim-png-before
 				includeExtensions optim-png-before
 
-				if [ $OPTIMIZE -eq 1 ]; then
+				if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_PNG -eq 1 ]]; then
 
 					optimPNG "$IMAGE"
 
@@ -1596,7 +1599,7 @@ if ! [ -z "$IMAGES" ]; then
 				# Hook: optim-gif-before
 				includeExtensions optim-gif-before
 
-				if [ $OPTIMIZE -eq 1 ]; then
+				if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_GIF -eq 1 ]]; then
 
 					optimGIF "$IMAGE"
 
@@ -1637,7 +1640,9 @@ if ! [ -z "$IMAGES" ]; then
 			updateModifyTime
 
 			# Remove original file
-			rm "$TMP_PATH/$(basename "$IMAGE").bkp"
+			if [ -f "$TMP_PATH/$(basename "$IMAGE").bkp" ]; then
+				rm "$TMP_PATH/$(basename "$IMAGE").bkp"
+			fi
 
 			# Optimize results and sizes
 			if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
