@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.9.9-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.9) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.10.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.10.0) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a specified directory include subdirectories on Linux, MacOS and FreeBSD.
 
@@ -49,27 +49,29 @@ bash zImageOptimizer.sh --path=/path/to/files
 ```
 
 Supported options:
-- -h (--help) - shows a help message;
-- -v (--version) - shows a script version;
-- -p (--path) - specify a full path to the input directory (usage: `-p <dir> | --path=<dir>`);
-- -q (--quiet) - executes the script without any questions and users actions;
-- -l (--less) - don't shows the optimizing process;
-- -c (--check-only) - checks tools with an opportunity to install dependences;
-- -t (--time) - sets the period for which to look for files by last modified time (usage: `-t <period> | --time=<period>`);
-- -n (--new-only) - use the time marker file for looking new images only;
-- -m (--time-marker) - sets the custom full path or the custom filename of a time marker file (usage: `-m <name|path> | --time-marker=<name|path>`);
-- -tmp (--tmp-path) - sets the custom directory full path for temporary files (usage: `-tmp <dir> | --tmp-path=<dir>`);
-- -e (--exclude) - a comma separated parts list of paths to files for an exclusion from search (the script removes from the search files in the full path of which includes any value from the list; usage: `-e <list> | --exclude=<list>`);
-- -ext (--extensions) - a comma separated list of script's extensions to enable. Script's extensions disabled by default. Use `all` to enable all found extensions (usage: `-ext <list> | --extensions=<list> | -ext all | --extensions=all`).
+- `-h (--help)` - shows a help message;
+- `-v (--version)` - shows a script version;
+- `-p (--path)` - specify a full path to the input directory (usage: `-p <dir> | --path=<dir>`);
+- `-q (--quiet)` - executes the script without any questions and users actions;
+- `-l (--less)` - don't shows the optimizing process;
+- `-c (--check-only)` - checks tools with an opportunity to install dependences;
+- `-t (--time)` - sets the period for which to look for files by last modified time (usage: `-t <period> | --time=<period>`);
+- `-n (--new-only)` - use the time marker file for looking new images only;
+- `-m (--time-marker)` - sets the custom full path or the custom filename of a time marker file (usage: `-m <name|path> | --time-marker=<name|path>`);
+- `-tmp (--tmp-path)` - sets the custom directory full path for temporary files (usage: `-tmp <dir> | --tmp-path=<dir>`);
+- `-e (--exclude)` - a comma separated parts list of paths to files for an exclusion from search (the script removes from the search files in the full path of which includes any value from the list; usage: `-e <list> | --exclude=<list>`);
+- `-ext (--extensions)` - a comma separated list of script's extensions to enable. Script's extensions disabled by default. Use `all` to enable all found extensions (usage: `-ext <list> | --extensions=<list> | -ext all | --extensions=all`).
+- `--unlock` - manually delete target dir from lockfile if previous script launch was interrupted incorrectly or killed by system.
 
 Notices:
 - you may combine options;
-- -h(--help) option ignore all other options;
-- -v(--version) option ignore all other options (except for -h(--help));
-- -c(--check-only) option ignore all other options (except for -h(--help) and -v(--version));
-- a path in -p(--path) and -tmp(--tmp-path) options may be with and without a slash in the end of the path;
-- it is impossible to use together -t(--time) and -n(--new-only) options;
-- you must use -m(--time-marker) option with -n(--new-only) option.
+- `-h (--help)` option ignore all other options;
+- `-v (--version)` option ignore all other options (except for `-h (--help)`);
+- `-c (--check-only)` option ignore all other options (except for `-h (--help)` and `-v (--version)`);
+- path in `-p (--path)` and `-tmp (--tmp-path)` options may be with and without a slash in the end of the path;
+- it is impossible to use together `-t (--time)` and `-n (--new-only)` options;
+- you must use `-m (--time-marker)` option with `-n (--new-only)` option;
+- you must use `--unlock` option with `-p (--path)` option (just add `--unlock` option in next run). 
 
 Recommendation: use [GNU Screen](https://en.wikipedia.org/wiki/GNU_Screen) or analogs if there are many images in an input directory, because the optimization may can take long time.
 
@@ -105,17 +107,17 @@ bash zImageOptimizer.sh -p /path/to/files -t 15d
 bash zImageOptimizer.sh -p /path/to/files -n
 ```
 
-Notice: by default the time marker file created in working a directory which set in -p(--path) option with a filename **.timeMarker**.
+Notice: by default the time marker file created in working a directory which set in `-p (--path)` option with a filename **.timeMarker**.
 
 #### Custom time marker name
-Use -m(--time-marker) option and set a new filename if you want to change the time marker filename:
+Use `-m (--time-marker)` option and set a new filename if you want to change the time marker filename:
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -n -m myCustomMarkerName
 ```
 Path to time marker will be `/path/to/files/myCustomMarkerName`
 
 #### Custom time marker path and name
-Use -m(--time-marker) option and set a new path and filename if you want to change the time marker path:
+Use `-m (--time-marker)` option and set a new path and filename if you want to change the time marker path:
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -n -m /path/to/marker/directory/markerName
 ```
@@ -140,7 +142,7 @@ Also you may collect all markers in own directory:
 0 1 * * * /bin/bash zImageOptimizer.sh -p /second/directory -q -n -m /path/to/markers/directory/secondMarkerName
 ```
 
-Notice: use -l(--less) option if you want exclude optimizing process in cron email messages
+Notice: use `-l (--less)` option if you want exclude optimizing process in cron email messages
 
 #### Manually create/modify the time marker file
 You may manually create the time marker file or change it last modified time:
@@ -153,13 +155,13 @@ If you want to create the marker with specify time or change marker last modifie
 touch -t [[CC]YY]MMDDhhmm[.SS]
 ```
 where:
-- CC – 2 first digits of the year,
-- YY – 2 last digits of the year,
-- MM – month,
-- DD – date,
-- hh – hours in 24 format,
-- mm – minutes,
-- SS – seconds.
+- `CC` – 2 first digits of the year,
+- `YY` – 2 last digits of the year,
+- `MM` – month,
+- `DD` – date,
+- `hh` – hours in 24 format,
+- `mm` – minutes,
+- `SS` – seconds.
 
 Example:
 ```bash
@@ -191,7 +193,7 @@ docker run -it -u "$UID:$GID" -d --volume /mnt/ImagesHundred/marker:/work/marker
 ## Automatical installing dependences
 Notice: curent user must be root or user with sudo access.
 
-Start the script in the optimization mode (-p|--path) or the checking tools mode (-c|--check-only, recommended) if you want to install dependences automatically. It will check installed tools and printing a choise option dialog if one or more tools not found. Select **Install dependences and exit** option by typing a appropriate number and press enter. The script will install dependences based on your platform, distribution and package manager. You may need to enter a password and confirm actions during installation dependences. Restart script to recheck installed tools after that.
+Start the script in the optimization mode (`-p|--path`) or the checking tools mode (`-c|--check-only`, recommended) if you want to install dependences automatically. It will check installed tools and printing a choise option dialog if one or more tools not found. Select **Install dependences and exit** option by typing a appropriate number and press enter. The script will install dependences based on your platform, distribution and package manager. You may need to enter a password and confirm actions during installation dependences. Restart script to recheck installed tools after that.
 
 Supported on:
 - DEB-based linux distributions (i686/amd64)
@@ -357,24 +359,37 @@ rm -rf advancecomp-2.0
 ```
 
 ## Extensions
-Guide for extensions comming soon...
+
+The script have support for extensions using special hooks. You can use [prepared extensions](https://github.com/zevilz/zImageOptimizer-extensions) or [make own](https://github.com/zevilz/zImageOptimizer/wiki/Extensions-development).
+
+Extensions must be placed in `extensions` directory near the main script. Extensions disabled by default. Use `-ext (--extensions)` to enable needed:
+```bash
+bash zImageOptimizer.sh -p /path/to/files -ext my_extension,another_extension
+```
+
+Information about extensions you can see after launch the script. It automatically check selected extensions exists in `extensions` directory.
+
+Or you can enable all extensions from dir `extensions`:
+```bash
+bash zImageOptimizer.sh -p /path/to/files -ext all
+```
 
 ## Troubleshooting
 
 **I'm install dependences but one of tool is marked as NOT FOUND**
 
-By default the script looks for binary files into folowing directories /bin /usr/bin /usr/local/bin. If your binary file is not in these directories add your directory in variable BINARY_PATHS through a space like below and restart the script
+By default the script looks for binary files into folowing directories `/bin` `/usr/bin` `/usr/local/bin`. If your binary file is not in these directories add your directory in variable `BINARY_PATHS` through a space like below and restart the script
 ```bash
 BINARY_PATHS="/bin /usr/bin /usr/local/bin /your/custom/path"
 ```
 
 **I have errors `djpeg: can't open /tmp/*` and `cjpeg: can't open /tmp/*` during optimization**
 
-You have not write access to the directory /tmp. Tools djpeg and cjpeg use this directory for temporary files. Use -tmp(--tmp-path) option for set custom path.
+You have not write access to the directory /tmp. Tools djpeg and cjpeg use this directory for temporary files. Use `-tmp (--tmp-path)` option for set custom path.
 
 **I run the script but have error `The directory is already locked by another script run! Exiting...`**
 
-The script is already running in specified directory. If not, previous run of the script was not completed correctly. Delete lock file (`/tmp/zio.lock` by default) manually and repeat.
+The script is already running in specified directory. If not, previous run of the script was not completed correctly. Delete dir from lock file (`/tmp/zio.lock` by default) or delete it manually and repeat. Also you can add `--unlock` option in next launch (dir automatically delete from lock file).
 
 ## TODO
 - [x] ~~add option for execute the script without any questions and users actions (for cron usage)~~
@@ -410,6 +425,7 @@ Do you like the script? Would you like to support its development? Feel free to 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 03.08.2020 - 0.10.0 - added `--unlock` option, added new hooks for extensions, bugfixes
 - 04.05.2019 - 0.9.9 - bugfix (added check for using time marker in function fixTimeMarker)
 - 02.05.2019 - 0.9.8 - [changed logic of time marker, bugfix](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.8)
 - 02.05.2019 - 0.9.8 - [changed logic of time marker, bugfix](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.8)
