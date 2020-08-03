@@ -1250,6 +1250,9 @@ MIN_VERSION_MACOS=10
 # Register min version of FreeBSD.
 MIN_VERSION_FREEBSD=10
 
+# Hook: after-init-deps-vars
+includeExtensions after-init-deps-vars
+
 # Hook: after-init-vars
 includeExtensions after-init-vars
 
