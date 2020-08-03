@@ -985,6 +985,11 @@ usage()
 	echo "    --extensions=<list>     enable. Script's extensions disabled by default. "
 	echo "                            Use \"all\" to enable all found extensions."
 	echo
+	echo "    --unlock                Manually delete target dir from lockfile if "
+	echo "                            previous script launch was interrupted "
+	echo "                            incorrectly or killed by system. You must use "
+	echo "                            this option with -p|--path option."
+	echo
 }
 
 # Define default script vars
@@ -1008,6 +1013,7 @@ SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 TIME_MARKER_PATH=""
 TIME_MARKER_NAME=".timeMarker"
 LOCK_FILE_NAME="zio.lock"
+UNLOCK=0
 
 # Define CRON and direct using styling
 if [ "Z$(ps o comm="" -p $(ps o ppid="" -p $$))" == "Zcron" -o \
@@ -1079,6 +1085,9 @@ while [ 1 ] ; do
 
 	elif [[ "$1" = "--debug" || "$1" = "-d" ]] ; then
 		DEBUG=1
+
+	elif [[ "$1" = "--unlock" ]] ; then
+		UNLOCK=1
 
 	elif [ -z "$1" ] ; then
 		break
@@ -1497,6 +1506,11 @@ includeExtensions init-loop-vars-after
 
 # If images found
 if ! [ -z "$IMAGES" ]; then
+
+	# Unlock
+	if [[ $UNLOCK -eq 1 ]]; then
+		unlockDir
+	fi
 
 	# Check isset working dir in lock file
 	checkDirLock
