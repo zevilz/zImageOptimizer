@@ -211,6 +211,8 @@ Tested on:
   - Debian 7.11 i686 minimal
   - Debian 8.9 i686 minimal
   - Debian 9.2 amd64
+  - Debian 10 i686
+  - Debian 10 amd64
   - Ubuntu 14.04.5 amd64
   - Ubuntu 16.04.3 amd64
   - Ubuntu 18.04.2 amd64
