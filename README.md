@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.10.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.10.0) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.10.1-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.10.1) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a specified directory include subdirectories on Linux, MacOS and FreeBSD.
 
@@ -71,7 +71,8 @@ Notices:
 - path in `-p (--path)` and `-tmp (--tmp-path)` options may be with and without a slash in the end of the path;
 - it is impossible to use together `-t (--time)` and `-n (--new-only)` options;
 - you must use `-m (--time-marker)` option with `-n (--new-only)` option;
-- you must use `--unlock` option with `-p (--path)` option (just add `--unlock` option in next run). 
+- you must use `--unlock` option with `-p (--path)` option (just add `--unlock` option in next run);
+- you can install dependences without any questions in check mode (`-c (--check-only)`) using `-q (--quiet)` option. 
 
 Recommendation: use [GNU Screen](https://en.wikipedia.org/wiki/GNU_Screen) or analogs if there are many images in an input directory, because the optimization may can take long time.
 
@@ -427,6 +428,7 @@ Do you like the script? Would you like to support its development? Feel free to 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 16.08.2020 - 0.10.1 - [bugfix](https://github.com/zevilz/zImageOptimizer/releases/tag/0.10.1)
 - 03.08.2020 - 0.10.0 - added `--unlock` option, added new hooks for extensions, bugfixes
 - 04.05.2019 - 0.9.9 - bugfix (added check for using time marker in function fixTimeMarker)
 - 02.05.2019 - 0.9.8 - [changed logic of time marker, bugfix](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.8)
