@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.10.2
+# Version: 0.10.3
 
 sayWait()
 {
@@ -637,13 +637,6 @@ fixTimeMarker()
 	fi
 }
 
-updateModifyTime()
-{
-	if [ $NEW_ONLY -eq 1 ]; then
-		touch "$IMAGE" -r "$TIME_MARKER_FULL_PATH" > /dev/null
-	fi
-}
-
 optimJpegoptim()
 {
 	jpegoptim --strip-all "$1" > /dev/null
@@ -905,23 +898,6 @@ checkDirLock()
 			exit 0
 		fi
 	fi
-}
-
-savePerms()
-{
-	if [[ "$OSTYPE" == "linux-gnu" ]]; then
-		CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
-		CUR_PERMS=$(stat -c "%a" "$IMAGE")
-	else
-		CUR_OWNER=$(ls -l "$IMAGE" | awk '{print $3":"$4}')
-		CUR_PERMS=$(stat -f "%Lp" "$IMAGE")
-	fi
-}
-
-restorePerms()
-{
-	chown $CUR_OWNER "$IMAGE"
-	chmod $CUR_PERMS "$IMAGE"
 }
 
 usage()
@@ -1581,11 +1557,8 @@ if ! [ -z "$IMAGES" ]; then
 
 			if [ $BACKUP -eq 1 ]; then
 
-				# Save permissions
-				savePerms
-
-				# Save original file
-				cp -f "$IMAGE" "$TMP_PATH/$(basename "$IMAGE").bkp"
+				# Backup original file
+				cp -fp "$IMAGE" "$TMP_PATH/$(basename "$IMAGE").bkp"
 
 			fi
 
@@ -1652,16 +1625,10 @@ if ! [ -z "$IMAGES" ]; then
 				if [ $RESTORE_IMAGE_CHECK -eq 1 ]; then
 
 					if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-						cp -f "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
+						cp -fp "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
 					fi
 
 				fi
-
-				# Restore permissions
-				restorePerms
-
-				# Update modify time from time marker
-				updateModifyTime
 
 				# Remove backup if exists
 				if [ -f "$TMP_PATH/$(basename "$IMAGE").bkp" ]; then
