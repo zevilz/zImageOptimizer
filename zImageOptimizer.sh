@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.10.0
+# Version: 0.10.2
 
 sayWait()
 {
@@ -1548,6 +1548,7 @@ if ! [ -z "$IMAGES" ]; then
 			OPTIMIZE_PNG=1
 			OPTIMIZE_GIF=1
 			RESTORE_IMAGE_CHECK=1
+			BACKUP=1
 
 			# Process counter
 			if [ $LESS -eq 0 ]; then
@@ -1578,11 +1579,15 @@ if ! [ -z "$IMAGES" ]; then
 			# Get image extension
 			EXT=${IMAGE##*.}
 
-			# Save permissions
-			savePerms
+			if [ $BACKUP -eq 1 ]; then
 
-			# Save original file
-			cp -f "$IMAGE" "$TMP_PATH/$(basename "$IMAGE").bkp"
+				# Save permissions
+				savePerms
+
+				# Save original file
+				cp -f "$IMAGE" "$TMP_PATH/$(basename "$IMAGE").bkp"
+
+			fi
 
 			# Hook: optim-before
 			includeExtensions optim-before
@@ -1641,55 +1646,55 @@ if ! [ -z "$IMAGES" ]; then
 			SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
 			SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
 
-			# Restore original if it smaller as optimized
-			if [ $RESTORE_IMAGE_CHECK -eq 1 ]; then
+			if [ $BACKUP -eq 1 ]; then
 
-				if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-					cp -f "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
+				# Restore original if it smaller as optimized
+				if [ $RESTORE_IMAGE_CHECK -eq 1 ]; then
+
+					if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
+						cp -f "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
+					fi
+
+				fi
+
+				# Restore permissions
+				restorePerms
+
+				# Update modify time from time marker
+				updateModifyTime
+
+				# Remove backup if exists
+				if [ -f "$TMP_PATH/$(basename "$IMAGE").bkp" ]; then
+					rm "$TMP_PATH/$(basename "$IMAGE").bkp"
 				fi
 
 			fi
 
-			# Calculate output
+			# Calculate stats
 			if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
 				OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
 			else
 				OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
-			fi
-
-			# Restore permissions
-			restorePerms
-
-			# Update modify time from time marker
-			updateModifyTime
-
-			# Remove original file
-			if [ -f "$TMP_PATH/$(basename "$IMAGE").bkp" ]; then
-				rm "$TMP_PATH/$(basename "$IMAGE").bkp"
-			fi
-
-			# Optimize results and sizes
-			if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-				if [ $LESS -eq 0 ]; then
-					$SETCOLOR_FAILURE
-					echo -n "[NOT OPTIMIZED]"
-					$SETCOLOR_NORMAL
-					echo -n " ${SIZE_BEFORE_SCALED}Kb"
-				fi
-			else
-				if [ $LESS -eq 0 ]; then
-					$SETCOLOR_SUCCESS
-					echo -n "[OPTIMIZED]"
-					$SETCOLOR_NORMAL
-					echo -n " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
-				fi
 				SIZE_DIFF=$(echo "$SIZE_BEFORE-$SIZE_AFTER" | bc)
 				SAVED_SIZE=$(echo "$SAVED_SIZE+$SIZE_DIFF" | bc)
 				IMAGES_OPTIMIZED=$(echo "$IMAGES_OPTIMIZED+1" | bc)
 			fi
 
 			if [ $LESS -eq 0 ]; then
-				echo
+
+				# Optimize results and sizes
+				if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
+					$SETCOLOR_FAILURE
+					echo -n "[NOT OPTIMIZED]"
+					$SETCOLOR_NORMAL
+					echo " ${SIZE_BEFORE_SCALED}Kb"
+				else
+					$SETCOLOR_SUCCESS
+					echo -n "[OPTIMIZED]"
+					$SETCOLOR_NORMAL
+					echo " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
+				fi
+
 			fi
 
 		done
