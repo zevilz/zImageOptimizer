@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.10.3
+# Version: 0.10.4
 
 sayWait()
 {
@@ -637,6 +637,13 @@ fixTimeMarker()
 	fi
 }
 
+updateModifyTime()
+{
+	if [ $NEW_ONLY -eq 1 ]; then
+		touch "$IMAGE" -r "$TIME_MARKER_FULL_PATH" > /dev/null
+	fi
+}
+
 optimJpegoptim()
 {
 	jpegoptim --strip-all "$1" > /dev/null
@@ -898,6 +905,23 @@ checkDirLock()
 			exit 0
 		fi
 	fi
+}
+
+savePerms()
+{
+	if [[ "$OSTYPE" == "linux-gnu" ]]; then
+		CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
+		CUR_PERMS=$(stat -c "%a" "$IMAGE")
+	else
+		CUR_OWNER=$(ls -l "$IMAGE" | awk '{print $3":"$4}')
+		CUR_PERMS=$(stat -f "%Lp" "$IMAGE")
+	fi
+}
+
+restorePerms()
+{
+	chown $CUR_OWNER "$IMAGE"
+	chmod $CUR_PERMS "$IMAGE"
 }
 
 usage()
@@ -1518,13 +1542,17 @@ if ! [ -z "$IMAGES" ]; then
 	echo "$IMAGES" | ( \
 		while read IMAGE ; do
 
-			# Define additional vars for using hooks
+			# Additional vars for using hooks
 			OPTIMIZE=1
 			OPTIMIZE_JPG=1
 			OPTIMIZE_PNG=1
 			OPTIMIZE_GIF=1
 			RESTORE_IMAGE_CHECK=1
 			BACKUP=1
+
+			# Internal vars
+			RESTORE_IMAGE_PERMS=1
+			UPDATE_IMAGE_MODIFY_TIME=1
 
 			# Process counter
 			if [ $LESS -eq 0 ]; then
@@ -1556,6 +1584,9 @@ if ! [ -z "$IMAGES" ]; then
 			EXT=${IMAGE##*.}
 
 			if [ $BACKUP -eq 1 ]; then
+
+				# Save permissions
+				savePerms
 
 				# Backup original file
 				cp -fp "$IMAGE" "$TMP_PATH/$(basename "$IMAGE").bkp"
@@ -1626,6 +1657,8 @@ if ! [ -z "$IMAGES" ]; then
 
 					if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
 						cp -fp "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
+						RESTORE_IMAGE_PERMS=0
+						UPDATE_IMAGE_MODIFY_TIME=0
 					fi
 
 				fi
@@ -1635,6 +1668,16 @@ if ! [ -z "$IMAGES" ]; then
 					rm "$TMP_PATH/$(basename "$IMAGE").bkp"
 				fi
 
+			fi
+
+			# Restore image permissions
+			if [ $RESTORE_IMAGE_PERMS -eq 1 ]; then
+				restorePerms
+			fi
+
+			# Update modify time from time marker
+			if [ $UPDATE_IMAGE_MODIFY_TIME -eq 1 ]; then
+				updateModifyTime
 			fi
 
 			# Calculate stats
