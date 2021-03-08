@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Simple image optimizer for JPEG, PNG and GIF images.
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
@@ -180,7 +180,7 @@ installDeps()
 		PLATFORM_ARCH=$(getconf LONG_BIT)
 
 		PLATFORM_VERSION="$(defaults read loginwindow SystemVersionStampAsString)"
-		if [[ $(echo $PLATFORM_VERSION | cut -d '.' -f2) -ge $MIN_VERSION_MACOS ]]; then
+		if [[ $(echo $PLATFORM_VERSION | cut -d '.' -f1) -ge $MIN_VERSION_MACOS ]]; then
 			PLATFORM_SUPPORT=1
 		fi
 
