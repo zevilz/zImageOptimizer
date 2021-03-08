@@ -455,8 +455,8 @@ installDeps()
 		fi
 
 	else
-		echo "Your platform not supported! Please install dependaces manually."
-		echo "Info: $GIT_URL"
+		echo "Your platform is not supported! Please install dependaces manually."
+		echo "Info: $GIT_URL#manual-installing-dependences"
 		echo
 	fi
 }
