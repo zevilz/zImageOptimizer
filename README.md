@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.10.4-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.10.4) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.10.5-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.10.5) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a specified directory include subdirectories on Linux, MacOS and FreeBSD.
 
@@ -205,7 +205,7 @@ Supported on:
   - CentOS 6+
   - Fedora 24+
 - FreeBSD 10+ (i686/amd64)
-- MacOS 10.10+
+- MacOS 10+
 
 Tested on:
 - DEB-based linux distributions
@@ -236,6 +236,7 @@ Tested on:
   - 10.10
   - 10.11.6
   - 10.13.6
+  - 11.2.1
 
 If you have errors during installing dependences on supported platforms please contact me or open issue.
 
@@ -428,6 +429,7 @@ Do you like the script? Would you like to support its development? Feel free to 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 09.03.2021 - 0.10.5 - added support for automatic install dependences on MacOS 11+
 - 27.09.2020 - 0.10.4 - fixed permissions and modify time for optimized images
 - 03.09.2020 - 0.10.3 - preserve permissions and modify time during backup/restore
 - 03.09.2020 - 0.10.2 - added BACKUP var in main loop for extensions, refactoring
