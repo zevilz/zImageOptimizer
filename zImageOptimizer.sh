@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Simple image optimizer for JPEG, PNG and GIF images.
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
@@ -180,7 +180,7 @@ installDeps()
 		PLATFORM_ARCH=$(getconf LONG_BIT)
 
 		PLATFORM_VERSION="$(defaults read loginwindow SystemVersionStampAsString)"
-		if [[ $(echo $PLATFORM_VERSION | cut -d '.' -f2) -ge $MIN_VERSION_MACOS ]]; then
+		if [[ $(echo $PLATFORM_VERSION | cut -d '.' -f1) -ge $MIN_VERSION_MACOS ]]; then
 			PLATFORM_SUPPORT=1
 		fi
 
@@ -455,8 +455,8 @@ installDeps()
 		fi
 
 	else
-		echo "Your platform not supported! Please install dependaces manually."
-		echo "Info: $GIT_URL"
+		echo "Your platform is not supported! Please install dependaces manually."
+		echo "Info: $GIT_URL#manual-installing-dependences"
 		echo
 	fi
 }
@@ -1244,7 +1244,7 @@ MIN_VERSION_FEDORA=24
 MIN_VERSION_RHEL=6
 MIN_VERSION_CENTOS=6
 
-# Register min version MacOS (second digit; ex. 10.12.2 == 12).
+# Register min version MacOS.
 MIN_VERSION_MACOS=10
 
 # Register min version of FreeBSD.
