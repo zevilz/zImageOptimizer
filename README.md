@@ -6,7 +6,7 @@ Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a s
 - lossless image optimization with a small image size in the output;
 - works recursively;
 - checks optimization tools after the start;
-- option for automatic install dependences and optimization tools if one or more of it is not found (see supported distributions [here](https://github.com/zevilz/zImageOptimizer#automatical-installing-dependences));
+- option for automatic install dependencies and optimization tools if one or more of it is not found (see supported distributions [here](https://github.com/zevilz/zImageOptimizer#automatical-installing-dependencies));
 - readable output info and total info after optimization;
 - no limit for a file size (limited only by hardware);
 - no limit for a number of files;
@@ -54,7 +54,7 @@ Supported options:
 - `-p (--path)` - specify a full path to the input directory (usage: `-p <dir> | --path=<dir>`);
 - `-q (--quiet)` - executes the script without any questions and users actions;
 - `-l (--less)` - don't shows the optimizing process;
-- `-c (--check-only)` - checks tools with an opportunity to install dependences;
+- `-c (--check-only)` - checks tools with an opportunity to install dependencies;
 - `-t (--time)` - sets the period for which to look for files by last modified time (usage: `-t <period> | --time=<period>`);
 - `-n (--new-only)` - use the time marker file for looking new images only;
 - `-m (--time-marker)` - sets the custom full path or the custom filename of a time marker file (usage: `-m <name|path> | --time-marker=<name|path>`);
@@ -72,7 +72,7 @@ Notices:
 - it is impossible to use together `-t (--time)` and `-n (--new-only)` options;
 - you must use `-m (--time-marker)` option with `-n (--new-only)` option;
 - you must use `--unlock` option with `-p (--path)` option (just add `--unlock` option in next run);
-- you can install dependences without any questions in check mode (`-c (--check-only)`) using `-q (--quiet)` option. 
+- you can install dependencies without any questions in check mode (`-c (--check-only)`) using `-q (--quiet)` option. 
 
 Recommendation: use [GNU Screen](https://en.wikipedia.org/wiki/GNU_Screen) or analogs if there are many images in an input directory, because the optimization may can take long time.
 
@@ -191,10 +191,10 @@ Or you can come up with your own CMD for example:
 docker run -it -u "$UID:$GID" -d --volume /mnt/ImagesHundred/marker:/work/marker --volume /mnt/ImagesHundred/images/:/work/images/ -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro varunbatrait/zimageoptimizer ./zImageOptimizer.sh -p /work/images/ -q -n -m /work/marker/marker
 ```
 
-## Automatical installing dependences
+## Automatical installing dependencies
 Notice: curent user must be root or user with sudo access.
 
-Start the script in the optimization mode (`-p|--path`) or the checking tools mode (`-c|--check-only`, recommended) if you want to install dependences automatically. It will check installed tools and printing a choise option dialog if one or more tools not found. Select **Install dependences and exit** option by typing a appropriate number and press enter. The script will install dependences based on your platform, distribution and package manager. You may need to enter a password and confirm actions during installation dependences. Restart script to recheck installed tools after that.
+Start the script in the optimization mode (`-p|--path`) or the checking tools mode (`-c|--check-only`, recommended) if you want to install dependencies automatically. It will check installed tools and printing a choise option dialog if one or more tools not found. Select **Install dependencies and exit** option by typing a appropriate number and press enter. The script will install dependencies based on your platform, distribution and package manager. You may need to enter a password and confirm actions during installation dependencies. Restart script to recheck installed tools after that.
 
 Supported on:
 - DEB-based linux distributions (i686/amd64)
@@ -238,9 +238,9 @@ Tested on:
   - 10.13.6
   - 11.2.1
 
-If you have errors during installing dependences on supported platforms please contact me or open issue.
+If you have errors during installing dependencies on supported platforms please contact me or open issue.
 
-## Manual installing dependences
+## Manual installing dependencies
 Notice: curent user must be root or user with sudo access.
 
 **Install following packages from repositories/ports**
@@ -380,7 +380,7 @@ bash zImageOptimizer.sh -p /path/to/files -ext all
 
 ## Troubleshooting
 
-**I'm install dependences but one of tool is marked as NOT FOUND**
+**I'm install dependencies but one of tool is marked as NOT FOUND**
 
 By default the script looks for binary files into folowing directories `/bin` `/usr/bin` `/usr/local/bin`. If your binary file is not in these directories add your directory in variable `BINARY_PATHS` through a space like below and restart the script
 ```bash
@@ -401,8 +401,8 @@ The script is already running in specified directory. If not, previous run of th
 - [ ] add an option for set quality for more small files in the output
 - [x] ~~add an option for check tools only~~
 - [x] ~~add support for optimize gif images~~
-- [x] ~~add support for automatic install dependences on other platforms and distributions with other package managers~~
-- [ ] add support for automatic install dependences on others linux distributions
+- [x] ~~add support for automatic install dependencies on other platforms and distributions with other package managers~~
+- [ ] add support for automatic install dependencies on others linux distributions
 - [ ] add support for parallel optimization
 - [ ] even more to improve results of compression
 - [ ] add SVG support
@@ -429,7 +429,7 @@ Do you like the script? Would you like to support its development? Feel free to 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
-- 09.03.2021 - 0.10.5 - added support for automatic install dependences on MacOS 11+
+- 09.03.2021 - 0.10.5 - added support for automatic install dependencies on MacOS 11+
 - 27.09.2020 - 0.10.4 - fixed permissions and modify time for optimized images
 - 03.09.2020 - 0.10.3 - preserve permissions and modify time during backup/restore
 - 03.09.2020 - 0.10.2 - added BACKUP var in main loop for extensions, refactoring
@@ -445,16 +445,16 @@ Do you like the script? Would you like to support its development? Feel free to 
 - 11.03.2018 - 0.9.3 - added a restoration of original files if their size is less or equal than optimized files size
 - 27.02.2018 - 0.9.2 - fixed PNG file permissions if the script does not work from files owner
 - 27.02.2018 - 0.9.1 - [added new features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.1) and bugfixes
-- 25.02.2018 - 0.9.0 - added support for working the script on MacOS 10.10+ with automatic install dependences
+- 25.02.2018 - 0.9.0 - added support for working the script on MacOS 10.10+ with automatic install dependencies
 - 24.02.2018 - 0.8.1 - [added new parameter, updated info after optimizing, small fixes and small code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.1)
 - 04.12.2017 - 0.8.0 - [new features, bugfixes and code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0)
-- 30.11.2017 - 0.7.0 - added support for working the script on FreeBSD with automatic install dependences, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
-- 28.11.2017 - 0.6.0 - added support for automatic install dependences on RHEL 6+ and Fedora 24+
+- 30.11.2017 - 0.7.0 - added support for working the script on FreeBSD with automatic install dependencies, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
+- 28.11.2017 - 0.6.0 - added support for automatic install dependencies on RHEL 6+ and Fedora 24+
 - 25.11.2017 - 0.5.0 - bug fixes and code refactoring
-- 25.11.2017 - 0.4.0 - added support for automatic install dependences on Debian 7.* and some bugfixes
-- 23.11.2017 - 0.3.0 - added support for automatic install dependences on CentOS 6.*
+- 25.11.2017 - 0.4.0 - added support for automatic install dependencies on Debian 7.* and some bugfixes
+- 23.11.2017 - 0.3.0 - added support for automatic install dependencies on CentOS 6.*
 - 22.11.2017 - 0.2.3 - some bug fixes
-- 21.11.2017 - 0.2.2 - added support for automatic install dependences on CentOS 7.*
+- 21.11.2017 - 0.2.2 - added support for automatic install dependencies on CentOS 7.*
 - 20.11.2017 - 0.2.1 - some bug fixes
 - 20.11.2017 - 0.2.0 - added [some features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.0) and code refactoring
 - 19.11.2017 - 0.1.1 - some bug fixes
