@@ -1244,7 +1244,7 @@ MIN_VERSION_FEDORA=24
 MIN_VERSION_RHEL=6
 MIN_VERSION_CENTOS=6
 
-# Register min version MacOS (second digit; ex. 10.12.2 == 12).
+# Register min version MacOS.
 MIN_VERSION_MACOS=10
 
 # Register min version of FreeBSD.
