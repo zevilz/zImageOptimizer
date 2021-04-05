@@ -1549,6 +1549,8 @@ if ! [ -z "$IMAGES" ]; then
 			OPTIMIZE_GIF=1
 			RESTORE_IMAGE_CHECK=1
 			BACKUP=1
+			CALCULATE_STATS=1
+			SHOW_OPTIMIZE_RESULT=1
 
 			# Internal vars
 			RESTORE_IMAGE_PERMS=1
@@ -1647,8 +1649,10 @@ if ! [ -z "$IMAGES" ]; then
 			includeExtensions optim-after
 
 			# Sizes after
-			SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
-			SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
+			if [ $CALCULATE_STATS -eq 1 ]; then
+				SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
+				SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
+			fi
 
 			if [ $BACKUP -eq 1 ]; then
 
@@ -1681,30 +1685,32 @@ if ! [ -z "$IMAGES" ]; then
 			fi
 
 			# Calculate stats
-			if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-				OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
-			else
-				OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
-				SIZE_DIFF=$(echo "$SIZE_BEFORE-$SIZE_AFTER" | bc)
-				SAVED_SIZE=$(echo "$SAVED_SIZE+$SIZE_DIFF" | bc)
-				IMAGES_OPTIMIZED=$(echo "$IMAGES_OPTIMIZED+1" | bc)
+			if [ $CALCULATE_STATS -eq 1 ]; then
+				if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
+					OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
+				else
+					OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
+					SIZE_DIFF=$(echo "$SIZE_BEFORE-$SIZE_AFTER" | bc)
+					SAVED_SIZE=$(echo "$SAVED_SIZE+$SIZE_DIFF" | bc)
+					IMAGES_OPTIMIZED=$(echo "$IMAGES_OPTIMIZED+1" | bc)
+				fi
 			fi
 
-			if [ $LESS -eq 0 ]; then
-
-				# Optimize results and sizes
-				if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-					$SETCOLOR_FAILURE
-					echo -n "[NOT OPTIMIZED]"
-					$SETCOLOR_NORMAL
-					echo " ${SIZE_BEFORE_SCALED}Kb"
-				else
-					$SETCOLOR_SUCCESS
-					echo -n "[OPTIMIZED]"
-					$SETCOLOR_NORMAL
-					echo " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
+			# Optimize results and sizes
+			if [ $SHOW_OPTIMIZE_RESULT -eq 1 ]; then
+				if [ $LESS -eq 0 ]; then
+					if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
+						$SETCOLOR_FAILURE
+						echo -n "[NOT OPTIMIZED]"
+						$SETCOLOR_NORMAL
+						echo " ${SIZE_BEFORE_SCALED}Kb"
+					else
+						$SETCOLOR_SUCCESS
+						echo -n "[OPTIMIZED]"
+						$SETCOLOR_NORMAL
+						echo " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
+					fi
 				fi
-
 			fi
 
 		done
