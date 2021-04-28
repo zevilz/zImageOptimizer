@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Simple image optimizer for JPEG, PNG and GIF images.
 # URL: https://github.com/zevilz/zImageOptimizer
-# Author: Alexandr "zEvilz" Emshanov
 # License: MIT
 # Version: 0.10.4
 
