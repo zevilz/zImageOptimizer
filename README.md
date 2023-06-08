@@ -406,7 +406,9 @@ The script is already running in specified directory. If not, previous run of th
 - [ ] add support for parallel optimization
 - [ ] even more to improve results of compression
 - [ ] add SVG support
-- [ ] add WebP support
+- [ ] add WebP optimizing support (converting to WebP supported via [extension](https://github.com/zevilz/zImageOptimizer-extensions#create_webp))
+- [ ] add support for detect wrong files extensions
+- [ ] add support for convert or rename images with wrong files extensions
 - [ ] add logging
 - [ ] add Ansible playbook
 - [x] ~~add progrees indicator~~
