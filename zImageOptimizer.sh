@@ -1575,142 +1575,148 @@ if ! [ -z "$IMAGES" ]; then
 				echo -n '... '
 			fi
 
-			# Sizes before optimizing
-			SIZE_BEFORE=$(wc -c "$IMAGE" | awk '{print $1}')
-			SIZE_BEFORE_SCALED=$(echo "scale=1; $SIZE_BEFORE/1024" | bc | sed 's/^\./0./')
-			INPUT=$(echo "$INPUT+$SIZE_BEFORE" | bc)
+			if [ -f "$IMAGE" ]; then
+				# Sizes before optimizing
+				SIZE_BEFORE=$(wc -c "$IMAGE" | awk '{print $1}')
+				SIZE_BEFORE_SCALED=$(echo "scale=1; $SIZE_BEFORE/1024" | bc | sed 's/^\./0./')
+				INPUT=$(echo "$INPUT+$SIZE_BEFORE" | bc)
 
-			# Get image extension
-			EXT=${IMAGE##*.}
+				# Get image extension
+				EXT=${IMAGE##*.}
 
-			if [ $BACKUP -eq 1 ]; then
+				if [ $BACKUP -eq 1 ]; then
 
-				# Save permissions
-				savePerms
+					# Save permissions
+					savePerms
 
-				# Backup original file
-				cp -fp "$IMAGE" "$TMP_PATH/$(basename "$IMAGE").bkp"
-
-			fi
-
-			# Hook: optim-before
-			includeExtensions optim-before
-
-			# JPEG
-			if [[ $EXT == "jpg" || $EXT == "jpeg" || $EXT == "JPG" || $EXT == "JPEG" ]]; then
-
-				# Hook: optim-jpg-before
-				includeExtensions optim-jpg-before
-
-				if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_JPG -eq 1 ]]; then
-
-					optimJPG "$IMAGE"
+					# Backup original file
+					cp -fp "$IMAGE" "$TMP_PATH/$(basename "$IMAGE").bkp"
 
 				fi
 
-				# Hook: optim-jpg-after
-				includeExtensions optim-jpg-after
+				# Hook: optim-before
+				includeExtensions optim-before
 
-			# PNG
-			elif [[ $EXT == "png" || $EXT == "PNG" ]]; then
+				# JPEG
+				if [[ $EXT == "jpg" || $EXT == "jpeg" || $EXT == "JPG" || $EXT == "JPEG" ]]; then
 
-				# Hook: optim-png-before
-				includeExtensions optim-png-before
+					# Hook: optim-jpg-before
+					includeExtensions optim-jpg-before
 
-				if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_PNG -eq 1 ]]; then
+					if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_JPG -eq 1 ]]; then
 
-					optimPNG "$IMAGE"
+						optimJPG "$IMAGE"
+
+					fi
+
+					# Hook: optim-jpg-after
+					includeExtensions optim-jpg-after
+
+				# PNG
+				elif [[ $EXT == "png" || $EXT == "PNG" ]]; then
+
+					# Hook: optim-png-before
+					includeExtensions optim-png-before
+
+					if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_PNG -eq 1 ]]; then
+
+						optimPNG "$IMAGE"
+
+					fi
+
+					# Hook: optim-png-after
+					includeExtensions optim-png-after
+
+				# GIF
+				elif [[ $EXT == "gif" || $EXT == "GIF" ]]; then
+
+					# Hook: optim-gif-before
+					includeExtensions optim-gif-before
+
+					if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_GIF -eq 1 ]]; then
+
+						optimGIF "$IMAGE"
+
+					fi
+
+					# Hook: optim-gif-after
+					includeExtensions optim-gif-after
 
 				fi
 
-				# Hook: optim-png-after
-				includeExtensions optim-png-after
+				# Hook: optim-after
+				includeExtensions optim-after
 
-			# GIF
-			elif [[ $EXT == "gif" || $EXT == "GIF" ]]; then
-
-				# Hook: optim-gif-before
-				includeExtensions optim-gif-before
-
-				if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_GIF -eq 1 ]]; then
-
-					optimGIF "$IMAGE"
-
+				# Sizes after
+				if [ $CALCULATE_STATS -eq 1 ]; then
+					SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
+					SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
 				fi
 
-				# Hook: optim-gif-after
-				includeExtensions optim-gif-after
+				if [ $BACKUP -eq 1 ]; then
 
-			fi
+					# Restore original if it smaller as optimized
+					if [ $RESTORE_IMAGE_CHECK -eq 1 ]; then
 
-			# Hook: optim-after
-			includeExtensions optim-after
+						if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
+							cp -fp "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
+							RESTORE_IMAGE_PERMS=0
+							UPDATE_IMAGE_MODIFY_TIME=0
+						fi
 
-			# Sizes after
-			if [ $CALCULATE_STATS -eq 1 ]; then
-				SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
-				SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
-			fi
+					fi
 
-			if [ $BACKUP -eq 1 ]; then
-
-				# Restore original if it smaller as optimized
-				if [ $RESTORE_IMAGE_CHECK -eq 1 ]; then
-
-					if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-						cp -fp "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
-						RESTORE_IMAGE_PERMS=0
-						UPDATE_IMAGE_MODIFY_TIME=0
+					# Remove backup if exists
+					if [ -f "$TMP_PATH/$(basename "$IMAGE").bkp" ]; then
+						rm "$TMP_PATH/$(basename "$IMAGE").bkp"
 					fi
 
 				fi
 
-				# Remove backup if exists
-				if [ -f "$TMP_PATH/$(basename "$IMAGE").bkp" ]; then
-					rm "$TMP_PATH/$(basename "$IMAGE").bkp"
+				# Restore image permissions
+				if [ $RESTORE_IMAGE_PERMS -eq 1 ]; then
+					restorePerms
 				fi
 
-			fi
-
-			# Restore image permissions
-			if [ $RESTORE_IMAGE_PERMS -eq 1 ]; then
-				restorePerms
-			fi
-
-			# Update modify time from time marker
-			if [ $UPDATE_IMAGE_MODIFY_TIME -eq 1 ]; then
-				updateModifyTime
-			fi
-
-			# Calculate stats
-			if [ $CALCULATE_STATS -eq 1 ]; then
-				if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-					OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
-				else
-					OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
-					SIZE_DIFF=$(echo "$SIZE_BEFORE-$SIZE_AFTER" | bc)
-					SAVED_SIZE=$(echo "$SAVED_SIZE+$SIZE_DIFF" | bc)
-					IMAGES_OPTIMIZED=$(echo "$IMAGES_OPTIMIZED+1" | bc)
+				# Update modify time from time marker
+				if [ $UPDATE_IMAGE_MODIFY_TIME -eq 1 ]; then
+					updateModifyTime
 				fi
-			fi
 
-			# Optimize results and sizes
-			if [ $SHOW_OPTIMIZE_RESULT -eq 1 ]; then
-				if [ $LESS -eq 0 ]; then
+				# Calculate stats
+				if [ $CALCULATE_STATS -eq 1 ]; then
 					if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-						$SETCOLOR_FAILURE
-						echo -n "[NOT OPTIMIZED]"
-						$SETCOLOR_NORMAL
-						echo " ${SIZE_BEFORE_SCALED}Kb"
+						OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
 					else
-						$SETCOLOR_SUCCESS
-						echo -n "[OPTIMIZED]"
-						$SETCOLOR_NORMAL
-						echo " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
+						OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
+						SIZE_DIFF=$(echo "$SIZE_BEFORE-$SIZE_AFTER" | bc)
+						SAVED_SIZE=$(echo "$SAVED_SIZE+$SIZE_DIFF" | bc)
+						IMAGES_OPTIMIZED=$(echo "$IMAGES_OPTIMIZED+1" | bc)
 					fi
+				fi
+
+				# Optimize results and sizes
+				if [ $SHOW_OPTIMIZE_RESULT -eq 1 ]; then
+					if [ $LESS -eq 0 ]; then
+						if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
+							$SETCOLOR_FAILURE
+							echo -n "[NOT OPTIMIZED]"
+							$SETCOLOR_NORMAL
+							echo " ${SIZE_BEFORE_SCALED}Kb"
+						else
+							$SETCOLOR_SUCCESS
+							echo -n "[OPTIMIZED]"
+							$SETCOLOR_NORMAL
+							echo " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
+						fi
+					fi
+				else
+					echo
 				fi
 			else
-				echo
+				$SETCOLOR_FAILURE
+				echo -n "[NOT EXISTS]"
+				$SETCOLOR_NORMAL
 			fi
 
 		done
