@@ -751,9 +751,9 @@ optimGIF()
 
 readableSize()
 {
-	if [ $1 -ge 1000000000 ]; then
+	if [ "$1" -ge 1000000000 ]; then
 		echo -n $(echo "scale=1; $1/1024/1024/1024" | bc | sed 's/^\./0./')"Gb"
-	elif [ $1 -ge 1000000 ]; then
+	elif [ "$1" -ge 1000000 ]; then
 		echo -n $(echo "scale=1; $1/1024/1024" | bc | sed 's/^\./0./')"Mb"
 	else
 		echo -n $(echo "scale=1; $1/1024" | bc | sed 's/^\./0./')"Kb"
