@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Simple image optimizer for JPEG, PNG and GIF images.
 # URL: https://github.com/zevilz/zImageOptimizer
-# Author: Alexandr "zEvilz" Emshanov
 # License: MIT
 # Version: 0.10.6
 
@@ -90,7 +89,7 @@ installDeps()
 	PLATFORM="unknown"
 	PLATFORM_ARCH="unknown"
 	PLATFORM_SUPPORT=0
-	if [[ "$OSTYPE" == "linux-gnu" ]]; then
+	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 		PLATFORM="linux"
 		PLATFORM_DISTRIBUTION="unknown"
 		PLATFORM_VERSION="unknown"
@@ -901,7 +900,7 @@ checkDirLock()
 
 savePerms()
 {
-	if [[ "$OSTYPE" == "linux-gnu" ]]; then
+	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 		CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
 		CUR_PERMS=$(stat -c "%a" "$IMAGE")
 	else
