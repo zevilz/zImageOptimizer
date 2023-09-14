@@ -1715,7 +1715,7 @@ if ! [ -z "$IMAGES" ]; then
 				fi
 			else
 				$SETCOLOR_FAILURE
-				echo -n "[NOT EXISTS]"
+				echo "[SKIPPING - NOT EXISTS]"
 				$SETCOLOR_NORMAL
 			fi
 
