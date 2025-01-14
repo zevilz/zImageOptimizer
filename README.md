@@ -1,11 +1,13 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.10.6-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.10.6) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.11.0-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.11.0) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a specified directory include subdirectories on Linux, MacOS and FreeBSD.
 
 ## Features
+
 - lossless image optimization with a small image size in the output;
 - works recursively;
 - checks optimization tools after the start;
+- option for automatic install dependencies and optimization tools if one or more of it is not found (see supported distributions [here](https://github.com/zevilz/zImageOptimizer#automatical-installing-dependencies));
 - option for automatic install dependencies and optimization tools if one or more of it is not found (see supported distributions [here](https://github.com/zevilz/zImageOptimizer#automatical-installing-dependencies));
 - readable output info and total info after optimization;
 - no limit for a file size (limited only by hardware);
@@ -15,22 +17,29 @@ Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a s
 - supports for search of images changed in a certain period of time;
 - supports for use of the special time marker for search only new files (based on last modify time).
 - supports extensions via special hooks
+- supports resmush.it API integration for additional optimization options
+- preserves file permissions and modification times during optimization
 
 ## Requirements
+
 - bash 4+
 
 ## Tools
+
 JPEG:
+
 - [jpegoptim](http://www.kokkonen.net/tjko/projects.html)
 - jpegtran, djpeg and cjpeg (from [libjpeg library](http://www.ijg.org/))
 
 PNG:
+
 - [pngcrush](http://pmt.sourceforge.net/pngcrush/) (v1.7.22+)
 - [optipng](http://optipng.sourceforge.net/) (v0.7+)
 - [pngout](http://www.jonof.id.au/kenutils)
 - advpng (from [AdvanceCOMP library](http://www.advancemame.it/comp-readme.html))
 
 GIF:
+
 - [gifsicle](http://www.lcdf.org/gifsicle/)
 
 One or more tools required for optimization. djpeg/cjpeg does not support CMYK colorspace and does not participate in the optimization of such images.
@@ -40,15 +49,19 @@ Notice: Optimization via djpeg/cjpeg is currently temporarily disabled to preven
 ## Usage
 
 ### Usual usage
+
 ```bash
 bash zImageOptimizer.sh -p /path/to/files
 ```
+
 or
+
 ```bash
 bash zImageOptimizer.sh --path=/path/to/files
 ```
 
 Supported options:
+
 - `-h (--help)` - shows a help message;
 - `-v (--version)` - shows a script version;
 - `-p (--path)` - specify a full path to the input directory (usage: `-p <dir> | --path=<dir>`);
@@ -62,8 +75,13 @@ Supported options:
 - `-e (--exclude)` - a comma separated parts list of paths to files for an exclusion from search (the script removes from the search files in the full path of which includes any value from the list; usage: `-e <list> | --exclude=<list>`);
 - `-ext (--extensions)` - a comma separated list of script's extensions to enable. Script's extensions disabled by default. Use `all` to enable all found extensions (usage: `-ext <list> | --extensions=<list> | -ext all | --extensions=all`).
 - `--unlock` - manually delete target dir from lockfile if previous script launch was interrupted incorrectly or killed by system.
+- `--resmush` - Use resmush.it API to optimize images. This option will override all other options.
+- `--resmush-quality=<quality>` - Set quality for resmush.it service (integer 0-100, default 92)
+- `--resmush-maxfilesize=<size>` - Set max filesize for resmush.it service in bytes (default 5242880/5MB)
+- `--resmush-preserve-exif` - Preserve EXIF data when using resmush.it service (default false)
 
 Notices:
+
 - you may combine options;
 - `-h (--help)` option ignore all other options;
 - `-v (--version)` option ignore all other options (except for `-h (--help)`);
@@ -72,90 +90,113 @@ Notices:
 - it is impossible to use together `-t (--time)` and `-n (--new-only)` options;
 - you must use `-m (--time-marker)` option with `-n (--new-only)` option;
 - you must use `--unlock` option with `-p (--path)` option (just add `--unlock` option in next run);
-- you can install dependencies without any questions in check mode (`-c (--check-only)`) using `-q (--quiet)` option. 
+- you can install dependencies without any questions in check mode (`-c (--check-only)`) using `-q (--quiet)` option.
 
 Recommendation: use [GNU Screen](https://en.wikipedia.org/wiki/GNU_Screen) or analogs if there are many images in an input directory, because the optimization may can take long time.
 
 After starting optimization, the script creates special temporary lock file (`/tmp/zio.lock` by default), where path to working directory is added. After optimization is finished, the script deletes this file (or deletes current path to working directory from the file with several parallel optimizations). This is done to prevent cycling optimization and avoid conflicts during optimization for longer than period between optimizations. Notice: if the script is terminated abnormally, you should delete lock file manually.
 
 ### Excluding folders/files from search
+
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -e <list>
 ```
 
 Example:
+
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -e /var/www/test.com,backup,uploads/orig.png
 ```
 
 ### Usage with set the period
+
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -t <period>
 ```
 
 Supported periods:
+
 - minutes (10m, 30m etc.),
 - hours (1h, 10h etc.),
 - days (1d, 30d  etc.).
 
 Example:
+
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -t 15d
 ```
 
 ### Usage with the time marker (recommended for a cron usage)
+
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -n
 ```
 
 Notice: by default the time marker file created in working a directory which set in `-p (--path)` option with a filename **.timeMarker**.
+Notice: by default the time marker file created in working a directory which set in `-p (--path)` option with a filename **.timeMarker**.
 
 #### Custom time marker name
+
 Use `-m (--time-marker)` option and set a new filename if you want to change the time marker filename:
+
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -n -m myCustomMarkerName
 ```
+
 Path to time marker will be `/path/to/files/myCustomMarkerName`
 
 #### Custom time marker path and name
+
 Use `-m (--time-marker)` option and set a new path and filename if you want to change the time marker path:
+
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -n -m /path/to/marker/directory/markerName
 ```
+
 Path to the time marker will be `/path/to/marker/directory/markerName`
 
 #### Cron usage
+
 Using default time marker:
+
 ```bash
 0 0 * * * /bin/bash zImageOptimizer.sh -p /first/directory -q -n
 0 1 * * * /bin/bash zImageOptimizer.sh -p /second/directory -q -n
 ```
 
 Using custom time marker path and filename:
+
 ```bash
 0 0 * * * /bin/bash zImageOptimizer.sh -p /first/directory -q -n -m /path/to/first/marker/firstMarkerName
 0 1 * * * /bin/bash zImageOptimizer.sh -p /second/directory -q -n -m /path/to/second/marker/secondMarkerName
 ```
 
 Also you may collect all markers in own directory:
+
 ```bash
 0 0 * * * /bin/bash zImageOptimizer.sh -p /first/directory -q -n -m /path/to/markers/directory/firstMarkerName
 0 1 * * * /bin/bash zImageOptimizer.sh -p /second/directory -q -n -m /path/to/markers/directory/secondMarkerName
 ```
 
 Notice: use `-l (--less)` option if you want exclude optimizing process in cron email messages
+Notice: use `-l (--less)` option if you want exclude optimizing process in cron email messages
 
 #### Manually create/modify the time marker file
+
 You may manually create the time marker file or change it last modified time:
+
 ```bash
 touch -m /path/to/marker/markerName
 ```
 
 If you want to create the marker with specify time or change marker last modified time with specify time:
+
 ```bash
 touch -t [[CC]YY]MMDDhhmm[.SS]
 ```
+
 where:
+
 - `CC` – 2 first digits of the year,
 - `YY` – 2 last digits of the year,
 - `MM` – month,
@@ -165,11 +206,13 @@ where:
 - `SS` – seconds.
 
 Example:
+
 ```bash
 touch -t 201712041426.00 /path/to/marker/markerName
 ```
 
 ### Usage with custom path to the temporary files directory
+
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -tmp /custom/path/to/temporary/directory
 ```
@@ -192,11 +235,14 @@ docker run -it -u "$UID:$GID" -d --volume /mnt/ImagesHundred/marker:/work/marker
 ```
 
 ## Automatical installing dependencies
+
 Notice: curent user must be root or user with sudo access.
 
 Start the script in the optimization mode (`-p|--path`) or the checking tools mode (`-c|--check-only`, recommended) if you want to install dependencies automatically. It will check installed tools and printing a choise option dialog if one or more tools not found. Select **Install dependencies and exit** option by typing a appropriate number and press enter. The script will install dependencies based on your platform, distribution and package manager. You may need to enter a password and confirm actions during installation dependencies. Restart script to recheck installed tools after that.
+Start the script in the optimization mode (`-p|--path`) or the checking tools mode (`-c|--check-only`, recommended) if you want to install dependencies automatically. It will check installed tools and printing a choise option dialog if one or more tools not found. Select **Install dependencies and exit** option by typing a appropriate number and press enter. The script will install dependencies based on your platform, distribution and package manager. You may need to enter a password and confirm actions during installation dependencies. Restart script to recheck installed tools after that.
 
 Supported on:
+
 - DEB-based linux distributions (i686/amd64)
   - Debian 7+
   - Ubuntu 14.04+
@@ -206,12 +252,18 @@ Supported on:
   - Fedora 24+
 - FreeBSD 10+ (i686/amd64)
 - MacOS 10+
+- MacOS 10+
 
 Tested on:
+
 - DEB-based linux distributions
   - Debian 7.11 i686 minimal
   - Debian 8.9 i686 minimal
   - Debian 9.2 amd64
+  - Debian 10 i686
+  - Debian 10 amd64
+  - Debian 11 amd64
+  - Debian 12 amd64
   - Debian 10 i686
   - Debian 10 amd64
   - Debian 11 amd64
@@ -243,16 +295,19 @@ Tested on:
 If you have errors during installing dependencies on supported platforms please contact me or open issue.
 
 ## Manual installing dependencies
+
 Notice: curent user must be root or user with sudo access.
 
 **Install following packages from repositories/ports**
 
 DEB-based:
+
 ```bash
 apt-get install jpegoptim libjpeg-progs pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
 ```
 
 RHEL:
+
 ```bash
 yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(rpm -E '%{rhel}').noarch.rpm -y
 subscription-manager repos --enable rhel-$(rpm -E '%{rhel}')-server-optional-rpms
@@ -260,12 +315,14 @@ yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoco
 ```
 
 CentOS:
+
 ```bash
 yum install epel-release -y
 yum install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
 ```
 
 Fedora:
+
 ```bash
 dnf install epel-release -y
 dnf install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoconf automake libtool make bc -y
@@ -274,31 +331,37 @@ dnf install jpegoptim libjpeg* pngcrush optipng advancecomp gifsicle wget autoco
 MacOS:
 
 Install homebrew if not installed
+
 ```bash
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 ```
 
 Install packages via homebrew
+
 ```bash
 brew install jpegoptim libjpeg pngcrush optipng advancecomp gifsicle jonof/kenutils/pngout
 ```
 
 Install new bash version (default 3.* version not supported) via homebrew
+
 ```bash
 brew install bash
 ```
 
 Add path to new bash version in `/private/etc/shells`
+
 ```bash
 /usr/local/bin/bash
 ```
 
 Add alias to new bash version in `~/.bash_profile`
+
 ```bash
 alias bash="/usr/local/bin/bash"
 ```
 
 Logout and login again for enable new alias or add permanent alias for curent session
+
 ```bash
 alias bash="/usr/local/bin/bash"
 ```
@@ -306,6 +369,7 @@ alias bash="/usr/local/bin/bash"
 FreeBSD:
 
 Install following ports
+
 ```bash
 wget (/usr/ports/ftp/wget)
 jpegoptim (/usr/ports/graphics/jpegoptim)
@@ -319,6 +383,7 @@ gifsicle (/usr/ports/graphics/gifsicle)
 **Install pngout**
 
 Linux:
+
 ```bash
 wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
 tar -xf pngout-20150319-linux.tar.gz
@@ -329,6 +394,7 @@ rm -rf pngout-20150319-linux
 ```
 
 FreeBSD:
+
 ```bash
 wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-bsd.tar.gz
 tar -xf pngout-20150319-bsd.tar.gz
@@ -339,6 +405,7 @@ rm -rf pngout-20150319-bsd
 ```
 
 **Install pngcrush (RHEL/CentOS 6.*)**
+
 ```bash
 wget https://downloads.sourceforge.net/project/pmt/pngcrush/old-versions/1.8/1.8.0/pngcrush-1.8.0.tar.gz
 tar -zxvf pngcrush-1.8.0.tar.gz
@@ -351,6 +418,7 @@ rm -rf pngcrush-1.8.0
 ```
 
 **Install advpng (RHEL/CentOS 6.*)**
+
 ```bash
 yum install zlib-devel gcc-c++ -y
 wget https://github.com/amadvance/advancecomp/releases/download/v2.0/advancecomp-2.0.tar.gz
@@ -369,6 +437,7 @@ rm -rf advancecomp-2.0
 The script have support for extensions using special hooks. You can use [prepared extensions](https://github.com/zevilz/zImageOptimizer-extensions) or [make own](https://github.com/zevilz/zImageOptimizer/wiki/Extensions-development).
 
 Extensions must be placed in `extensions` directory near the main script. Extensions disabled by default. Use `-ext (--extensions)` to enable needed:
+
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -ext my_extension,another_extension
 ```
@@ -376,6 +445,7 @@ bash zImageOptimizer.sh -p /path/to/files -ext my_extension,another_extension
 Information about extensions you can see after launch the script. It automatically check selected extensions exists in `extensions` directory.
 
 Or you can enable all extensions from dir `extensions`:
+
 ```bash
 bash zImageOptimizer.sh -p /path/to/files -ext all
 ```
@@ -385,6 +455,7 @@ bash zImageOptimizer.sh -p /path/to/files -ext all
 **I'm install dependencies but one of tool is marked as NOT FOUND**
 
 By default the script looks for binary files into folowing directories `/bin` `/usr/bin` `/usr/local/bin`. If your binary file is not in these directories add your directory in variable `BINARY_PATHS` through a space like below and restart the script
+
 ```bash
 BINARY_PATHS="/bin /usr/bin /usr/local/bin /your/custom/path"
 ```
@@ -392,12 +463,15 @@ BINARY_PATHS="/bin /usr/bin /usr/local/bin /your/custom/path"
 **I have errors `djpeg: can't open /tmp/*` and `cjpeg: can't open /tmp/*` during optimization**
 
 You have not write access to the directory /tmp. Tools djpeg and cjpeg use this directory for temporary files. Use `-tmp (--tmp-path)` option for set custom path.
+You have not write access to the directory /tmp. Tools djpeg and cjpeg use this directory for temporary files. Use `-tmp (--tmp-path)` option for set custom path.
 
 **I run the script but have error `The directory is already locked by another script run! Exiting...`**
 
 The script is already running in specified directory. If not, previous run of the script was not completed correctly. Delete dir from lock file (`/tmp/zio.lock` by default) or delete it manually and repeat. Also you can add `--unlock` option in next launch (dir automatically delete from lock file).
+The script is already running in specified directory. If not, previous run of the script was not completed correctly. Delete dir from lock file (`/tmp/zio.lock` by default) or delete it manually and repeat. Also you can add `--unlock` option in next launch (dir automatically delete from lock file).
 
 ## TODO
+
 - [x] ~~add option for execute the script without any questions and users actions (for cron usage)~~
 - [x] ~~add option for set time of the last change files for optimize only new images (for cron usage)~~
 - [ ] add an option for set quality for more small files in the output
@@ -405,9 +479,14 @@ The script is already running in specified directory. If not, previous run of th
 - [x] ~~add support for optimize gif images~~
 - [x] ~~add support for automatic install dependencies on other platforms and distributions with other package managers~~
 - [ ] add support for automatic install dependencies on others linux distributions
+- [x] ~~add support for automatic install dependencies on other platforms and distributions with other package managers~~
+- [ ] add support for automatic install dependencies on others linux distributions
 - [ ] add support for parallel optimization
 - [ ] even more to improve results of compression
 - [ ] add SVG support
+- [ ] add WebP optimizing support (converting to WebP supported via [extension](https://github.com/zevilz/zImageOptimizer-extensions#create_webp))
+- [ ] add support for detect wrong files extensions
+- [ ] add support for convert or rename images with wrong files extensions
 - [ ] add WebP optimizing support (converting to WebP supported via [extension](https://github.com/zevilz/zImageOptimizer-extensions#create_webp))
 - [ ] add support for detect wrong files extensions
 - [ ] add support for convert or rename images with wrong files extensions
@@ -420,19 +499,24 @@ The script is already running in specified directory. If not, previous run of th
 - [ ] add repository for rhel/centos/fedora
 
 ## Contacts
+
 - telegram [@zevilz](https://t.me/zevilz) (EN|RU)
 - telegram chat [@zImageOptimizer](https://t.me/zImageOptimizer) (RU)
 
 ## Reviews
+
 - [sysadmin.pm](https://sysadmin.pm/zimageoptimizer/) (RU)
 - [glashkoff.com](https://glashkoff.com/blog/manual/kak-optimizirovat-izobrazheniya-sayta/) (RU)
 
 ## Donations
+
 Do you like the script? Would you like to support its development? Feel free to donate
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+
+- 03.01.2024 - 0.11.0 - Added resmush.it API integration, added JPEG library selection during install
 - 14.09.2023 - 0.10.6 - check file exists before optimizing
 - 09.03.2021 - 0.10.5 - added support for automatic install dependencies on MacOS 11+
 - 27.09.2020 - 0.10.4 - fixed permissions and modify time for optimized images
@@ -451,14 +535,20 @@ Do you like the script? Would you like to support its development? Feel free to 
 - 27.02.2018 - 0.9.2 - fixed PNG file permissions if the script does not work from files owner
 - 27.02.2018 - 0.9.1 - [added new features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.9.1) and bugfixes
 - 25.02.2018 - 0.9.0 - added support for working the script on MacOS 10.10+ with automatic install dependencies
+- 25.02.2018 - 0.9.0 - added support for working the script on MacOS 10.10+ with automatic install dependencies
 - 24.02.2018 - 0.8.1 - [added new parameter, updated info after optimizing, small fixes and small code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.1)
 - 04.12.2017 - 0.8.0 - [new features, bugfixes and code refactoring](https://github.com/zevilz/zImageOptimizer/releases/tag/0.8.0)
+- 30.11.2017 - 0.7.0 - added support for working the script on FreeBSD with automatic install dependencies, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
+- 28.11.2017 - 0.6.0 - added support for automatic install dependencies on RHEL 6+ and Fedora 24+
 - 30.11.2017 - 0.7.0 - added support for working the script on FreeBSD with automatic install dependencies, [bug fixes and more](https://github.com/zevilz/zImageOptimizer/releases/tag/0.7.0)
 - 28.11.2017 - 0.6.0 - added support for automatic install dependencies on RHEL 6+ and Fedora 24+
 - 25.11.2017 - 0.5.0 - bug fixes and code refactoring
 - 25.11.2017 - 0.4.0 - added support for automatic install dependencies on Debian 7.* and some bugfixes
 - 23.11.2017 - 0.3.0 - added support for automatic install dependencies on CentOS 6.*
+- 25.11.2017 - 0.4.0 - added support for automatic install dependencies on Debian 7.* and some bugfixes
+- 23.11.2017 - 0.3.0 - added support for automatic install dependencies on CentOS 6.*
 - 22.11.2017 - 0.2.3 - some bug fixes
+- 21.11.2017 - 0.2.2 - added support for automatic install dependencies on CentOS 7.*
 - 21.11.2017 - 0.2.2 - added support for automatic install dependencies on CentOS 7.*
 - 20.11.2017 - 0.2.1 - some bug fixes
 - 20.11.2017 - 0.2.0 - added [some features](https://github.com/zevilz/zImageOptimizer/releases/tag/0.2.0) and code refactoring

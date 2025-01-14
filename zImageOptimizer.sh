@@ -3,58 +3,321 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.10.6
+# Version: 0.11.0
 
-sayWait()
-{
+# Core utility functions
+initializeVariables() {
+	# Add trap handler for Ctrl+C
+	trap cleanup SIGINT
+
+	IMAGES_OPTIMIZED=0
+	IMAGES_CURRENT=0
+	START_TIME=$(date +%s)
+	INPUT=0
+	OUTPUT=0
+	SAVED_SIZE=0
+
+	# Export variables so they persist across subshells
+	export IMAGES_OPTIMIZED
+	export IMAGES_CURRENT
+	export INPUT
+	export OUTPUT
+	export SAVED_SIZE
+}
+
+# Add cleanup function
+cleanup() {
+	echo -e "\nScript interrupted by user. Cleaning up..."
+
+	# Remove all temporary files
+	rm -f "${TMP_PATH}/stats.tmp" "${TMP_PATH}/progress.tmp"
+
+	# Remove any backup files
+	if [ "$BACKUP" = "1" ]; then
+		rm -f "$TMP_PATH"/*.bkp
+	fi
+
+	# Remove any PPM temporary files from failed optimizations
+	rm -f "${TMP_PATH}"/*.ppm
+
+	# Unlock the directory
+	unlockDir
+
+	# Exit with error code
+	exit 1
+}
+
+showProgressBar() {
+	local current=$1
+	local total=$2
+	local width=50
+
+	# Prevent division by zero and invalid inputs
+	if [ -z "$total" ] || [ -z "$current" ] || [ "$total" -le 0 ]; then
+		return 1
+	fi
+
+	# Convert inputs to integers
+	current=$(($current + 0))
+	total=$(($total + 0))
+
+	# Ensure current doesn't exceed total
+	if [ "$current" -gt "$total" ]; then
+		current=$total
+	fi
+
+	local percentage=$(((current * 100) / total))
+	local completed=$(((width * current) / total))
+
+	printf "\r[" >&2
+	printf "%${completed}s" '' | tr ' ' '#' >&2
+	printf "%$((width - completed))s" '' | tr ' ' '-' >&2
+	printf "] %3d%% (%d/%d)" "$percentage" "$current" "$total" >&2
+}
+
+calculateStats() {
+	local size_before=$1
+	local size_after=$2
+
+	# Read current stats
+	read cur_input cur_output cur_saved cur_optimized <"${TMP_PATH}/stats.tmp"
+
+	# Update stats
+	cur_input=$((cur_input + size_before))
+
+	if [ $size_before -le $size_after ]; then
+		# If not optimized, use original size
+		cur_output=$((cur_output + size_before))
+		echo "$cur_input $cur_output $cur_saved $cur_optimized" >"${TMP_PATH}/stats.tmp"
+		return 1
+	else
+		# If optimized, use new size and update stats
+		cur_output=$((cur_output + size_after))
+		cur_saved=$((cur_saved + (size_before - size_after)))
+		cur_optimized=$((cur_optimized + 1))
+		echo "$cur_input $cur_output $cur_saved $cur_optimized" >"${TMP_PATH}/stats.tmp"
+		return 0
+	fi
+}
+
+displayOptimizationResult() {
+	local size_before=$1
+	local size_after=$2
+	local failed_status=$3
+	local size_before_scaled=$(echo "scale=1; $size_before/1024" | bc | sed 's/^\./0./')
+	local size_after_scaled=$(echo "scale=1; $size_after/1024" | bc | sed 's/^\./0./')
+
+	if [ "${failed_status:-0}" -ne 0 ]; then
+		printf "%s[FAILED]%s" "$($SETCOLOR_FAILURE)" "$($SETCOLOR_NORMAL)"
+	elif [ $size_before -le $size_after ]; then
+		printf "%s[NOT OPTIMIZED]%s ${size_before_scaled}Kb" "$($SETCOLOR_FAILURE)" "$($SETCOLOR_NORMAL)"
+	else
+		printf "%s[OPTIMIZED]%s ${size_before_scaled}Kb -> ${size_after_scaled}Kb" "$($SETCOLOR_SUCCESS)" "$($SETCOLOR_NORMAL)"
+	fi
+	echo
+}
+
+# Image handling functions
+handleBackup() {
+	local image="$1"
+	if [ "$BACKUP" = "1" ]; then
+		savePerms
+		cp -fp "$image" "$TMP_PATH/$(basename "$image").bkp"
+	fi
+}
+
+restoreBackup() {
+	local image="$1"
+	local size_before="$2"
+	local size_after="$3"
+
+	if [ "$BACKUP" = "1" ]; then
+		if [ "$RESTORE_IMAGE_CHECK" = "1" ] && [ "$size_before" -le "$size_after" ]; then
+			cp -fp "$TMP_PATH/$(basename "$image").bkp" "$image"
+			return 0
+		fi
+		rm -f "$TMP_PATH/$(basename "$image").bkp"
+	fi
+	return 1
+}
+
+# Optimization functions
+optimizeImage() {
+	local image="$1"
+	local ext="${image##*.}"
+	ext="${ext,,}" # Convert to lowercase
+
+	case "$ext" in
+	jpg | jpeg | jpe)
+		optimJPG "$image"
+		;;
+	png)
+		optimPNG "$image"
+		;;
+	gif)
+		optimGIF "$image"
+		;;
+	esac
+}
+
+# Main processing function
+processImage() {
+	local image="$1"
+	local failed=0
+
+	if [ ! -f "$image" ]; then
+		printf "%s[SKIPPING - NOT EXISTS]%s\n" "$($SETCOLOR_FAILURE)" "$($SETCOLOR_NORMAL)"
+		return 1
+	fi
+
+	# Get initial size
+	local size_before=$(wc -c "$image" | awk '{print $1}')
+
+	# Backup and optimize
+	handleBackup "$image"
+	optimizeImage "$image"
+	local failed_status=$?
+
+	# Get final size and calculate stats
+	local size_after=$(wc -c "$image" | awk '{print $1}')
+
+	# Restore backup if needed
+	if ! restoreBackup "$image" "$size_before" "$size_after"; then
+		restorePerms
+		updateModifyTime
+	fi
+
+	# Calculate and display results
+	calculateStats "$size_before" "$size_after"
+	[ $LESS -eq 0 ] && displayOptimizationResult "$size_before" "$size_after" "$failed_status"
+
+	return 0
+}
+
+# Main optimization loop
+processImages() {
+	local images="$1"
+	local total=$(echo "$images" | wc -l)
+
+	echo "Optimizing..."
+
+	initializeVariables
+	export IMAGES_TOTAL=$total
+
+	# Change to target directory before processing
+	cd "$FULL_DIR_PATH" || exit 1
+
+	# Convert input to array, handling spaces correctly
+	mapfile -t image_array < <(echo "$images" | grep -v '^$')
+
+	# Initialize stats file with zeros
+	echo "0 0 0 0" >"${TMP_PATH}/stats.tmp"
+	echo "0" >"${TMP_PATH}/progress.tmp"
+
+	# Process each image using array
+	for ((i = 0; i < ${#image_array[@]}; i++)); do
+		image="${image_array[$i]}"
+
+		IMAGES_CURRENT=$((i + 1))
+		echo "$IMAGES_CURRENT" >"${TMP_PATH}/progress.tmp"
+
+		if [ $LESS -eq 0 ]; then
+			showProgressBar "$IMAGES_CURRENT" "$total"
+		fi
+
+		processImage "$image"
+		if [ $LESS -eq 0 ]; then
+			printf "\r"
+		fi
+	done
+
+	# Read final stats
+	read INPUT OUTPUT SAVED_SIZE IMAGES_OPTIMIZED <"${TMP_PATH}/stats.tmp"
+
+	# Clean up
+	rm -f "${TMP_PATH}/progress.tmp" "${TMP_PATH}/stats.tmp"
+
+	# Return to original directory
+	cd "$ORIGINAL_DIR" || exit 1
+
+	displayFinalStats
+}
+
+# Statistics display
+displayFinalStats() {
+	echo -e "\n\nOptimization Summary:"
+	echo "----------------------"
+	printf "Input: %s\n" "$(readableSize $INPUT)"
+	printf "Output: %s\n" "$(readableSize $OUTPUT)"
+	printf "Saved: %s\n" "$(readableSize $SAVED_SIZE)"
+	if [ "$INPUT" -gt 0 ]; then
+		echo " ($(echo "scale=2; ($INPUT-$OUTPUT)*100/$INPUT" | bc | sed 's/^\./0./')%)"
+	else
+		echo " (0%)"
+	fi
+	echo "Files Optimized: $IMAGES_OPTIMIZED / $IMAGES_TOTAL"
+
+	END_TIME=$(date +%s)
+	TOTAL_TIME=$((END_TIME - START_TIME))
+	printf "Total Time: %s" "$(readableTime $TOTAL_TIME)"
+}
+
+sayWait() {
+	if [ "$NO_ASK" -eq 1 ]; then
+		return 0
+	fi
 	local AMSURE
 	[ -n "$1" ] && echo "$@" 1>&2
 	read -n 1 -p "Press any key to continue..." AMSURE
 	echo "" 1>&2
 }
 
-cdAndCheck()
-{
-	cd "$1" 2>/dev/null
-	if ! [ "$(pwd)" = "$1" ]; then
+cdAndCheck() {
+	local target_dir
+	target_dir=$(readlink -f "$1") || {
+		echo "Failed to resolve path: $1"
+		exit 1
+	}
+
+	if [ $DEBUG -eq 1 ]; then
+		echo "Debug: Attempting cd to: '$target_dir'"
+	fi
+
+	cd "$target_dir" 2>/dev/null || {
 		echo
 		$SETCOLOR_FAILURE
 		if [ -z "$2" ]; then
-			echo "Can't get up in a directory $1!" 1>&2
+			echo "Can't change to directory: '$target_dir'" 1>&2
+			echo "Current directory: $(pwd)" 1>&2
 		else
 			echo "$2" 1>&2
 		fi
 		$SETCOLOR_NORMAL
 		echo
 		exit 1
-	fi
+	}
 }
 
-checkDir()
-{
+checkDir() {
 	if ! [ -d "$1" ]; then
 		echo
 		$SETCOLOR_FAILURE
-		if [ -z "$2" ]; then
-			echo "Directory $1 not found!" 1>&2
-		else
-			echo "$2" 1>&2
-		fi
+		echo "${2:-"Directory $1 not found!"}" 1>&2
 		$SETCOLOR_NORMAL
 		echo
 		exit 1
 	fi
 }
 
-checkDirPermissions()
-{
+checkDirPermissions() {
+	local test_file="$1/checkDirPermissions"
 	cd "$1" 2>/dev/null
-	touch checkDirPermissions 2>/dev/null
-	if ! [ -f "$1/checkDirPermissions" ]; then
+	touch "$test_file" 2>/dev/null
+	if ! [ -f "$test_file" ]; then
 		echo
 		$SETCOLOR_FAILURE
 		if [ -z "$2" ]; then
-			echo "Current user have no permissions to directory $1!" 1>&2
+			echo "Current user does not have write permission to the directory $1!" 1>&2
 		else
 			echo "$2" 1>&2
 		fi
@@ -62,35 +325,55 @@ checkDirPermissions()
 		echo
 		exit 1
 	else
-		rm "$1/checkDirPermissions"
+		rm "$test_file"
 	fi
 }
 
-checkParm()
-{
+checkParm() {
 	if [ -z "$1" ]; then
 		echo
 		$SETCOLOR_FAILURE
-		echo "$2" 1>&2
+		echo "${2:-"Parameter not set!"}" 1>&2
 		$SETCOLOR_NORMAL
 		echo
 		exit 1
 	fi
 }
 
-inArray () {
-	local e match="$1"
+inArray() {
+	local match="$1"
 	shift
-	for e; do [[ "$e" == "$match" ]] && return 0; done
-	return 1
+	local IFS="|"
+	[[ "$*" =~ (^|[|])$match($|[|]) ]]
 }
 
-installDeps()
-{
+installMozJPEG() {
+	$SUDO apt-get install cmake nasm libpng-dev -y || return 1
+
+	git clone https://github.com/mozilla/mozjpeg.git || return 1
+	cd mozjpeg || return 1
+	mkdir -p build && cd build || return 1
+
+	cmake -G"Unix Makefiles" \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DENABLE_STATIC=TRUE \
+		-DCMAKE_INSTALL_PREFIX=/usr/local \
+		.. || return 1
+
+	make || return 1
+	$SUDO make install || return 1
+	cd ../..
+	$SUDO rm -rf mozjpeg
+	return 0
+}
+
+installDeps() {
 	PLATFORM="unknown"
 	PLATFORM_ARCH="unknown"
 	PLATFORM_SUPPORT=0
-	if [[ "$OSTYPE" == "linux-gnu" ]]; then
+	PNGCRUSH_VERSION=1.8.13
+	ADVANCECOMP_VERSION=2.6
+	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 		PLATFORM="linux"
 		PLATFORM_DISTRIBUTION="unknown"
 		PLATFORM_VERSION="unknown"
@@ -106,7 +389,7 @@ installDeps()
 		if [ -r /etc/rc.d/init.d/functions ]; then
 
 			source /etc/rc.d/init.d/functions
-			[ zz`type -t passed 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="redhat"
+			[ zz$(type -t passed 2>/dev/null) == "zzfunction" ] && PLATFORM_PKG="redhat"
 			PLATFORM_DISTRIBUTION=$(cat /etc/redhat-release | cut -d ' ' -f1)
 
 			if [ $PLATFORM_DISTRIBUTION == "Fedora" ]; then
@@ -134,17 +417,11 @@ installDeps()
 				fi
 			fi
 
-		# Then test against SUSE (must be after Redhat,
-		# I've seen rc.status on Ubuntu I think? TODO: Recheck that)
-#		elif [ -r /etc/rc.status ]; then
-#			source /etc/rc.status
-#			[ zz`type -t rc_reset 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="suse"
-
 		# Then test against Debian, Ubuntu and friends
 		elif [ -r /lib/lsb/init-functions ]; then
 
 			source /lib/lsb/init-functions
-			[ zz`type -t log_begin_msg 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="debian"
+			[ zz$(type -t log_begin_msg 2>/dev/null) == "zzfunction" ] && PLATFORM_PKG="debian"
 			PLATFORM_DISTRIBUTION=$(lsb_release -i | cut -d ':' -f2 | sed 's/\s//')
 			PLATFORM_VERSION=$(lsb_release -r | cut -d ':' -f2 | sed 's/\s//' | sed 's/\..*//')
 
@@ -159,16 +436,6 @@ installDeps()
 					PLATFORM_SUPPORT=1
 				fi
 			fi
-
-		# Then test against Gentoo
-#		elif [ -r /etc/init.d/functions.sh ]; then
-#			source /etc/init.d/functions.sh
-#			[ zz`type -t ebegin 2>/dev/null` == "zzfunction" ] && PLATFORM_PKG="gentoo"
-
-		# For Slackware we currently just test if /etc/slackware-version exists
-		# and isn't empty (TODO: Find a better way :)
-#		elif [ -s /etc/slackware-version ]; then
-#			PLATFORM_PKG="slackware"
 		fi
 
 	elif [[ "$OSTYPE" == "darwin"* ]]; then
@@ -232,7 +499,15 @@ installDeps()
 				includeExtensions before-install-deps-debian
 
 				$SUDO apt-get update
-				$SUDO apt-get install $DEPS_DEBIAN -y
+
+				# Handle mozjpeg installation separately
+				if [[ "$DEPS_DEBIAN" == *"mozjpeg"* ]]; then
+					DEPS_DEBIAN=${DEPS_DEBIAN/mozjpeg/}
+					$SUDO apt-get install $DEPS_DEBIAN -y
+					installMozJPEG
+				else
+					$SUDO apt-get install $DEPS_DEBIAN -y
+				fi
 
 				# Hook: after-install-deps-debian
 				includeExtensions after-install-deps-debian
@@ -284,68 +559,49 @@ installDeps()
 				includeExtensions after-install-deps-redhat
 
 				if [[ $PLATFORM_DISTRIBUTION == "CentOS" && $PLATFORM_VERSION -eq 6 || $PLATFORM_DISTRIBUTION == "RHEL" && $PLATFORM_VERSION -eq 6 ]]; then
-					for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+					for p in "${!BINARY_PATHS_ARRAY[@]}"; do
 						if [ -f "${BINARY_PATHS_ARRAY[$p]}/pngcrush" ]; then
 							ISSET_pngcrush=1
 						fi
 					done
 					if ! [ -z $ISSET_pngcrush ] && [ $ISSET_pngcrush -eq 0 ]; then
-						wget https://downloads.sourceforge.net/project/pmt/pngcrush/old-versions/1.8/1.8.0/pngcrush-1.8.0.tar.gz
-						tar -zxvf pngcrush-1.8.0.tar.gz
-						rm pngcrush-1.8.0.tar.gz
-						cd pngcrush-1.8.0
+						wget https://downloads.sourceforge.net/project/pmt/pngcrush/$PNGCRUSH_VERSION/pngcrush-$PNGCRUSH_VERSION.tar.gz
+						tar -zxvf pngcrush-$PNGCRUSH_VERSION.tar.gz
+						rm pngcrush-$PNGCRUSH_VERSION.tar.gz
+						cd pngcrush-$PNGCRUSH_VERSION
 						make
 						$SUDO cp pngcrush /bin/
 						cd ../
-						rm -rf pngcrush-1.8.0
+						rm -rf pngcrush-$PNGCRUSH_VERSION
 					fi
 
-					for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+					for p in "${!BINARY_PATHS_ARRAY[@]}"; do
 						if [ -f "${BINARY_PATHS_ARRAY[$p]}/advpng" ]; then
 							ISSET_advpng=1
 						fi
 					done
 					if ! [ -z $ISSET_advpng ] && [ $ISSET_advpng -eq 0 ]; then
 						$SUDO yum install zlib-devel gcc-c++ -y
-						wget https://github.com/amadvance/advancecomp/releases/download/v2.0/advancecomp-2.0.tar.gz
-						tar -zxvf advancecomp-2.0.tar.gz
-						rm advancecomp-2.0.tar.gz
-						cd advancecomp-2.0
+						wget https://github.com/amadvance/advancecomp/releases/download/v$ADVANCECOMP_VERSION/advancecomp-$ADVANCECOMP_VERSION.tar.gz
+						tar -zxvf advancecomp-$ADVANCECOMP_VERSION.tar.gz
+						rm advancecomp-$ADVANCECOMP_VERSION.tar.gz
+						cd advancecomp-$ADVANCECOMP_VERSION
 						./configure
 						make
 						$SUDO make install
 						cd ../
-						rm -rf advancecomp-2.0
+						rm -rf advancecomp-$ADVANCECOMP_VERSION
 					fi
 				fi
+
+				if [[ "$DEPS_REDHAT" == *"mozjpeg"* ]]; then
+					DEPS_REDHAT=${DEPS_REDHAT/mozjpeg/}
+					$SUDO yum install $DEPS_REDHAT -y
+					installMozJPEG
+				else
+					$SUDO yum install $DEPS_REDHAT -y
+				fi
 			fi
-
-	#		for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-	#			if [ -f "${BINARY_PATHS_ARRAY[$p]}/djpeg" ]; then
-	#				ISSET_djpeg=1
-	#			fi
-	#		done
-	#		for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-	#			if [ -f "${BINARY_PATHS_ARRAY[$p]}/cjpeg" ]; then
-	#				ISSET_cjpeg=1
-	#			fi
-	#		done
-
-	#		if [[ $ISSET_djpeg -eq 0 || $ISSET_cjpeg -eq 0 ]]; then
-	#			git clone https://github.com/mozilla/mozjpeg.git
-	#			cd mozjpeg/
-	#			autoreconf -fiv
-	#			./configure
-	#			if [ $PLATFORM_PKG == "debian" ]; then
-	#				make deb
-	#				$SUDO dpkg -i mozjpeg_*.deb
-	#			else
-	#				make
-	#				$SUDO make install
-	#			fi
-	#			cd ../
-	#			rm -rf mozjpeg
-	#		fi
 
 			if ! [ -z $ISSET_pngout ] && [ $ISSET_pngout -eq 0 ]; then
 				wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
@@ -378,19 +634,7 @@ installDeps()
 			# Hook: before-install-deps-freebsd
 			includeExtensions before-install-deps-freebsd
 
-#			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
-#				if [ -f "${BINARY_PATHS_ARRAY[$p]}/git" ]; then
-#					ISSET_git=1
-#				else
-#					ISSET_git=0
-#				fi
-#			done
-#			if [[ $ISSET_git -eq 0 ]]; then
-#				cd /usr/ports/devel/git/
-#				make BATCH=yes install clean
-#			fi
-
-			for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+			for p in "${!BINARY_PATHS_ARRAY[@]}"; do
 				if [ -f "${BINARY_PATHS_ARRAY[$p]}/wget" ]; then
 					ISSET_wget=1
 				else
@@ -460,8 +704,7 @@ installDeps()
 	fi
 }
 
-checkBashVersion()
-{
+checkBashVersion() {
 	if [[ $(echo $BASH_VERSION | cut -d '.' -f1) -lt $BASH_MIN_VERSION ]]; then
 		echo
 		$SETCOLOR_FAILURE
@@ -475,22 +718,25 @@ checkBashVersion()
 			echo -n "Enter selection [0] > "
 			read item
 			case "$item" in
-				0) echo
-					echo "Exiting..."
-					echo
-					exit 0
-					;;
-				1) echo
-					installBashMacOS
-					echo "Exiting..."
-					echo
-					exit 0
-					;;
-				*) echo
-					echo "Exiting..."
-					echo
-					exit 0
-					;;
+			0)
+				echo
+				echo "Exiting..."
+				echo
+				exit 0
+				;;
+			1)
+				echo
+				installBashMacOS
+				echo "Exiting..."
+				echo
+				exit 0
+				;;
+			*)
+				echo
+				echo "Exiting..."
+				echo
+				exit 0
+				;;
 			esac
 		else
 			echo
@@ -499,8 +745,7 @@ checkBashVersion()
 	fi
 }
 
-installBashMacOS()
-{
+installBashMacOS() {
 	checkHomebrew
 	brew install bash
 
@@ -517,9 +762,8 @@ installBashMacOS()
 	bash -c 'alias bash="/usr/local/bin/bash"'
 }
 
-checkHomebrew()
-{
-	for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+checkHomebrew() {
+	for p in "${!BINARY_PATHS_ARRAY[@]}"; do
 		if [ -f "${BINARY_PATHS_ARRAY[$p]}/brew" ]; then
 			ISSET_brew=1
 		else
@@ -531,8 +775,7 @@ checkHomebrew()
 	fi
 }
 
-getTimeMarkerPath()
-{
+getTimeMarkerPath() {
 	TIME_MARKER_PATH=$(echo "$TIME_MARKER_PATH" | sed 's/\/$//')
 	if [ -z $TIME_MARKER ]; then
 		if [ -z $TIME_MARKER_PATH ]; then
@@ -553,8 +796,7 @@ getTimeMarkerPath()
 	fi
 }
 
-checkUserTimeMarker()
-{
+checkUserTimeMarker() {
 	if [[ $TIME_MARKER =~ ^-?.*\/$ ]]; then
 		echo
 		$SETCOLOR_FAILURE
@@ -565,8 +807,7 @@ checkUserTimeMarker()
 	fi
 }
 
-checkTimeMarkerPermissions()
-{
+checkTimeMarkerPermissions() {
 	if [[ "$OSTYPE" == "darwin"* ]]; then
 		TIME_MARKER_MODIFIED=$(stat -t %s -f %m -- "$1")
 	else
@@ -589,18 +830,17 @@ checkTimeMarkerPermissions()
 		echo
 		exit 1
 	else
-		if date --version >/dev/null 2>/dev/null ; then
-			touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED) "$1" > /dev/null # GNU version of date
+		if date --version >/dev/null 2>/dev/null; then
+			touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED) "$1" >/dev/null # GNU version of date
 		else
-			touch -t $(date -r $TIME_MARKER_MODIFIED +%Y%m%d%H%M.%S) "$1" > /dev/null # Non GNU version of date
+			touch -t $(date -r $TIME_MARKER_MODIFIED +%Y%m%d%H%M.%S) "$1" >/dev/null # Non GNU version of date
 		fi
 	fi
 }
 
-updateTimeMarker()
-{
+updateTimeMarker() {
 	if [ $NEW_ONLY -eq 1 ]; then
-		touch -m "$TIME_MARKER_FULL_PATH" > /dev/null
+		touch -m "$TIME_MARKER_FULL_PATH" >/dev/null
 		if [ $TIME_MARKER_ISSET -eq 1 ]; then
 			echo "Time marker updated."
 		else
@@ -610,8 +850,7 @@ updateTimeMarker()
 	fi
 }
 
-fixTimeMarker()
-{
+fixTimeMarker() {
 	if [ $NEW_ONLY -eq 1 ]; then
 		if [[ "$OSTYPE" == "darwin"* ]]; then
 			TIME_MARKER_MODIFIED_TIME=$(stat -t %s -f %m -- "$TIME_MARKER_FULL_PATH")
@@ -621,170 +860,207 @@ fixTimeMarker()
 
 		TIME_MARKER_MODIFIED_TIME=$(echo "$TIME_MARKER_MODIFIED_TIME+1" | bc)
 
-		if date --version >/dev/null 2>/dev/null ; then
-			touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED_TIME) "$TIME_MARKER_FULL_PATH" > /dev/null # GNU version of date
+		if date --version >/dev/null 2>/dev/null; then
+			touch -t $(date '+%Y%m%d%H%M.%S' -d @$TIME_MARKER_MODIFIED_TIME) "$TIME_MARKER_FULL_PATH" >/dev/null # GNU version of date
 		else
-			touch -t $(date -r $TIME_MARKER_MODIFIED_TIME +%Y%m%d%H%M.%S) "$TIME_MARKER_FULL_PATH" > /dev/null # Non GNU version of date
+			touch -t $(date -r $TIME_MARKER_MODIFIED_TIME +%Y%m%d%H%M.%S) "$TIME_MARKER_FULL_PATH" >/dev/null # Non GNU version of date
 		fi
 	fi
 }
 
-updateModifyTime()
-{
-	if [ $NEW_ONLY -eq 1 ]; then
-		touch "$IMAGE" -r "$TIME_MARKER_FULL_PATH" > /dev/null
+updateModifyTime() {
+	if [ $NEW_ONLY -eq 1 ] && [ -n "$image" ] && [ -f "$image" ]; then
+		touch "$image" -r "$TIME_MARKER_FULL_PATH" >/dev/null 2>&1
 	fi
 }
 
-optimJpegoptim()
-{
-	jpegoptim --strip-all "$1" > /dev/null
-}
-
-optimJpegtran()
-{
-	jpegtran -progressive -copy none -optimize "$1" > /dev/null
-}
-
-optimXjpeg()
-{
-	# decompress in temp file
-	djpeg -outfile "$TMP_PATH/$(basename "$1")" "$1" > /dev/null 2>/dev/null
-
-	if [ -f "$TMP_PATH/$(basename "$1")" ]; then
-
-		SIZE_CHECK=$(wc -c "$TMP_PATH/$(basename "$1")" | awk '{print $1}')
-
-		if [[ SIZE_CHECK -gt 0 ]]; then
-
-			# compress and replace original file if temp file exists and not empty
-			cjpeg -quality 95 -optimize -progressive -outfile "$1" "$TMP_PATH/$(basename "$1")" > /dev/null
-
-		fi
-
+optimJpegoptim() {
+	if [ $DEBUG -eq 1 ]; then
+		printf "\Using: jpegoptim"
 	fi
 
-	# cleanup
-	if [ -f "$TMP_PATH/$(basename "$1")" ]; then
-		rm "$TMP_PATH/$(basename "$1")"
-	fi
+	jpegoptim --strip-all "$1" >/dev/null
 }
 
-optimPngcrush()
-{
+optimJpegtran() {
+	if [ $DEBUG -eq 1 ]; then
+		printf "\nUsing: jpegtran"
+	fi
+
+	jpegtran -progressive -copy none -optimize "$1" >/dev/null
+}
+
+optimXjpeg() {
+	if [ $DEBUG -eq 1 ]; then
+		printf "\nUsing: cjpeg\nResult: "
+	fi
+
+	local image="$1"
+	local temp_file="$TMP_PATH/$(basename "$image").ppm"
+
+	# Decompress with djpeg, capturing any error output
+	if ! djpeg -outfile "$temp_file" "$image" 2>/dev/null; then
+		[ $DEBUG -eq 1 ] && echo "djpeg failed to process $image"
+		rm -f "$temp_file" # Cleanup empty file if it exists
+		return 1
+	fi
+
+	# Check if temp file exists and has size
+	if [ ! -s "$temp_file" ]; then
+		[ $DEBUG -eq 1 ] && echo "Temp file missing or empty: $temp_file"
+		rm -f "$temp_file" # Cleanup empty file if it exists
+		return 1
+	fi
+
+	# Use mozjpeg-specific options if available
+	if cjpeg -help 2>&1 | grep -q -- "-quality"; then
+		cjpeg -quality 85 -optimize -progressive -outfile "$image" "$temp_file" >/dev/null 2>&1
+	else
+		cjpeg -optimize -progressive -outfile "$image" "$temp_file" >/dev/null 2>&1
+	fi
+
+	local status=$?
+	rm -f "$temp_file"
+	return $status
+}
+
+optimPngcrush() {
+	if [ $DEBUG -eq 1 ]; then
+		printf "\nUsing: pngcrush\nResult: "
+	fi
 	IMAGE="$1"
 	IMAGE_DIR=$(dirname "$IMAGE")
 	cd "$IMAGE_DIR"
-	pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -reduce -q -s -ow "$IMAGE" > /dev/null
+	pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -reduce -q -s -ow "$IMAGE" >/dev/null
 }
 
-optimOptipng()
-{
+optimOptipng() {
+	if [ $DEBUG -eq 1 ]; then
+		printf "\nUsing: optipng\nResult: "
+	fi
+
 	OPTIPNG_V=$(optipng -v | head -n1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | cut -d '.' -f2)
 	if ! [ -z $OPTIPNG_V ]; then
 		if [ $OPTIPNG_V -ge 7 ]; then
-			optipng -strip all -o7 -q "$1" > /dev/null
+			optipng -strip all -o7 -q "$1" >/dev/null
 		else
-			optipng -o7 -q "$1" > /dev/null
+			optipng -o7 -q "$1" >/dev/null
 		fi
 	else
-		optipng -o7 -q "$1" > /dev/null
+		optipng -o7 -q "$1" >/dev/null
 	fi
 }
 
-optimPngout()
-{
-	pngout -q -y -k0 -s0 "$1" > /dev/null
+optimPngout() {
+	if [ $DEBUG -eq 1 ]; then
+		printf "\nUsing: pngout\nResult: "
+	fi
+
+	pngout -q -y -k0 -s0 "$1" >/dev/null
 }
 
-optimAdvpng()
-{
-	advpng -z -4 "$1" > /dev/null
+optimAdvpng() {
+	if [ $DEBUG -eq 1 ]; then
+		printf "\nUsing: advpng\nResult: "
+	fi
+
+	advpng -z -4 "$1" >/dev/null
 }
 
-optimGifsicle()
-{
-	gifsicle --optimize=3 -b "$1" > /dev/null
+optimGifsicle() {
+	if [ $DEBUG -eq 1 ]; then
+		printf "\nUsing: gifsicle\nResult: "
+	fi
+
+	gifsicle --optimize=3 -b "$1" >/dev/null
 	#gifsicle --optimize=3 --lossy=30 -b "$IMAGE" # for lossy optimize
 }
 
-optimJPG()
-{
-	#if [[ $ISSET_djpeg -eq 1 && $ISSET_cjpeg -eq 1 ]]; then
-	#	optimXjpeg "$1"
-	#fi
-
-	if [[ $ISSET_jpegoptim -eq 1 ]]; then
-		optimJpegoptim "$1"
+optimJPG() {
+	if [ $DEBUG -eq 1 ]; then
+		printf "\nInput image: $1"
 	fi
 
-	if [[ $ISSET_jpegtran -eq 1 ]]; then
+	if [[ $ISSET_djpeg -eq 1 && $ISSET_cjpeg -eq 1 ]]; then
+		optimXjpeg "$1"
+	elif [[ $ISSET_jpegoptim -eq 1 ]]; then
+		optimJpegoptim "$1"
+	elif [[ $ISSET_jpegtran -eq 1 ]]; then
 		optimJpegtran "$1"
+	else
+		echo "No JPEG optimizer found"
+		return 1
 	fi
 }
 
-optimPNG()
-{
-	if [[ $ISSET_pngcrush -eq 1 ]]; then
-		optimPngcrush "$1"
+optimPNG() {
+	if [ $DEBUG -eq 1 ]; then
+		printf "\nInput image: $1"
 	fi
 
 	if [[ $ISSET_optipng -eq 1 ]]; then
 		optimOptipng "$1"
-	fi
-
-	if [[ $ISSET_pngout -eq 1 ]]; then
+	elif [[ $ISSET_pngcrush -eq 1 ]]; then
+		optimPngcrush "$1"
+	elif [[ $ISSET_pngout -eq 1 ]]; then
 		optimPngout "$1"
-	fi
-
-	if [[ $ISSET_advpng -eq 1 ]]; then
+	elif [[ $ISSET_advpng -eq 1 ]]; then
 		optimAdvpng "$1"
+	else
+		echo "No PNG optimizer found"
+		return 1
 	fi
 }
 
-optimGIF()
-{
+optimGIF() {
+	if [ $DEBUG -eq 1 ]; then
+		printf "\nInput image: $1"
+	fi
+
 	if [[ $ISSET_gifsicle -eq 1 ]]; then
 		optimGifsicle "$1"
-	fi
-}
-
-readableSize()
-{
-	if [ "$1" -ge 1000000000 ]; then
-		echo -n $(echo "scale=1; $1/1024/1024/1024" | bc | sed 's/^\./0./')"Gb"
-	elif [ "$1" -ge 1000000 ]; then
-		echo -n $(echo "scale=1; $1/1024/1024" | bc | sed 's/^\./0./')"Mb"
 	else
-		echo -n $(echo "scale=1; $1/1024" | bc | sed 's/^\./0./')"Kb"
+		echo "No GIF optimizer found"
+		return 1
 	fi
 }
-readableTime()
-{
-	local T=$1
-	local D=$((T/60/60/24))
-	local H=$((T/60/60%24))
-	local M=$((T/60%60))
-	local S=$((T%60))
-	(( $D > 0 )) && printf '%d days ' $D
-	(( $H > 0 )) && printf '%d hours ' $H
-	(( $M > 0 )) && printf '%d minutes ' $M
-	(( $D > 0 || $H > 0 || $M > 0 )) && printf 'and '
-	printf '%d seconds\n' $S
+
+readableSize() {
+	local size=$1
+	if ((size >= 1000000000)); then
+		printf "%.1fGb" "$(echo "scale=1; $size/1024/1024/1024" | bc)"
+	elif ((size >= 1000000)); then
+		printf "%.1fMb" "$(echo "scale=1; $size/1024/1024" | bc)"
+	else
+		printf "%.1fKb" "$(echo "scale=1; $size/1024" | bc)"
+	fi
 }
 
-findExclude()
-{
-	if ! [ -z "$EXCLUDE_LIST" ]; then
-		EXCLUDE_LIST=$(echo $EXCLUDE_LIST | sed 's/,$//g' | sed 's/^,//g' | sed 's/,/\\|/g')
-		grep -v "$EXCLUDE_LIST"
+readableTime() {
+	local T=$1
+	local D=$((T / 86400))
+	local H=$(((T % 86400) / 3600))
+	local M=$(((T % 3600) / 60))
+	local S=$((T % 60))
+
+	local result=""
+	((D > 0)) && result+="$D days "
+	((H > 0)) && result+="$H hours "
+	((M > 0)) && result+="$M minutes "
+	((D > 0 || H > 0 || M > 0)) && result+="and "
+	printf "%s%d seconds\n" "$result" $S
+}
+
+findExclude() {
+	if [ -n "$EXCLUDE_LIST" ]; then
+		local pattern=${EXCLUDE_LIST//,/\\|}
+		grep -v "$pattern"
 	else
 		grep -v ">>>>>>>>>>>>>"
 	fi
 }
 
-checkEnabledExtensions()
-{
+checkEnabledExtensions() {
 	if ! [ -z "$ENABLED_EXTENSIONS" ]; then
 		cd "$SCRIPT_PATH"
 		if [ -d extensions ]; then
@@ -829,8 +1105,7 @@ checkEnabledExtensions()
 	fi
 }
 
-includeExtensions()
-{
+includeExtensions() {
 	if ! [ -z "$ENABLED_EXTENSIONS" ]; then
 		cd "$SCRIPT_PATH"
 		if ! [ -z "$1" ] && [ -d extensions ]; then
@@ -852,45 +1127,40 @@ includeExtensions()
 	fi
 }
 
-joinBy()
-{
+joinBy() {
 	local d=$1
 	shift
 	echo -n "$1"
 	shift
 	printf "%s" "${@/#/$d}"
 }
-
-lockDir()
-{
+lockDir() {
 	if [ -f "${TMP_PATH}/${LOCK_FILE_NAME}" ]; then
-		sed "/^$/d" "${TMP_PATH}/${LOCK_FILE_NAME}" > "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" && \
-		mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
-		echo "$DIR_PATH" >> "${TMP_PATH}/${LOCK_FILE_NAME}"
+		sed "/^$/d" "${TMP_PATH}/${LOCK_FILE_NAME}" >"${TMP_PATH}/${LOCK_FILE_NAME}.tmp" &&
+			mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
+		echo "$DIR_PATH" >>"${TMP_PATH}/${LOCK_FILE_NAME}"
 	else
-		echo "$DIR_PATH" > "${TMP_PATH}/${LOCK_FILE_NAME}"
+		echo "$DIR_PATH" >"${TMP_PATH}/${LOCK_FILE_NAME}"
 	fi
 }
 
-unlockDir()
-{
+unlockDir() {
 	if [ -f "${TMP_PATH}/${LOCK_FILE_NAME}" ]; then
-		sed "/^$/d" "${TMP_PATH}/${LOCK_FILE_NAME}" > "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" && \
-		mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
-		if [[ $(wc -l "${TMP_PATH}/${LOCK_FILE_NAME}" | sed 's/^[\ ]*//' | cut -d ' ' -f1) -gt 1 ]]; then
-			grep -v "^${DIR_PATH}$" "${TMP_PATH}/${LOCK_FILE_NAME}" > "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" && \
+		sed "/^$/d" "${TMP_PATH}/${LOCK_FILE_NAME}" >"${TMP_PATH}/${LOCK_FILE_NAME}.tmp" &&
 			mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
+		if [[ $(wc -l "${TMP_PATH}/${LOCK_FILE_NAME}" | sed 's/^[\ ]*//' | cut -d ' ' -f1) -gt 1 ]]; then
+			grep -v "^${DIR_PATH}$" "${TMP_PATH}/${LOCK_FILE_NAME}" >"${TMP_PATH}/${LOCK_FILE_NAME}.tmp" &&
+				mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
 		else
 			rm "${TMP_PATH}/${LOCK_FILE_NAME}"
 		fi
 	fi
 }
 
-checkDirLock()
-{
+checkDirLock() {
 	if [ -f "${TMP_PATH}/${LOCK_FILE_NAME}" ]; then
-		sed "/^$/d" "${TMP_PATH}/${LOCK_FILE_NAME}" > "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" && \
-		mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
+		sed "/^$/d" "${TMP_PATH}/${LOCK_FILE_NAME}" >"${TMP_PATH}/${LOCK_FILE_NAME}.tmp" &&
+			mv "${TMP_PATH}/${LOCK_FILE_NAME}.tmp" "${TMP_PATH}/${LOCK_FILE_NAME}"
 		if [[ $(grep "^${DIR_PATH}$" "${TMP_PATH}/${LOCK_FILE_NAME}") == "$DIR_PATH" ]]; then
 			echo "The directory is already locked by another script run! Exiting..."
 			echo
@@ -899,25 +1169,21 @@ checkDirLock()
 	fi
 }
 
-savePerms()
-{
-	if [[ "$OSTYPE" == "linux-gnu" ]]; then
-		CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
-		CUR_PERMS=$(stat -c "%a" "$IMAGE")
-	else
-		CUR_OWNER=$(ls -l "$IMAGE" | awk '{print $3":"$4}')
-		CUR_PERMS=$(stat -f "%Lp" "$IMAGE")
+savePerms() {
+	if [ -n "$1" ]; then
+		PERMS_OWNER=$(stat -c %u "$1")
+		PERMS_GROUP=$(stat -c %g "$1")
+		PERMS_MOD=$(stat -c %a "$1")
 	fi
 }
 
-restorePerms()
-{
-	chown $CUR_OWNER "$IMAGE"
-	chmod $CUR_PERMS "$IMAGE"
+restorePerms() {
+	if [ -n "$PERMS_OWNER" ] && [ -n "$PERMS_GROUP" ] && [ -n "$PERMS_MOD" ]; then
+		chown "$PERMS_OWNER:$PERMS_GROUP" "$1"
+		chmod "$PERMS_MOD" "$1"
+	fi
 }
-
-usage()
-{
+usage() {
 	echo
 	echo "Usage: bash $0 [options]"
 	echo
@@ -982,6 +1248,20 @@ usage()
 	echo "                            incorrectly or killed by system. You must use "
 	echo "                            this option with -p|--path option."
 	echo
+	echo "    --resmush               Use resmush.it API to optimize images."
+	echo "                            This option will override all other options."
+	echo
+	echo "    --resmush-quality=<quality>   Set quality for resmush.it service. Must be "
+	echo "                            integer value from 0 to 100. Default value is "
+	echo "                            92."
+	echo
+	echo "    --resmush-maxfilesize=<szie>   Set max filesize for resmush.it service. Must be "
+	echo "                            integer value in bytes. Default value is "
+	echo "                            5242880 (5Mb)."
+	echo
+	echo "    --resmush-preserve-exif    Preserve exif flag for resmush.it service. "
+	echo "                            Default value is false."
+	echo
 }
 
 # Define default script vars
@@ -1002,7 +1282,10 @@ ALL_FOUND=1
 PARAMS_NUM=$#
 CUR_DIR=$(pwd)
 CUR_USER=$(whoami)
-SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
+SCRIPT_PATH="$(
+	cd "$(dirname "$0")"
+	pwd -P
+)"
 TIME_MARKER_PATH=""
 TIME_MARKER_NAME=".timeMarker"
 LOCK_FILE_NAME="zio.lock"
@@ -1013,9 +1296,16 @@ else
 	SUDO="sudo"
 fi
 
+# System vars for reSmush.it
+RESMUSH_ENABLED=0
+RESMUSH_API_URL="http://api.resmush.it"
+RESMUSH_QUALITY=92
+RESMUSH_MAXFILESIZE=5242880 #5Mb
+RESMUSH_PRESERVE_EXIF=false
+
 # Define CRON and direct using styling
 if [ "Z$(ps o comm="" -p $(ps o ppid="" -p $$))" == "Zcron" -o \
-     "Z$(ps o comm="" -p $(ps o ppid="" -p $(ps o ppid="" -p $$)))" == "Zcron" ]; then
+	"Z$(ps o comm="" -p $(ps o ppid="" -p $(ps o ppid="" -p $$)))" == "Zcron" ]; then
 	SETCOLOR_SUCCESS=
 	SETCOLOR_FAILURE=
 	SETCOLOR_NORMAL=
@@ -1032,62 +1322,96 @@ fi
 checkBashVersion
 
 # Parse options
-while [ 1 ] ; do
-	if [ "${1#--path=}" != "$1" ] ; then
+while [ 1 ]; do
+	if [ "${1#--path=}" != "$1" ]; then
 		DIR_PATH="${1#--path=}"
-	elif [ "$1" = "-p" ] ; then
-		shift ; DIR_PATH="$1"
+	elif [ "$1" = "-p" ]; then
+		shift
+		DIR_PATH="$1"
 
-	elif [ "${1#--time=}" != "$1" ] ; then
+	elif [ "${1#--time=}" != "$1" ]; then
 		PERIOD="${1#--time=}"
-	elif [ "$1" = "-t" ] ; then
-		shift ; PERIOD="$1"
+	elif [ "$1" = "-t" ]; then
+		shift
+		PERIOD="$1"
 
-	elif [ "${1#--time-marker=}" != "$1" ] ; then
+	elif [ "${1#--time-marker=}" != "$1" ]; then
 		TIME_MARKER="${1#--time-marker=}"
-	elif [ "$1" = "-m" ] ; then
-		shift ; TIME_MARKER="$1"
+	elif [ "$1" = "-m" ]; then
+		shift
+		TIME_MARKER="$1"
 
-	elif [ "${1#--tmp-path=}" != "$1" ] ; then
+	elif [ "${1#--tmp-path=}" != "$1" ]; then
 		TMP_PATH="${1#--tmp-path=}"
-	elif [ "$1" = "-tmp" ] ; then
-		shift ; TMP_PATH="$1"
+	elif [ "$1" = "-tmp" ]; then
+		shift
+		TMP_PATH="$1"
 
-	elif [ "${1#--exclude=}" != "$1" ] ; then
+	elif [ "${1#--exclude=}" != "$1" ]; then
 		EXCLUDE_LIST="${1#--exclude=}"
-	elif [ "$1" = "-e" ] ; then
-		shift ; EXCLUDE_LIST="$1"
+	elif [ "$1" = "-e" ]; then
+		shift
+		EXCLUDE_LIST="$1"
 
-	elif [ "${1#--extensions=}" != "$1" ] ; then
+	elif [ "${1#--extensions=}" != "$1" ]; then
 		ENABLED_EXTENSIONS="${1#--extensions=}"
-	elif [ "$1" = "-ext" ] ; then
-		shift ; ENABLED_EXTENSIONS="$1"
+	elif [ "$1" = "-ext" ]; then
+		shift
+		ENABLED_EXTENSIONS="$1"
 
-	elif [[ "$1" = "--help" || "$1" = "-h" ]] ; then
+	elif [[ "$1" = "--help" || "$1" = "-h" ]]; then
 		HELP=1
 
-	elif [[ "$1" = "--version" || "$1" = "-v" ]] ; then
+	elif [[ "$1" = "--version" || "$1" = "-v" ]]; then
 		SHOW_VERSION=1
 
-	elif [[ "$1" = "--quiet" || "$1" = "-q" ]] ; then
+	elif [[ "$1" = "--quiet" || "$1" = "-q" ]]; then
 		NO_ASK=1
 
-	elif [[ "$1" = "--less" || "$1" = "-l" ]] ; then
+	elif [[ "$1" = "--less" || "$1" = "-l" ]]; then
 		LESS=1
 
-	elif [[ "$1" = "--check-only" || "$1" = "-c" ]] ; then
+	elif [[ "$1" = "--check-only" || "$1" = "-c" ]]; then
 		CHECK_ONLY=1
 
-	elif [[ "$1" = "--new-only" || "$1" = "-n" ]] ; then
+	elif [[ "$1" = "--new-only" || "$1" = "-n" ]]; then
 		NEW_ONLY=1
 
-	elif [[ "$1" = "--debug" || "$1" = "-d" ]] ; then
+	elif [[ "$1" = "--debug" || "$1" = "-d" ]]; then
 		DEBUG=1
 
-	elif [[ "$1" = "--unlock" ]] ; then
+	elif [[ "$1" = "--unlock" ]]; then
 		UNLOCK=1
 
-	elif [ -z "$1" ] ; then
+	elif [ "${1#--resmush-quality=}" != "$1" ]; then
+		RESMUSH_QUALITY="${1#--resmush-quality=}"
+		if ! [[ "$RESMUSH_QUALITY" =~ ^[0-9]+$ ]] || [ $RESMUSH_QUALITY -lt 0 ] || [ $RESMUSH_QUALITY -gt 100 ]; then
+			echo
+			$SETCOLOR_FAILURE
+			echo "Resmush quality must be an integer between 0 and 100!"
+			$SETCOLOR_NORMAL
+			echo
+			exit 1
+		fi
+
+	elif [ "${1#--resmush-maxfilesize=}" != "$1" ]; then
+		RESMUSH_MAXFILESIZE="${1#--resmush-maxfilesize=}"
+		if ! [[ "$RESMUSH_MAXFILESIZE" =~ ^[0-9]+$ ]]; then
+			echo
+			$SETCOLOR_FAILURE
+			echo "Resmush maxfilesize must be a positive integer!"
+			$SETCOLOR_NORMAL
+			echo
+			exit 1
+		fi
+
+	elif [ "$1" = "--resmush-preserve-exif" ]; then
+		RESMUSH_PRESERVE_EXIF=true
+
+	elif [ "$1" = "--resmush" ]; then
+		RESMUSH_ENABLED=1
+
+	elif [ -z "$1" ]; then
 		break
 	else
 		echo
@@ -1117,10 +1441,11 @@ BINARY_PATHS=$(echo $BINARY_PATHS | sed 's/\/\ /\ /g' | sed 's/\/$/\ /')
 BINARY_PATHS_ARRAY=($BINARY_PATHS)
 
 # Register image types
-declare -A IMG_TYPES_ARR
-IMG_TYPES_ARR[JPG]="JPG"
-IMG_TYPES_ARR[PNG]="PNG"
-IMG_TYPES_ARR[GIF]="GIF"
+declare -A IMG_TYPES_ARR=(
+	[JPG]="JPG"
+	[PNG]="PNG"
+	[GIF]="GIF"
+)
 
 # Hook: after-init-image-types
 includeExtensions after-init-image-types
@@ -1137,16 +1462,11 @@ if [ ${#IMG_TYPES_ARR[@]} -eq 0 ]; then
 fi
 
 # Register tools
-declare -A TOOLS
-if ! [ -z "${IMG_TYPES_ARR[JPG]}" ]; then
-	TOOLS[JPG]="jpegoptim jpegtran djpeg cjpeg"
-fi
-if ! [ -z "${IMG_TYPES_ARR[PNG]}" ]; then
-	TOOLS[PNG]="pngcrush optipng pngout advpng"
-fi
-if ! [ -z "${IMG_TYPES_ARR[GIF]}" ]; then
-	TOOLS[GIF]="gifsicle"
-fi
+declare -A TOOLS=(
+	[JPG]="jpegoptim jpegtran djpeg cjpeg"
+	[PNG]="pngcrush optipng pngout advpng"
+	[GIF]="gifsicle"
+)
 
 # Hook: after-init-tools
 includeExtensions after-init-tools
@@ -1167,16 +1487,22 @@ TOOLS_ARRAY=($(echo ${TOOLS[@]}))
 
 # Register images extensions
 declare -A FIND_EXT_ARR
-FIND_EXT=
+FIND_EXT=""
 if ! [ -z "${IMG_TYPES_ARR[JPG]}" ]; then
-	FIND_EXT_ARR[JPG]='JPG JPEG jpg jpeg'
+	FIND_EXT_ARR[JPG]='jpg jpeg jpe'
+	FIND_EXT="${FIND_EXT} ${FIND_EXT_ARR[JPG]}"
 fi
 if ! [ -z "${IMG_TYPES_ARR[PNG]}" ]; then
-	FIND_EXT_ARR[PNG]='PNG png'
+	FIND_EXT_ARR[PNG]='png'
+	FIND_EXT="${FIND_EXT} ${FIND_EXT_ARR[PNG]}"
 fi
 if ! [ -z "${IMG_TYPES_ARR[GIF]}" ]; then
-	FIND_EXT_ARR[GIF]='GIF gif'
+	FIND_EXT_ARR[GIF]='gif'
+	FIND_EXT="${FIND_EXT} ${FIND_EXT_ARR[GIF]}"
 fi
+
+# Trim leading/trailing spaces
+FIND_EXT=$(echo "$FIND_EXT" | xargs)
 
 # Hook: after-init-img-ext
 includeExtensions after-init-img-ext
@@ -1192,18 +1518,22 @@ if [ ${#FIND_EXT_ARR[@]} -eq 0 ]; then
 	exit 1
 fi
 
-# Generate names for find command
-for FIND_EXT_ITEM in "${FIND_EXT_ARR[@]}"; do
-	FIND_EXT="${FIND_EXT} ${FIND_EXT_ITEM}"
+# Generate names for find command using case-insensitive search
+FIND_NAMES=""
+for ext in $FIND_EXT; do
+	if [ -z "$FIND_NAMES" ]; then
+		FIND_NAMES="-iname *.${ext}"
+	else
+		FIND_NAMES="$FIND_NAMES -o -iname *.${ext}"
+	fi
 done
-FIND_NAMES=$(echo -n '-name *.'; joinBy ' -or -name *.' $FIND_EXT)
 
 # Register OS-based dependencies
 declare -A DEPS_DEBIAN_ARR
 declare -A DEPS_REDHAT_ARR
 declare -A DEPS_MACOS_ARR
-DEPS_DEBIAN="wget autoconf automake libtool make bc"
-DEPS_REDHAT="wget autoconf automake libtool make bc"
+DEPS_DEBIAN="wget autoconf automake libtool make bc jq curl"
+DEPS_REDHAT="wget autoconf automake libtool make bc jq curl"
 DEPS_MACOS=""
 if ! [ -z "${TOOLS[JPG]}" ]; then
 	DEPS_DEBIAN_ARR[JPG]="jpegoptim libjpeg-progs"
@@ -1271,8 +1601,19 @@ fi
 if [ $CHECK_ONLY -eq 0 ]; then
 
 	DIR_PATH=$(echo "$DIR_PATH" | sed 's/\/$//')
+
+	# Add debug output
+	if [ $DEBUG -eq 1 ]; then
+		echo "Debug: Checking directory path: '$DIR_PATH'"
+	fi
+
 	checkParm "$DIR_PATH" "Path to files not set in -p(--path) option!"
 	checkDir "$DIR_PATH"
+
+	if [ $DEBUG -eq 1 ]; then
+		echo "Debug: Changing to directory: '$DIR_PATH'"
+	fi
+
 	cdAndCheck "$DIR_PATH"
 	checkDirPermissions "$DIR_PATH"
 
@@ -1384,11 +1725,11 @@ if [ $DEBUG -eq 1 ]; then
 fi
 echo "..."
 
-for t in "${!TOOLS_ARRAY[@]}" ; do
+for t in "${!TOOLS_ARRAY[@]}"; do
 
 	FOUND=0
 	echo -n ${TOOLS_ARRAY[$t]}"..."
-	for p in "${!BINARY_PATHS_ARRAY[@]}" ; do
+	for p in "${!BINARY_PATHS_ARRAY[@]}"; do
 		if [ -f "${BINARY_PATHS_ARRAY[$p]}/${TOOLS_ARRAY[$t]}" ]; then
 			FOUND=1
 			TOOL_PATH="${BINARY_PATHS_ARRAY[$p]}/${TOOLS_ARRAY[$t]}"
@@ -1433,59 +1774,81 @@ else
 	if [ $NO_ASK -eq 0 ]; then
 		echo "Please Select:"
 		echo
+		echo "1. Install dependencies"
 		if [ $CHECK_ONLY -eq 0 ]; then
-			echo "1. Continue (default)"
-			echo "2. Install dependences and exit"
-			echo "0. Exit"
+			echo "2. Continue without installing (default)"
+		fi
+		echo "0. Exit"
+		echo
+		echo -n "Enter selection [${CHECK_ONLY:-2}] > "
+
+		read item
+		case "$item" in
+		1)
+			echo
+			echo "Select JPEG library to install:"
+			echo "1. libjpeg (default)"
+			echo "2. libjpeg-turbo (fastest)"
+			echo "3. mozjpeg (smallest filesize, needs to compile from source)"
 			echo
 			echo -n "Enter selection [1] > "
-		else
-			echo "1. Install dependences and exit"
-			echo "0. Exit (default)"
+			read jpeg_lib
+			case "$jpeg_lib" in
+			2)
+				DEPS_DEBIAN=${DEPS_DEBIAN/libjpeg-progs/libjpeg-turbo-progs}
+				DEPS_REDHAT=${DEPS_REDHAT/libjpeg*/libjpeg-turbo*}
+				DEPS_MACOS=${DEPS_MACOS/libjpeg/jpeg-turbo}
+				;;
+			3)
+				DEPS_DEBIAN=${DEPS_DEBIAN/libjpeg-progs/mozjpeg}
+				DEPS_REDHAT=${DEPS_REDHAT/libjpeg*/mozjpeg}
+				DEPS_MACOS=${DEPS_MACOS/libjpeg/mozjpeg}
+				;;
+			*)
+				# Default libjpeg - no changes needed
+				;;
+			esac
+			installDeps
+			if [ $CHECK_ONLY -eq 1 ]; then
+				echo "Exiting..."
+				echo
+				exit 0
+			fi
 			echo
-			echo -n "Enter selection [0] > "
-		fi
-		if [ $CHECK_ONLY -eq 0 ]; then
-			read item
-			case "$item" in
-				1) echo
-					;;
-				0) echo
-					echo "Exiting..."
-					echo
-					exit 0
-					;;
-				2) echo
-					installDeps
-					echo "Exiting..."
-					echo
-					exit 0
-					;;
-				*) echo 
-					;;
-			esac
-		else
-			read item
-			case "$item" in
-				0) echo
-					echo "Exiting..."
-					echo
-					exit 0
-					;;
-				1) echo
-					installDeps
-					echo "Exiting..."
-					echo
-					exit 0
-					;;
-				*) echo
-					echo "Exiting..."
-					echo
-					exit 0
-					;;
-			esac
-		fi
+			;;
+		0)
+			echo
+			echo "Exiting..."
+			echo
+			exit 0
+			;;
+		2)
+			if [ $CHECK_ONLY -eq 1 ]; then
+				echo
+				echo "Exiting..."
+				echo
+				exit 0
+			fi
+			echo
+			;;
+		*)
+			if [ $CHECK_ONLY -eq 1 ]; then
+				echo
+				echo "Exiting..."
+				echo
+				exit 0
+			fi
+			echo
+			;;
+		esac
 	else
+		if [ $CHECK_ONLY -eq 1 ]; then
+			installDeps
+			echo "Exiting..."
+			echo
+			exit 0
+		fi
+		else
 		if [ $CHECK_ONLY -eq 1 ]; then
 			installDeps
 			echo "Exiting..."
@@ -1498,22 +1861,60 @@ fi
 # Return to script dir to prevent find errors
 cd "$SCRIPT_PATH"
 
+# For debugging
+if [ $DEBUG -eq 1 ]; then
+	echo "Search pattern: $FIND_NAMES"
+fi
 # Find images
-IMAGES=$(find "$DIR_PATH" $FIND_INCLUDE \( $FIND_NAMES \) | findExclude)
+if [ -d "$DIR_PATH" ]; then
+	# Save current directory
+	ORIGINAL_DIR=$(pwd)
+
+	# Get absolute path
+	DIR_PATH=$(readlink -f "$DIR_PATH")
+
+	# Verify directory exists after resolving path
+	if [ ! -d "$DIR_PATH" ]; then
+		echo "Directory not found after resolving path: $DIR_PATH"
+		exit 1
+	fi
+
+	# Change to target directory
+	if ! cd "$DIR_PATH" 2>/dev/null; then
+		echo "Cannot access directory: $DIR_PATH"
+		exit 1
+	fi
+
+	FULL_DIR_PATH=$(pwd)
+
+	if [ $DEBUG -eq 1 ]; then
+		echo "Debug: Current directory: $(pwd)"
+		echo "Debug: FULL_DIR_PATH: $FULL_DIR_PATH"
+	fi
+
+	# Find images from current directory
+	IMAGES=$(find . $FIND_INCLUDE \( $FIND_NAMES \) -print0 2>/dev/null | tr '\0' '\n')
+	if [ ! -z "$EXCLUDE_LIST" ]; then
+		IMAGES=$(echo "$IMAGES" | findExclude)
+	fi
+
+	# Return to original directory
+	cd "$ORIGINAL_DIR" || exit 1
+else
+	echo "Directory not found: $DIR_PATH"
+	exit 1
+fi
 
 # Num of images
 IMAGES_TOTAL=$(echo "$IMAGES" | wc -l)
 
-# Preoptimize vars
-IMAGES_OPTIMIZED=0
-IMAGES_CURRENT=0
-START_TIME=$(date +%s)
-
-# Hook: init-loop-vars-after
-includeExtensions init-loop-vars-after
-
 # If images found
-if ! [ -z "$IMAGES" ]; then
+if [ ! -z "$IMAGES" ]; then
+
+	# Unlock
+	if [[ $UNLOCK -eq 1 ]]; then
+		unlockDir
+	fi
 
 	# Unlock
 	if [[ $UNLOCK -eq 1 ]]; then
@@ -1529,233 +1930,7 @@ if ! [ -z "$IMAGES" ]; then
 	# Update time marker
 	updateTimeMarker
 
-	echo "Optimizing..."
-
-	# Init stat vars
-	INPUT=0
-	OUTPUT=0
-	SAVED_SIZE=0
-
-	# Main optimize loop
-	echo "$IMAGES" | ( \
-		while read IMAGE ; do
-
-			# Additional vars for using hooks
-			OPTIMIZE=1
-			OPTIMIZE_JPG=1
-			OPTIMIZE_PNG=1
-			OPTIMIZE_GIF=1
-			RESTORE_IMAGE_CHECK=1
-			BACKUP=1
-			CALCULATE_STATS=1
-			SHOW_OPTIMIZE_RESULT=1
-
-			# Internal vars
-			RESTORE_IMAGE_PERMS=1
-			UPDATE_IMAGE_MODIFY_TIME=1
-
-			# Process counter
-			if [ $LESS -eq 0 ]; then
-	#			if [ $SHOW_PROGRESS -eq 1 ]; then
-	#				if [ $PROGRESS_MEASURE == "percent" ]; then
-	#					IMAGES_CURRENT_PERCENT=$(echo "scale=2; $IMAGES_CURRENT*100/$IMAGES_TOTAL" | bc)
-	#					IMAGES_CURRENT=$(echo "$IMAGES_CURRENT+1" | bc)
-	#					echo -n "[$IMAGES_CURRENT_PERCENT%] "
-	#				fi
-	#				if [ $PROGRESS_MEASURE == "num" ]; then
-						IMAGES_CURRENT=$(echo "$IMAGES_CURRENT+1" | bc)
-						echo -n "["
-						echo -n $IMAGES_CURRENT
-						echo -n "/"
-						echo -n $IMAGES_TOTAL
-						echo -n "] "
-	#				fi
-	#			fi
-				echo -n "$IMAGE"
-				echo -n '... '
-			fi
-
-			if [ -f "$IMAGE" ]; then
-				# Sizes before optimizing
-				SIZE_BEFORE=$(wc -c "$IMAGE" | awk '{print $1}')
-				SIZE_BEFORE_SCALED=$(echo "scale=1; $SIZE_BEFORE/1024" | bc | sed 's/^\./0./')
-				INPUT=$(echo "$INPUT+$SIZE_BEFORE" | bc)
-
-				# Get image extension
-				EXT=${IMAGE##*.}
-
-				if [ $BACKUP -eq 1 ]; then
-
-					# Save permissions
-					savePerms
-
-					# Backup original file
-					cp -fp "$IMAGE" "$TMP_PATH/$(basename "$IMAGE").bkp"
-
-				fi
-
-				# Hook: optim-before
-				includeExtensions optim-before
-
-				# JPEG
-				if [[ $EXT == "jpg" || $EXT == "jpeg" || $EXT == "JPG" || $EXT == "JPEG" ]]; then
-
-					# Hook: optim-jpg-before
-					includeExtensions optim-jpg-before
-
-					if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_JPG -eq 1 ]]; then
-
-						optimJPG "$IMAGE"
-
-					fi
-
-					# Hook: optim-jpg-after
-					includeExtensions optim-jpg-after
-
-				# PNG
-				elif [[ $EXT == "png" || $EXT == "PNG" ]]; then
-
-					# Hook: optim-png-before
-					includeExtensions optim-png-before
-
-					if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_PNG -eq 1 ]]; then
-
-						optimPNG "$IMAGE"
-
-					fi
-
-					# Hook: optim-png-after
-					includeExtensions optim-png-after
-
-				# GIF
-				elif [[ $EXT == "gif" || $EXT == "GIF" ]]; then
-
-					# Hook: optim-gif-before
-					includeExtensions optim-gif-before
-
-					if [[ $OPTIMIZE -eq 1 && $OPTIMIZE_GIF -eq 1 ]]; then
-
-						optimGIF "$IMAGE"
-
-					fi
-
-					# Hook: optim-gif-after
-					includeExtensions optim-gif-after
-
-				fi
-
-				# Hook: optim-after
-				includeExtensions optim-after
-
-				# Sizes after
-				if [ $CALCULATE_STATS -eq 1 ]; then
-					SIZE_AFTER=$(wc -c "$IMAGE" | awk '{print $1}')
-					SIZE_AFTER_SCALED=$(echo "scale=1; $SIZE_AFTER/1024" | bc | sed 's/^\./0./')
-				fi
-
-				if [ $BACKUP -eq 1 ]; then
-
-					# Restore original if it smaller as optimized
-					if [ $RESTORE_IMAGE_CHECK -eq 1 ]; then
-
-						if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-							cp -fp "$TMP_PATH/$(basename "$IMAGE").bkp" "$IMAGE"
-							RESTORE_IMAGE_PERMS=0
-							UPDATE_IMAGE_MODIFY_TIME=0
-						fi
-
-					fi
-
-					# Remove backup if exists
-					if [ -f "$TMP_PATH/$(basename "$IMAGE").bkp" ]; then
-						rm "$TMP_PATH/$(basename "$IMAGE").bkp"
-					fi
-
-				fi
-
-				# Restore image permissions
-				if [ $RESTORE_IMAGE_PERMS -eq 1 ]; then
-					restorePerms
-				fi
-
-				# Update modify time from time marker
-				if [ $UPDATE_IMAGE_MODIFY_TIME -eq 1 ]; then
-					updateModifyTime
-				fi
-
-				# Calculate stats
-				if [ $CALCULATE_STATS -eq 1 ]; then
-					if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-						OUTPUT=$(echo "$OUTPUT+$SIZE_BEFORE" | bc)
-					else
-						OUTPUT=$(echo "$OUTPUT+$SIZE_AFTER" | bc)
-						SIZE_DIFF=$(echo "$SIZE_BEFORE-$SIZE_AFTER" | bc)
-						SAVED_SIZE=$(echo "$SAVED_SIZE+$SIZE_DIFF" | bc)
-						IMAGES_OPTIMIZED=$(echo "$IMAGES_OPTIMIZED+1" | bc)
-					fi
-				fi
-
-				# Optimize results and sizes
-				if [ $SHOW_OPTIMIZE_RESULT -eq 1 ]; then
-					if [ $LESS -eq 0 ]; then
-						if [ $SIZE_BEFORE -le $SIZE_AFTER ]; then
-							$SETCOLOR_FAILURE
-							echo -n "[NOT OPTIMIZED]"
-							$SETCOLOR_NORMAL
-							echo " ${SIZE_BEFORE_SCALED}Kb"
-						else
-							$SETCOLOR_SUCCESS
-							echo -n "[OPTIMIZED]"
-							$SETCOLOR_NORMAL
-							echo " ${SIZE_BEFORE_SCALED}Kb -> ${SIZE_AFTER_SCALED}Kb"
-						fi
-					fi
-				else
-					echo
-				fi
-			else
-				$SETCOLOR_FAILURE
-				echo "[SKIPPING - NOT EXISTS]"
-				$SETCOLOR_NORMAL
-			fi
-
-		done
-
-		# Hook: total-info-before
-		includeExtensions total-info-before
-
-		# Total info
-		echo
-		echo -n "Input: "
-		readableSize $INPUT
-		echo
-
-		echo -n "Output: "
-		readableSize $OUTPUT
-		echo
-
-		echo -n "You save: "
-		readableSize $SAVED_SIZE
-		echo " / $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
-		
-		echo -n "Optimized/Total: "
-		echo -n $IMAGES_OPTIMIZED
-		echo -n " / "
-		echo -n $IMAGES_TOTAL
-		echo " files"
-
-		# Hook: total-info-time-before
-		includeExtensions total-info-time-before
-
-		END_TIME=$(date +%s)
-		TOTAL_TIME=$(echo "$END_TIME-$START_TIME" | bc)
-		echo -n "Total optimizing time: "
-		readableTime $TOTAL_TIME
-
-		# Hook: total-info-after
-		includeExtensions total-info-after
-
-	) # End of loop process. Further variable variables inside loop will not be available
+	processImages "$IMAGES"
 
 	# Time marker fix
 	fixTimeMarker
@@ -1768,7 +1943,6 @@ else
 	echo "No input images found."
 
 fi
-
 echo
 
 cd "$CUR_DIR"
