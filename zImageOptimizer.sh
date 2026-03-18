@@ -352,7 +352,7 @@ installDeps()
 				tar -xf pngout-20200115-linux.tar.gz
 				rm pngout-20200115-linux.tar.gz
 				if [ $PLATFORM_ARCH == 64 ]; then
-					$SUDO cp pngout-20200115-linux/x86_64/pngout /bin/pngout
+					$SUDO cp pngout-20200115-linux/amd64/pngout /bin/pngout
 				else
 					$SUDO cp pngout-20200115-linux/i686/pngout /bin/pngout
 				fi
