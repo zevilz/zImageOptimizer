@@ -3,7 +3,7 @@
 # URL: https://github.com/zevilz/zImageOptimizer
 # Author: Alexandr "zEvilz" Emshanov
 # License: MIT
-# Version: 0.10.6
+# Version: 0.10.7
 
 sayWait()
 {
@@ -348,7 +348,7 @@ installDeps()
 	#		fi
 
 			if ! [ -z $ISSET_pngout ] && [ $ISSET_pngout -eq 0 ]; then
-				wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux.tar.gz
+				wget https://www.jonof.id.au/files/kenutils/pngout-20200115-linux.tar.gz
 				tar -xf pngout-20150319-linux.tar.gz
 				rm pngout-20150319-linux.tar.gz
 				if [ $PLATFORM_ARCH == 64 ]; then
@@ -434,7 +434,7 @@ installDeps()
 
 			if ! [ -z $ISSET_pngout ] && [ $ISSET_pngout -eq 0 ]; then
 				cd ~
-				wget http://static.jonof.id.au/dl/kenutils/pngout-20150319-bsd.tar.gz
+				wget https://www.jonof.id.au/files/kenutils/pngout-20200115-bsd.tar.gz
 				tar -xf pngout-20150319-bsd.tar.gz
 				rm pngout-20150319-bsd.tar.gz
 				if [ $PLATFORM_ARCH == 64 ]; then
@@ -1461,7 +1461,7 @@ else
 					echo
 					exit 0
 					;;
-				*) echo 
+				*) echo
 					;;
 			esac
 		else
@@ -1737,7 +1737,7 @@ if ! [ -z "$IMAGES" ]; then
 		echo -n "You save: "
 		readableSize $SAVED_SIZE
 		echo " / $(echo "scale=2; 100-$OUTPUT*100/$INPUT" | bc | sed 's/^\./0./')%"
-		
+
 		echo -n "Optimized/Total: "
 		echo -n $IMAGES_OPTIMIZED
 		echo -n " / "
