@@ -349,14 +349,14 @@ installDeps()
 
 			if ! [ -z $ISSET_pngout ] && [ $ISSET_pngout -eq 0 ]; then
 				wget https://www.jonof.id.au/files/kenutils/pngout-20200115-linux.tar.gz
-				tar -xf pngout-20150319-linux.tar.gz
-				rm pngout-20150319-linux.tar.gz
+				tar -xf pngout-20200115-linux.tar.gz
+				rm pngout-20200115-linux.tar.gz
 				if [ $PLATFORM_ARCH == 64 ]; then
-					$SUDO cp pngout-20150319-linux/x86_64/pngout /bin/pngout
+					$SUDO cp pngout-20200115-linux/x86_64/pngout /bin/pngout
 				else
-					$SUDO cp pngout-20150319-linux/i686/pngout /bin/pngout
+					$SUDO cp pngout-20200115-linux/i686/pngout /bin/pngout
 				fi
-				rm -rf pngout-20150319-linux
+				rm -rf pngout-20200115-linux
 			fi
 
 			# Hook: after-install-deps-linux
@@ -435,14 +435,14 @@ installDeps()
 			if ! [ -z $ISSET_pngout ] && [ $ISSET_pngout -eq 0 ]; then
 				cd ~
 				wget https://www.jonof.id.au/files/kenutils/pngout-20200115-bsd.tar.gz
-				tar -xf pngout-20150319-bsd.tar.gz
-				rm pngout-20150319-bsd.tar.gz
+				tar -xf pngout-20200115-bsd.tar.gz
+				rm pngout-20200115-bsd.tar.gz
 				if [ $PLATFORM_ARCH == 64 ]; then
-					$SUDO cp pngout-20150319-bsd/amd64/pngout /bin/pngout
+					$SUDO cp pngout-20200115-bsd/amd64/pngout /bin/pngout
 				else
-					$SUDO cp pngout-20150319-bsd/i686/pngout /bin/pngout
+					$SUDO cp pngout-20200115-bsd/i686/pngout /bin/pngout
 				fi
-				rm -rf pngout-20150319-bsd
+				rm -rf pngout-20200115-bsd
 			fi
 
 			# Hook: after-install-deps-freebsd
