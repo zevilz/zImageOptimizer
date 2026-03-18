@@ -1,4 +1,4 @@
-# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.10.6-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.10.6) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
+# zImageOptimizer [![Version](https://img.shields.io/badge/version-v0.10.7-orange.svg)](https://github.com/zevilz/zImageOptimizer/releases/tag/0.10.7) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 Simple bash script for lossless image optimizing JPEG, PNG and GIF images in a specified directory include subdirectories on Linux, MacOS and FreeBSD.
 
@@ -27,7 +27,7 @@ JPEG:
 PNG:
 - [pngcrush](http://pmt.sourceforge.net/pngcrush/) (v1.7.22+)
 - [optipng](http://optipng.sourceforge.net/) (v0.7+)
-- [pngout](http://www.jonof.id.au/kenutils)
+- [pngout](https://www.jonof.id.au/kenutils.html)
 - advpng (from [AdvanceCOMP library](http://www.advancemame.it/comp-readme.html))
 
 GIF:
@@ -72,7 +72,7 @@ Notices:
 - it is impossible to use together `-t (--time)` and `-n (--new-only)` options;
 - you must use `-m (--time-marker)` option with `-n (--new-only)` option;
 - you must use `--unlock` option with `-p (--path)` option (just add `--unlock` option in next run);
-- you can install dependencies without any questions in check mode (`-c (--check-only)`) using `-q (--quiet)` option. 
+- you can install dependencies without any questions in check mode (`-c (--check-only)`) using `-q (--quiet)` option.
 
 Recommendation: use [GNU Screen](https://en.wikipedia.org/wiki/GNU_Screen) or analogs if there are many images in an input directory, because the optimization may can take long time.
 
@@ -433,6 +433,7 @@ Do you like the script? Would you like to support its development? Feel free to 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/zevilz)
 
 ## Changelog
+- 18.03.2026 - 0.10.7 - updated links to pngout sources
 - 14.09.2023 - 0.10.6 - check file exists before optimizing
 - 09.03.2021 - 0.10.5 - added support for automatic install dependencies on MacOS 11+
 - 27.09.2020 - 0.10.4 - fixed permissions and modify time for optimized images
