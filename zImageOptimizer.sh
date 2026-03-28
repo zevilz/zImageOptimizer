@@ -90,7 +90,7 @@ installDeps()
 	PLATFORM="unknown"
 	PLATFORM_ARCH="unknown"
 	PLATFORM_SUPPORT=0
-	if [[ "$OSTYPE" == "linux-gnu" ]]; then
+	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 		PLATFORM="linux"
 		PLATFORM_DISTRIBUTION="unknown"
 		PLATFORM_VERSION="unknown"
@@ -901,7 +901,7 @@ checkDirLock()
 
 savePerms()
 {
-	if [[ "$OSTYPE" == "linux-gnu" ]]; then
+	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 		CUR_OWNER=$(stat -c "%U:%G" "$IMAGE")
 		CUR_PERMS=$(stat -c "%a" "$IMAGE")
 	else
